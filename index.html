@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gavin Higgins | Mechanical & Robotics Engineering Portfolio</title>
+  <meta name="description" content="Skeuomorphic engineering portfolio of Gavin Higgins - Mechanical Engineering at University of Washington. Hero Robot Lead, robotic mechanisms, FEA, and controls.">
+
+  <!-- Google Fonts for Skeuomorphic Aesthetics -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=JetBrains+Mono:wght@400;600;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-workbench">
+
+  <!-- Embedded SVG Filter for Authentic Paper & Desk Texture -->
+  <svg class="svg-filters" aria-hidden="true" width="0" height="0">
+    <defs>
+      <filter id="paper-texture">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" result="noise" />
+        <feDiffuseLighting in="noise" lighting-color="#ffffff" surfaceScale="1.2" result="light">
+          <feDistantLight azimuth="55" elevation="65" />
+        </feDiffuseLighting>
+        <feBlend mode="multiply" in="SourceGraphic" in2="light" />
+      </filter>
+      <filter id="pencil-texture">
+        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Ambient Light / Vignette / Lamp Glow Overlay -->
+  <div class="desk-lighting" id="deskLighting"></div>
+
+  <!-- Top Floating Engineering Utility Dock -->
+  <header class="desk-toolbar">
+    <div class="dock-left">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span class="status-text">WORKBENCH ACTIVE // UW ROBOTICS LAB</span>
+      </div>
+    </div>
+    
+    <div class="dock-center">
+      <button class="tool-btn" id="btnNeaten" title="Organize desk papers into a clean drafting layout">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Neaten Desk</span>
+      </button>
+      <button class="tool-btn" id="btnScatter" title="Scatter papers naturally across the drafting board">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16l4-8 4 6 5-10 3 12"/></svg>
+        <span>Scatter Papers</span>
+      </button>
+      <div class="tool-divider"></div>
+      <button class="tool-btn" id="btnThemeToggle" title="Toggle desk lighting: Warm Workbench / Clean Lab / Nocturnal Blueprint">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <span id="themeLabel">Desk Lamp</span>
+      </button>
+      <button class="tool-btn" id="btnMatToggle" title="Toggle surface: Self-Healing Cutting Mat / Dark Walnut Wood">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 4v16M10 4v16M14 4v16M18 4v16M2 8h20M2 12h20M2 16h20"/></svg>
+        <span id="matLabel">Cutting Mat</span>
+      </button>
+      <button class="tool-btn" id="btnSoundToggle" title="Toggle subtle physical paper & toggle sounds">
+        <svg id="soundIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        <span id="soundLabel">Sound: On</span>
+      </button>
+    </div>
+
+    <div class="dock-right">
+      <div class="hint-badge">
+        <span class="hint-icon">💡</span>
+        <span>Hover drawings to animate &bull; Click to expand fullscreen &bull; Drag to rearrange</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- The Workbench Desk Surface Area -->
+  <main class="workbench-canvas" id="workbench">
+
+    <!-- Cutting Mat Measurement Scales (Top & Left Rulers) -->
+    <div class="mat-ruler mat-ruler-top" id="rulerTop"></div>
+    <div class="mat-ruler mat-ruler-left" id="rulerLeft"></div>
+
+    <!-- Desk Props & Physical Tools (Skeuomorphic Decor) -->
+    <div class="desk-prop ceramic-coffee-mug" title="Fresh brew keeps the mechanisms turning">
+      <div class="mug-top">
+        <div class="coffee-liquid">
+          <div class="crema-ring"></div>
+        </div>
+      </div>
+      <div class="mug-handle"></div>
+      <div class="mug-shadow"></div>
+      <div class="coffee-stain"></div>
+    </div>
+
+    <!-- Steel Vernier Caliper Prop -->
+    <div class="desk-prop precision-caliper" id="caliperProp" title="Stainless Steel Vernier Caliper (Drag me!)">
+      <div class="caliper-beam">
+        <div class="caliper-scale"></div>
+      </div>
+      <div class="caliper-fixed-jaw"></div>
+      <div class="caliper-slider">
+        <div class="caliper-movable-jaw"></div>
+        <div class="caliper-lcd">
+          <span class="lcd-value" id="caliperValue">24.85</span>
+          <span class="lcd-unit">mm</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rotring 600 Technical Drafting Pencil -->
+    <div class="desk-prop technical-pencil" title="0.5mm Mechanical Drafting Pencil">
+      <div class="pencil-eraser-cap"></div>
+      <div class="pencil-body">
+        <span class="pencil-brand">ROTRING 600 &bull; 0.5mm</span>
+      </div>
+      <div class="pencil-grip"></div>
+      <div class="pencil-tip"></div>
+      <div class="pencil-lead"></div>
+    </div>
+
+    <!-- ========================================================
+         ITEM 1: BIG CANARY YELLOW POST-IT NOTE (Name, Title, Contact)
+         ======================================================== -->
+    <div class="desk-item post-it-note" id="postItNote" data-tilt="-2.5" style="--rotation: -2.5deg;">
+      <div class="post-it-tape"></div>
+      <div class="post-it-pin"></div>
+      <div class="post-it-peel-corner"></div>
+      <div class="post-it-content">
+        <div class="post-it-header">
+          <span class="post-it-tag">NOTE // TO COLLABORATORS &amp; RECRUITERS</span>
+          <span class="post-it-date">OCT 2026</span>
+        </div>
+        
+        <h1 class="post-it-name">Gavin Higgins</h1>
+        <p class="post-it-subtitle">Mechanical &amp; Robotics Engineer</p>
+        
+        <div class="post-it-affiliation">
+          <span class="uw-pill">UW SEATTLE</span>
+          <span>B.S. Mechanical Engineering &bull; 3.60 GPA</span>
+        </div>
+        <div class="post-it-lead-role">
+          <span class="role-badge">Lead Role</span>
+          <strong>Hero Robot Lead</strong> @ Advanced Robotics at UW (ARUW)
+        </div>
+
+        <hr class="post-it-divider">
+
+        <div class="post-it-contact-grid">
+          <a href="mailto:ghigg385@uw.edu" class="post-it-link" title="Send email">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>ghigg385@uw.edu</span>
+          </a>
+          <a href="tel:602-471-8078" class="post-it-link" title="Call or text">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>602-471-8078</span>
+          </a>
+          <a href="https://linkedin.com/in/gavin-higgins-640293334/" target="_blank" rel="noopener noreferrer" class="post-it-link" title="LinkedIn Profile">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+            <span>linkedin.com/in/gavin-higgins</span>
+          </a>
+          <div class="post-it-location">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Seattle, WA // Scottsdale, AZ</span>
+          </div>
+        </div>
+
+        <div class="post-it-skills-box">
+          <span class="skills-heading">TOOLKIT &amp; CORE SKILLS:</span>
+          <div class="post-it-tags">
+            <span class="tag">Solidworks</span>
+            <span class="tag">ANSYS FEA</span>
+            <span class="tag">Onshape</span>
+            <span class="tag">nTop</span>
+            <span class="tag">CNC Machining</span>
+            <span class="tag">Manual Mill/Lathe</span>
+            <span class="tag">MATLAB</span>
+            <span class="tag">ESP32 / Controls</span>
+          </div>
+        </div>
+
+        <div class="post-it-checklist">
+          <span class="checklist-title">CURRENT WORKBENCH PIPELINE:</span>
+          <label class="check-item checked">
+            <input type="checkbox" checked disabled>
+            <span>Low-backlash yaw drive (3rd Place Intl)</span>
+          </label>
+          <label class="check-item checked">
+            <input type="checkbox" checked disabled>
+            <span>560 N impact omni suspension validated</span>
+          </label>
+          <label class="check-item in-progress">
+            <input type="checkbox" disabled>
+            <span>Tuning LQR on bipedal wheel-legged robot</span>
+          </label>
+        </div>
+
+        <div class="post-it-footer">
+          <button class="post-it-btn primary" id="btnQuickResume">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Inspect Formal Resume
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         ITEM 2: FORMAL RESUME (Physical Bond Paper on the Desk)
+         ======================================================== -->
+    <article class="desk-item paper-sheet resume-paper" id="paperResume" data-id="resume" data-tilt="3" style="--rotation: 3deg;">
+      <div class="paper-clip-brass"></div>
+      <div class="paper-watermark">UW ME</div>
+      <div class="paper-fold-shadow"></div>
+      
+      <div class="paper-inner-content">
+        <!-- Resume Header -->
+        <header class="resume-sheet-header">
+          <div class="resume-meta-left">
+            <h2 class="resume-name">Gavin Higgins</h2>
+          </div>
+          <div class="resume-meta-right">
+            <div>ghigg385@uw.edu</div>
+            <div>602-471-8078</div>
+            <div>linkedin.com/in/gavin-higgins-640293334/</div>
+          </div>
+        </header>
+
+        <!-- Education -->
+        <section class="resume-sheet-section">
+          <h3 class="resume-sec-title">EDUCATION</h3>
+          <div class="resume-entry">
+            <div class="entry-header">
+              <span class="school-name">University of Washington, Seattle</span>
+              <span class="location">Seattle, WA</span>
+            </div>
+            <div class="entry-sub">
+              <em>Bachelor of Science - Mechanical Engineering, 3.60 GPA</em>
+              <span class="date">Sep 2025 - Jun 2029</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Experience -->
+        <section class="resume-sheet-section">
+          <h3 class="resume-sec-title">EXPERIENCE</h3>
+          
+          <div class="resume-entry">
+            <div class="entry-header">
+              <span class="job-title">Hero Robot Lead</span>
+              <span class="location">Seattle, WA</span>
+            </div>
+            <div class="entry-sub">
+              <em>Advanced Robotics at the University of Washington</em>
+              <span class="date">October 2025 - Present</span>
+            </div>
+            <ul class="resume-bullets">
+              <li>Engineered a low-backlash yaw mechanism for the 'Hero' robot. Used nTop generative design and Solidworks FEA to increase impact resistance and overall stiffness. Robot placed 3rd in international competition.</li>
+              <li>Replaced faulty drive pulley mounting with zero backlash components. Introduced serviceable sliding belt tensioner to ensure ease of control throughout the robot's lifetime. Total robot weight reduced by 28%.</li>
+              <li>Leading a team of 5 to fully redevelop the robot for the 2027 season, aiming to reduce weight, increase electronics accessibility, increase shot accuracy, and place 1st in competition.</li>
+            </ul>
+          </div>
+
+          <div class="resume-entry">
+            <div class="entry-header">
+              <span class="job-title">Robot Lead</span>
+              <span class="location">Scottsdale, AZ</span>
+            </div>
+            <div class="entry-sub">
+              <em>High School FRC Robotics Competition Team</em>
+              <span class="date">August 2022 - May 2025</span>
+            </div>
+            <ul class="resume-bullets">
+              <li>Directed a team of 10 rookies to design and build a 125 lb competition robot, using mainly in-house manufacturing during a 6 week timeline. Created the best-performing robot in 15-year team history.</li>
+              <li>Eliminated previous robots' constant electrical and mechanical failures, and modernized style of building robots to guarantee competitiveness. Reshaped internal curriculum and removed previous leadership team issues.</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Projects -->
+        <section class="resume-sheet-section">
+          <h3 class="resume-sec-title">PROJECTS</h3>
+          <div class="resume-entry">
+            <div class="entry-header">
+              <span class="proj-title">Omni Wheel Suspension Module &amp; Spring Optimization</span>
+              <span class="date">Sep - Oct 2026</span>
+            </div>
+            <div class="entry-sub">
+              <em>Advanced Robotics at the University of Washington</em>
+            </div>
+            <ul class="resume-bullets">
+              <li>Designed suspension &amp; drive module for two ARUW 2027 robots: 0.25" 6061 and 4mm carbon fiber plates, dual MGN9H rails.</li>
+              <li>Validated structure via ANSYS: handles drops from 200% higher and lateral impacts of 560 N (4x more than 2026).</li>
+              <li>Wrote MATLAB script to optimize spring and damper constants under drop and bumpy obstacle constraints.</li>
+            </ul>
+          </div>
+          <div class="resume-entry">
+            <div class="entry-header">
+              <span class="proj-title">PID Wheel-Legged Balancing Robot</span>
+              <span class="date">Sep 2026 - In Progress</span>
+            </div>
+            <div class="entry-sub">
+              <em>Personal Project</em>
+            </div>
+            <ul class="resume-bullets">
+              <li>ESP32-based bipedal wheel-legged robot built to learn control theory. Currently balances in place.</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Skills -->
+        <section class="resume-sheet-section">
+          <h3 class="resume-sec-title">SKILLS &amp; COURSEWORK</h3>
+          <p class="resume-compact-p"><strong>Technical Skills:</strong> Solidworks, ANSYS, Onshape, nTop, Manual and CNC Machining</p>
+          <p class="resume-compact-p"><strong>Coursework:</strong> Differential Equations, Linear Algebra, Engineering Statics, Kinematics &amp; Dynamics, Materials Science, Electromagnetism</p>
+        </section>
+
+        <div class="click-hint-banner">
+          <span>🔍 Click paper to zoom fullscreen &bull; Print / Save PDF</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- ========================================================
+         ITEM 3: BLUEPRINT 1 - OMNI WHEEL SUSPENSION & SPRING OPTIMIZATION
+         ======================================================== -->
+    <article class="desk-item paper-sheet blueprint-sheet" id="drawingSuspension" data-id="suspension" data-tilt="-4" style="--rotation: -4deg;">
+      <div class="tape-corner tape-top-left"></div>
+      <div class="tape-corner tape-bottom-right"></div>
+      
+      <div class="blueprint-inner">
+        <!-- Blueprint Title Block Header -->
+        <div class="blueprint-header-bar">
+          <div class="dwg-info">
+            <span class="dwg-no">DWG: ARUW-2027-SUSP-01</span>
+            <span class="dwg-rev">REV B</span>
+          </div>
+          <div class="dwg-title">OMNI WHEEL SUSPENSION MODULE // DUAL MGN9H</div>
+          <div class="dwg-scale">SCALE 1:2</div>
+        </div>
+
+        <!-- Dynamic Animated Canvas / Interactive Drawing -->
+        <div class="blueprint-canvas-container">
+          <canvas id="canvasSuspension" class="drawing-canvas" width="460" height="320"></canvas>
+          <div class="canvas-live-badge">
+            <span class="live-dot"></span>
+            <span class="live-text">SIM ACTIVE // HOVER TO COMPRESS SPRING</span>
+          </div>
+          <div class="telemetry-overlay">
+            <div class="tele-row">
+              <span class="tele-label">MAX LATERAL LOAD:</span>
+              <span class="tele-val highlight">560 N (4x 2026)</span>
+            </div>
+            <div class="tele-row">
+              <span class="tele-label">DROP RATING:</span>
+              <span class="tele-val">+200% ELEVATION</span>
+            </div>
+            <div class="tele-row">
+              <span class="tele-label">MATERIALS:</span>
+              <span class="tele-val">0.25" 6061-T6 + 4mm CF</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Blueprint Title Block Footer -->
+        <footer class="blueprint-title-block">
+          <div class="block-cell cell-org">ADVANCED ROBOTICS @ UW</div>
+          <div class="block-cell cell-designer">DESIGNED BY: G. HIGGINS</div>
+          <div class="block-cell cell-date">DATE: OCT 2026</div>
+          <div class="block-cell cell-action">CLICK TO INSPECT FULL CAD &amp; FEA</div>
+        </footer>
+      </div>
+    </article>
+
+    <!-- ========================================================
+         ITEM 4: BLUEPRINT 2 - HERO ROBOT LOW-BACKLASH YAW MECHANISM
+         ======================================================== -->
+    <article class="desk-item paper-sheet blueprint-sheet dark-blueprint" id="drawingYaw" data-id="yaw" data-tilt="2" style="--rotation: 2deg;">
+      <div class="paper-clip-brass clip-right"></div>
+      
+      <div class="blueprint-inner">
+        <div class="blueprint-header-bar">
+          <div class="dwg-info">
+            <span class="dwg-no">DWG: HERO-YAW-nTOP-03</span>
+            <span class="dwg-rev">REV C</span>
+          </div>
+          <div class="dwg-title">HERO ROBOT YAW DRIVE // SLIDING TENSIONER</div>
+          <div class="dwg-scale">3RD PLACE INTL</div>
+        </div>
+
+        <div class="blueprint-canvas-container">
+          <canvas id="canvasYaw" class="drawing-canvas" width="460" height="320"></canvas>
+          <div class="canvas-live-badge">
+            <span class="live-dot"></span>
+            <span class="live-text">GEAR TRAIN RUNNING // HOVER FOR SPEED</span>
+          </div>
+          <div class="telemetry-overlay">
+            <div class="tele-row">
+              <span class="tele-label">SYSTEM BACKLASH:</span>
+              <span class="tele-val highlight">&plusmn;0.012&deg; (ZERO PLAY)</span>
+            </div>
+            <div class="tele-row">
+              <span class="tele-label">WEIGHT SAVED:</span>
+              <span class="tele-val highlight">-28% TOTAL REDUCTION</span>
+            </div>
+            <div class="tele-row">
+              <span class="tele-label">OPTIMIZATION:</span>
+              <span class="tele-val">nTop Generative Lattice</span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="blueprint-title-block">
+          <div class="block-cell cell-org">ARUW COMPETITION PLATFORM</div>
+          <div class="block-cell cell-designer">LEAD: G. HIGGINS</div>
+          <div class="block-cell cell-date">2026-2027 REDEVELOPMENT</div>
+          <div class="block-cell cell-action">CLICK FOR FULL ASSEMBLY ANALYSIS</div>
+        </footer>
+      </div>
+    </article>
+
+    <!-- ========================================================
+         ITEM 5: LAB NOTEBOOK SHEET - PID WHEEL-LEGGED BALANCING ROBOT
+         ======================================================== -->
+    <article class="desk-item paper-sheet notebook-sheet" id="drawingBalance" data-id="balance" data-tilt="-1.5" style="--rotation: -1.5deg;">
+      <div class="binder-holes">
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+      </div>
+
+      <div class="notebook-inner">
+        <div class="notebook-header">
+          <div class="nb-title">LAB LOG // BIPEDAL WHEEL-LEGGED BOT</div>
+          <div class="nb-tag">ESP32 &bull; LQR &bull; INVERTED PENDULUM</div>
+        </div>
+
+        <div class="blueprint-canvas-container">
+          <canvas id="canvasBalance" class="drawing-canvas" width="460" height="320"></canvas>
+          <div class="canvas-live-badge">
+            <span class="live-dot pulse-amber"></span>
+            <span class="live-text">PHYSICS SIM ONLINE // HOVER/MOVE TO NUDGE</span>
+          </div>
+          <div class="telemetry-overlay">
+            <div class="tele-row">
+              <span class="tele-label">PITCH ANGLE &theta;:</span>
+              <span class="tele-val" id="teleTheta">0.02 rad</span>
+            </div>
+            <div class="tele-row">
+              <span class="tele-label">WHEEL TORQUE &tau;:</span>
+              <span class="tele-val" id="teleTorque">&plusmn;0.34 N&bull;m</span>
+            </div>
+            <div class="tele-row">
+              <span class="tele-label">NEXT MILESTONE:</span>
+              <span class="tele-val highlight">Jump &amp; Fall Recovery</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="notebook-footer-notes">
+          <div class="handwritten-note">&rarr; Goal: Replace standard PID with Full State-Space LQR matrix for robust jump damping.</div>
+          <div class="click-to-read">CLICK FOR SYSTEM EQUATIONS &bull; ESP32 ARCHITECTURE</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ========================================================
+         ITEM 6: DRAFTING VELLUM - 125 LB FRC COMPETITION ROBOT
+         ======================================================== -->
+    <article class="desk-item paper-sheet drafting-vellum-sheet" id="drawingFrc" data-id="frc" data-tilt="4.5" style="--rotation: 4.5deg;">
+      <div class="tape-corner tape-top-right"></div>
+      
+      <div class="blueprint-inner">
+        <div class="blueprint-header-bar">
+          <div class="dwg-info">
+            <span class="dwg-no">DWG: FRC-COMP-125LB</span>
+            <span class="dwg-rev">15-YR RECORD</span>
+          </div>
+          <div class="dwg-title">125 LB COMPETITION ROBOT // 4-BAR INTAKE</div>
+          <div class="dwg-scale">IN-HOUSE CNC</div>
+        </div>
+
+        <div class="blueprint-canvas-container">
+          <canvas id="canvasFrc" class="drawing-canvas" width="460" height="320"></canvas>
+          <div class="canvas-live-badge">
+            <span class="live-dot"></span>
+            <span class="live-text">KINEMATIC LINKAGE MOVING // HOVER TO CYCLE</span>
+          </div>
+          <div class="telemetry-overlay">
+            <div class="tele-row">
+              <span class="tele-label">LEADERSHIP:</span>
+              <span class="tele-val">Directed 10 Rookies</span>
+            </div>
+            <div class="tele-row">
+              <span class="tele-label">MANUFACTURING:</span>
+              <span class="tele-val highlight">6-Week In-House Build</span>
+            </div>
+            <div class="tele-row">
+              <span class="tele-label">RELIABILITY:</span>
+              <span class="tele-val">0 Electrical/Mech Failures</span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="blueprint-title-block">
+          <div class="block-cell cell-org">FRC ROBOTICS TEAM</div>
+          <div class="block-cell cell-designer">ROBOT LEAD: G. HIGGINS</div>
+          <div class="block-cell cell-date">2022 - 2025</div>
+          <div class="block-cell cell-action">CLICK FOR LINKAGE &amp; SHOP STORY</div>
+        </footer>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- ========================================================
+       FULLSCREEN INSPECTION MODAL (BRINGS PAPER UP CLOSE)
+       ======================================================== -->
+  <div class="modal-backdrop" id="inspectionModal" aria-hidden="true" role="dialog">
+    <div class="modal-workbench">
+      <div class="modal-paper-container" id="modalPaperTarget">
+        <!-- Content will be injected dynamically based on clicked paper -->
+      </div>
+      <button class="modal-close-btn" id="modalCloseBtn" aria-label="Close Fullscreen View">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <span>ESC / Return to Desk</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="drawings.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
