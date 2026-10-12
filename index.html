@@ -3,126 +3,272 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gavin Higgins — Mechanical Engineering Portfolio</title>
+  <title>Gavin Higgins | Mechanical & Robotics Engineering Portfolio</title>
+  <meta name="description" content="Engineering portfolio of Gavin Higgins - Mechanical Engineering at University of Washington. Hero Robot Lead at ARUW, robotic mechanisms, FEA, and controls.">
+
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Three.js & GLTFLoader for Real 3D CAD Assembly Rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+  <!-- PDF.js for 100% Authentic Vector Resume Rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <!-- Wood desk surface -->
-  <div class="desk">
+  <!-- Natural Wooden Desk Canvas (Procedural vertical timber planks matching screenshot) -->
+  <canvas id="deskWoodCanvas"></canvas>
 
-    <!-- Post-it note — top left, compact -->
-    <div class="paper post-it" id="postIt" style="left: 60px; top: 55px; --angle: -3deg;">
-      <div class="post-it-fold"></div>
-      <div class="post-it-body">
+  <main class="desk-container">
+
+    <!-- ========================================================
+         ITEM 1: BIG CANARY YELLOW POST-IT NOTE (Top-Left)
+         ======================================================== -->
+    <div class="post-it-note" id="postIt" style="left: 55px; top: 45px; --angle: -2.5deg;">
+      <div class="post-it-tape"></div>
+      <div class="post-it-peel"></div>
+      <div class="post-it-content">
         <h1 class="post-it-name">Gavin Higgins</h1>
         <p class="post-it-title">Mechanical &amp; Robotics Engineer</p>
-        <div class="post-it-divider"></div>
-        <p class="post-it-detail">B.S. Mech Eng — UW Seattle</p>
-        <p class="post-it-detail">Hero Robot Lead @ ARUW</p>
-        <div class="post-it-divider"></div>
-        <a href="mailto:ghigg385@uw.edu" class="post-it-link">ghigg385@uw.edu</a>
-        <a href="tel:602-471-8078" class="post-it-link">602-471-8078</a>
-        <a href="https://linkedin.com/in/gavin-higgins-640293334/" target="_blank" class="post-it-link">LinkedIn ↗</a>
+        <p class="post-it-sub">B.S. Mechanical Engineering &bull; 3.60 GPA<br>University of Washington, Seattle</p>
+        
+        <div class="post-it-rule"></div>
+
+        <div class="post-it-role">
+          Hero Robot Lead @ ARUW<br>
+          <span style="font-size:0.62rem; font-weight:normal; color:#444;">Advanced Robotics at UW &bull; 3rd Place Intl</span>
+        </div>
+
+        <div class="post-it-links">
+          <a href="mailto:ghigg385@uw.edu" class="post-it-link">
+            <span>✉</span> ghigg385@uw.edu
+          </a>
+          <a href="tel:602-471-8078" class="post-it-link">
+            <span>☎</span> 602-471-8078
+          </a>
+          <a href="https://linkedin.com/in/gavin-higgins-640293334/" target="_blank" rel="noopener noreferrer" class="post-it-link">
+            <span>🔗</span> linkedin.com/in/gavin-higgins
+          </a>
+        </div>
       </div>
     </div>
 
-    <!-- Drawing 1: Omni Suspension -->
-    <div class="paper drawing-sheet" id="sheetSuspension" data-drawing="suspension" style="left: 80px; top: 320px; --angle: 7deg;">
-      <canvas id="canvasSuspension" width="520" height="380"></canvas>
-    </div>
+    <!-- ========================================================
+         ITEM 2: DRAWING 1 — 2027 LINEAR SUSPENSION V3 ASSEMBLY
+         (Flat White Paper, Exact Zone Grid & Title Block from User Image)
+         ======================================================== -->
+    <article class="paper-item drawing-sheet" id="sheetSuspension" data-id="suspension" style="left: 140px; top: 350px; --angle: 2.8deg;">
+      <div class="drawing-frame">
+        <!-- Zone Border Overlay (4, 3, 2, 1 and D, C, B, A) -->
+        <svg class="zone-border-svg" viewBox="0 0 580 420" preserveAspectRatio="none">
+          <!-- Outer border -->
+          <rect x="2" y="2" width="576" height="416" fill="none" stroke="#777" stroke-width="1.2" />
+          <!-- Inner border -->
+          <rect x="14" y="14" width="552" height="392" fill="none" stroke="#555" stroke-width="1.5" />
+          
+          <!-- Zone Ticks Top & Bottom -->
+          <line x1="152" y1="2" x2="152" y2="14" stroke="#777" stroke-width="1" />
+          <line x1="290" y1="2" x2="290" y2="14" stroke="#777" stroke-width="1" />
+          <line x1="428" y1="2" x2="428" y2="14" stroke="#777" stroke-width="1" />
+          <line x1="152" y1="406" x2="152" y2="418" stroke="#777" stroke-width="1" />
+          <line x1="290" y1="406" x2="290" y2="418" stroke="#777" stroke-width="1" />
+          <line x1="428" y1="406" x2="428" y2="418" stroke="#777" stroke-width="1" />
 
-    <!-- Drawing 2: Yaw Mechanism -->
-    <div class="paper drawing-sheet" id="sheetYaw" data-drawing="yaw" style="left: 340px; top: 160px; --angle: -5deg;">
-      <canvas id="canvasYaw" width="520" height="380"></canvas>
-    </div>
+          <!-- Zone Numbers Top -->
+          <text x="83" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">4</text>
+          <text x="221" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">3</text>
+          <text x="359" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">2</text>
+          <text x="497" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">1</text>
 
-    <!-- Drawing 3: Balancing Robot -->
-    <div class="paper drawing-sheet" id="sheetBalance" data-drawing="balance" style="left: 180px; top: 550px; --angle: 4deg;">
-      <canvas id="canvasBalance" width="520" height="380"></canvas>
-    </div>
+          <!-- Zone Numbers Bottom -->
+          <text x="83" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">4</text>
+          <text x="221" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">3</text>
+          <text x="359" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">2</text>
+          <text x="497" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">1</text>
 
-    <!-- Drawing 4: FRC Robot -->
-    <div class="paper drawing-sheet" id="sheetFrc" data-drawing="frc" style="left: 500px; top: 460px; --angle: -8deg;">
-      <canvas id="canvasFrc" width="520" height="380"></canvas>
-    </div>
+          <!-- Zone Ticks Left & Right -->
+          <line x1="2" y1="112" x2="14" y2="112" stroke="#777" stroke-width="1" />
+          <line x1="2" y1="210" x2="14" y2="210" stroke="#777" stroke-width="1" />
+          <line x1="2" y1="308" x2="14" y2="308" stroke="#777" stroke-width="1" />
+          <line x1="566" y1="112" x2="578" y2="112" stroke="#777" stroke-width="1" />
+          <line x1="566" y1="210" x2="578" y2="210" stroke="#777" stroke-width="1" />
+          <line x1="566" y1="308" x2="578" y2="308" stroke="#777" stroke-width="1" />
 
-    <!-- Resume — right side, tall -->
-    <div class="paper resume-sheet" id="sheetResume" style="right: 70px; top: 80px; --angle: 2deg;">
-      <div class="resume-body">
-        <header class="res-header">
-          <h2 class="res-name">Gavin Higgins</h2>
-          <div class="res-contact">
-            <span>ghigg385@uw.edu</span>
-            <span>602-471-8078</span>
-            <span>linkedin.com/in/gavin-higgins-640293334</span>
+          <!-- Zone Letters Left -->
+          <text x="8" y="66" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">D</text>
+          <text x="8" y="164" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">C</text>
+          <text x="8" y="262" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">B</text>
+          <text x="8" y="360" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">A</text>
+
+          <!-- Zone Letters Right -->
+          <text x="572" y="66" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">D</text>
+          <text x="572" y="164" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">C</text>
+          <text x="572" y="262" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">B</text>
+          <text x="572" y="360" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">A</text>
+        </svg>
+
+        <span class="drawing-loading-badge" id="badgeSuspension">LOADING CAD ASSEMBLY...</span>
+
+        <!-- WebGL 3D CAD Canvas for Linear Suspension (Top-Left: Isometric, Top-Right: Front, Bottom-Left: Side) -->
+        <canvas class="cad-webgl-canvas" id="canvasSuspension3D"></canvas>
+
+        <!-- SolidWorks Style Title Block in Bottom Right -->
+        <div class="drawing-title-block">
+          <!-- Info Box replacing ARUW logo -->
+          <div class="title-cell cell-info-box">
+            <span class="info-box-org">UNIV OF WASH</span>
+            <span class="info-box-sub">ADVANCED ROBOTICS</span>
+            <span class="info-box-lead">ARUW &bull; 2027</span>
           </div>
-        </header>
 
-        <section class="res-section">
-          <h3>Education</h3>
-          <div class="res-entry">
-            <div class="res-row"><strong>University of Washington, Seattle</strong><span>Seattle, WA</span></div>
-            <div class="res-row"><em>B.S. Mechanical Engineering, 3.60 GPA</em><span>Sep 2025 – Jun 2029</span></div>
+          <!-- Units cell -->
+          <div class="title-cell cell-units">
+            UNITS IN MILLIMETERS<br>UNLESS SPECIFIED.<br>REMOVE ALL BURRS.
           </div>
-        </section>
 
-        <section class="res-section">
-          <h3>Experience</h3>
-          <div class="res-entry">
-            <div class="res-row"><strong>Hero Robot Lead</strong><span>Seattle, WA</span></div>
-            <div class="res-row"><em>Advanced Robotics at UW (ARUW)</em><span>Oct 2025 – Present</span></div>
-            <ul>
-              <li>Engineered low-backlash yaw mechanism using nTop generative design and Solidworks FEA. Robot placed 3rd internationally.</li>
-              <li>Replaced faulty drive pulley with zero-backlash components and sliding belt tensioner. 28% total weight reduction.</li>
-              <li>Leading team of 5 to fully redevelop robot for 2027, targeting 1st place.</li>
-            </ul>
+          <!-- Part Name cell -->
+          <div class="title-cell cell-part-name">
+            <span class="part-name-label">PART NAME</span>
+            <span class="part-name-text">2027, Linear Suspension V3, Assembly</span>
           </div>
-          <div class="res-entry">
-            <div class="res-row"><strong>Robot Lead</strong><span>Scottsdale, AZ</span></div>
-            <div class="res-row"><em>FRC Robotics Competition Team</em><span>Aug 2022 – May 2025</span></div>
-            <ul>
-              <li>Directed 10 rookies to design and build a 125 lb competition robot in 6 weeks using in-house manufacturing. Best-performing robot in 15-year team history.</li>
-              <li>Eliminated constant electrical and mechanical failures. Reshaped curriculum and leadership structure.</li>
-            </ul>
-          </div>
-        </section>
 
-        <section class="res-section">
-          <h3>Projects</h3>
-          <div class="res-entry">
-            <div class="res-row"><strong>Omni Wheel Suspension &amp; Spring Optimization</strong><span>Sep – Oct 2026</span></div>
-            <ul>
-              <li>Designed suspension for two ARUW 2027 robots: 0.25" 6061 + 4mm CF, dual MGN9H rails.</li>
-              <li>ANSYS validated: 560 N lateral (4x), drops from 200% higher.</li>
-              <li>MATLAB spring/damper optimization under field constraints.</li>
-            </ul>
+          <!-- Drawn -->
+          <div class="title-cell cell-drawn">
+            DRAWN: G.H. ☑
           </div>
-          <div class="res-entry">
-            <div class="res-row"><strong>PID Wheel-Legged Balancing Robot</strong><span>Sep 2026 – Present</span></div>
-            <ul>
-              <li>ESP32 bipedal wheel-legged robot. Currently balances in place, progressing to LQR control.</li>
-            </ul>
-          </div>
-        </section>
 
-        <section class="res-section">
-          <h3>Skills &amp; Coursework</h3>
-          <p><strong>Technical:</strong> Solidworks, ANSYS, Onshape, nTop, Manual &amp; CNC Machining, MATLAB, ESP32</p>
-          <p><strong>Coursework:</strong> Diff Eq, Linear Algebra, Statics, Kinematics &amp; Dynamics, Materials Science</p>
-        </section>
+          <!-- Config & Qty -->
+          <div class="title-cell cell-config">
+            CONFIG: Default &nbsp; QTY: 1 &nbsp; SIZE: A
+          </div>
+
+          <!-- Checked -->
+          <div class="title-cell cell-checked">
+            CHECKED: G.H. ☑
+          </div>
+
+          <!-- Material & Scale -->
+          <div class="title-cell cell-mat">
+            MAT: Al 6061-T6 / CF &nbsp; SCALE: 1:1
+          </div>
+        </div>
       </div>
-    </div>
+    </article>
 
-  </div>
+    <!-- ========================================================
+         ITEM 3: DRAWING 2 — 2026 HERO MK1 ASSEMBLY & EI TENSIONER
+         (Hero explodes along vertical axis on hover, includes EI tensioner on same page)
+         ======================================================== -->
+    <article class="paper-item drawing-sheet" id="sheetHero" data-id="hero" style="left: 360px; top: 75px; --angle: -4.5deg;">
+      <div class="drawing-frame">
+        <!-- Zone Border Overlay -->
+        <svg class="zone-border-svg" viewBox="0 0 580 420" preserveAspectRatio="none">
+          <rect x="2" y="2" width="576" height="416" fill="none" stroke="#777" stroke-width="1.2" />
+          <rect x="14" y="14" width="552" height="392" fill="none" stroke="#555" stroke-width="1.5" />
+          
+          <line x1="152" y1="2" x2="152" y2="14" stroke="#777" stroke-width="1" />
+          <line x1="290" y1="2" x2="290" y2="14" stroke="#777" stroke-width="1" />
+          <line x1="428" y1="2" x2="428" y2="14" stroke="#777" stroke-width="1" />
+          <line x1="152" y1="406" x2="152" y2="418" stroke="#777" stroke-width="1" />
+          <line x1="290" y1="406" x2="290" y2="418" stroke="#777" stroke-width="1" />
+          <line x1="428" y1="406" x2="428" y2="418" stroke="#777" stroke-width="1" />
 
-  <!-- Fullscreen modal -->
-  <div class="modal-overlay" id="modal">
-    <div class="modal-content" id="modalContent"></div>
-    <button class="modal-close" id="modalClose">✕ Close</button>
+          <text x="83" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">4</text>
+          <text x="221" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">3</text>
+          <text x="359" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">2</text>
+          <text x="497" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">1</text>
+
+          <text x="83" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">4</text>
+          <text x="221" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">3</text>
+          <text x="359" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">2</text>
+          <text x="497" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">1</text>
+
+          <line x1="2" y1="112" x2="14" y2="112" stroke="#777" stroke-width="1" />
+          <line x1="2" y1="210" x2="14" y2="210" stroke="#777" stroke-width="1" />
+          <line x1="2" y1="308" x2="14" y2="308" stroke="#777" stroke-width="1" />
+          <line x1="566" y1="112" x2="578" y2="112" stroke="#777" stroke-width="1" />
+          <line x1="566" y1="210" x2="578" y2="210" stroke="#777" stroke-width="1" />
+          <line x1="566" y1="308" x2="578" y2="308" stroke="#777" stroke-width="1" />
+
+          <text x="8" y="66" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">D</text>
+          <text x="8" y="164" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">C</text>
+          <text x="8" y="262" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">B</text>
+          <text x="8" y="360" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">A</text>
+
+          <text x="572" y="66" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">D</text>
+          <text x="572" y="164" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">C</text>
+          <text x="572" y="262" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">B</text>
+          <text x="572" y="360" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">A</text>
+        </svg>
+
+        <span class="drawing-loading-badge" id="badgeHero">LOADING HERO CAD MODEL...</span>
+
+        <!-- WebGL Canvas for 2026 Hero & EI Tensioner -->
+        <!-- Top-Left: Hero Isometric (Exploded on hover) -->
+        <!-- Top-Right: Hero Front Orthographic (Exploded on hover) -->
+        <!-- Bottom-Left: EI Tensioner Subassembly -->
+        <canvas class="cad-webgl-canvas" id="canvasHero3D"></canvas>
+
+        <div class="drawing-title-block">
+          <div class="title-cell cell-info-box">
+            <span class="info-box-org">UNIV OF WASH</span>
+            <span class="info-box-sub">HERO ROBOT LEAD</span>
+            <span class="info-box-lead">ARUW &bull; 2026</span>
+          </div>
+
+          <div class="title-cell cell-units">
+            UNITS IN MILLIMETERS<br>UNLESS SPECIFIED.<br>REMOVE ALL BURRS.
+          </div>
+
+          <div class="title-cell cell-part-name">
+            <span class="part-name-label">PART NAME</span>
+            <span class="part-name-text">2026 Hero Mk1 &amp; EI Tensioner Assembly</span>
+          </div>
+
+          <div class="title-cell cell-drawn">
+            DRAWN: G.H. ☑
+          </div>
+
+          <div class="title-cell cell-config">
+            CONFIG: Default &nbsp; QTY: 1 &nbsp; SIZE: A
+          </div>
+
+          <div class="title-cell cell-checked">
+            CHECKED: G.H. ☑
+          </div>
+
+          <div class="title-cell cell-mat">
+            MAT: 7075-T6 / nTop &nbsp; SCALE: 1:2
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ========================================================
+         ITEM 4: FORMAL RESUME (Exact PDF from Folder rendered onto Canvas)
+         (Right Side — Flat White Paper matching Drawing Sheets)
+         ======================================================== -->
+    <article class="paper-item resume-sheet-item" id="sheetResume" data-id="resume" style="right: 80px; top: 60px; --angle: 1.8deg;">
+      <div class="resume-paper-frame">
+        <canvas id="resumeCanvas"></canvas>
+        <div class="resume-hint-tag">GAVIN HIGGINS RESUME &bull; CLICK TO ENLARGE</div>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- ========================================================
+       FULLSCREEN INSPECTION MODAL
+       ======================================================== -->
+  <div class="modal-overlay" id="modal" aria-hidden="true" role="dialog">
+    <div class="modal-container" id="modalContainer"></div>
+    <button class="modal-close-btn" id="modalClose">✕ Return to Desk</button>
   </div>
 
   <script src="drawings.js"></script>

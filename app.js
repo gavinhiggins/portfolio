@@ -1,189 +1,230 @@
 /* ==========================================================================
-   APP.JS — Paper hover/click, fullscreen modals
+   GAVIN HIGGINS — APPLICATION CONTROLLER
+   Fullscreen Lightbox Modal, Inspection & Paper Transitions
    ========================================================================== */
 
-class PortfolioApp {
+class AppController {
   constructor() {
     this.modal = document.getElementById('modal');
-    this.modalContent = document.getElementById('modalContent');
+    this.modalContainer = document.getElementById('modalContainer');
     this.modalClose = document.getElementById('modalClose');
 
-    this.setupPaperClicks();
-    this.setupModal();
+    this.initEvents();
   }
 
-  setupPaperClicks() {
-    // Drawing sheets — click to open modal
-    document.querySelectorAll('.drawing-sheet').forEach(sheet => {
-      sheet.addEventListener('click', () => {
-        const key = sheet.dataset.drawing;
-        this.openModal(key);
+  initEvents() {
+    // Click on Drawing Sheets to inspect fullscreen
+    const sheets = document.querySelectorAll('.paper-item');
+    sheets.forEach(sheet => {
+      sheet.addEventListener('click', (e) => {
+        const id = sheet.dataset.id;
+        if (id) {
+          this.openModal(id);
+        }
       });
     });
 
-    // Resume — click to open modal
-    const resume = document.getElementById('sheetResume');
-    if (resume) {
-      resume.addEventListener('click', () => {
-        this.openModal('resume');
+    // Click on Post-It note
+    const postIt = document.getElementById('postIt');
+    if (postIt) {
+      postIt.addEventListener('click', () => {
+        this.openModal('postit');
       });
     }
-  }
 
-  setupModal() {
-    this.modalClose.addEventListener('click', () => this.closeModal());
-    this.modal.addEventListener('click', (e) => {
-      if (e.target === this.modal) this.closeModal();
-    });
+    // Modal close controls
+    if (this.modalClose) {
+      this.modalClose.addEventListener('click', () => this.closeModal());
+    }
+
+    if (this.modal) {
+      this.modal.addEventListener('click', (e) => {
+        if (e.target === this.modal) this.closeModal();
+      });
+    }
+
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') this.closeModal();
+      if (e.key === 'Escape' && this.modal && this.modal.classList.contains('open')) {
+        this.closeModal();
+      }
     });
   }
 
   closeModal() {
+    if (!this.modal) return;
     this.modal.classList.remove('open');
-    this.modalContent.innerHTML = '';
+    this.modal.setAttribute('aria-hidden', 'true');
+    this.modalContainer.innerHTML = '';
   }
 
-  openModal(key) {
-    this.modalContent.innerHTML = this.getContent(key);
+  openModal(id) {
+    if (!this.modal || !this.modalContainer) return;
+    this.modalContainer.innerHTML = this.getModalContent(id);
     this.modal.classList.add('open');
+    this.modal.setAttribute('aria-hidden', 'false');
+
+    // If opening resume, render full high-res PDF into modal
+    if (id === 'resume' && typeof pdfjsLib !== 'undefined') {
+      const modalCanvas = document.getElementById('modalResumeCanvas');
+      if (modalCanvas) {
+        pdfjsLib.getDocument(encodeURI('Gavin_Higgins_Resume.pdf')).promise.then(pdf => {
+          pdf.getPage(1).then(page => {
+            const viewport = page.getViewport({ scale: 2.5 });
+            modalCanvas.width = viewport.width;
+            modalCanvas.height = viewport.height;
+            page.render({
+              canvasContext: modalCanvas.getContext('2d'),
+              viewport: viewport
+            });
+          });
+        });
+      }
+    }
   }
 
-  getContent(key) {
-    const content = {
-      resume: `
-        <div class="modal-header">
-          <h1>Gavin Higgins</h1>
-          <p>B.S. Mechanical Engineering — University of Washington, Seattle &bull; 3.60 GPA</p>
-        </div>
-        <div class="modal-stats">
-          <div><div class="modal-stat-label">Degree</div><div class="modal-stat-val">B.S. Mech Eng</div></div>
-          <div><div class="modal-stat-label">GPA</div><div class="modal-stat-val">3.60 / 4.00</div></div>
-          <div><div class="modal-stat-label">Current Role</div><div class="modal-stat-val">Hero Robot Lead</div></div>
-          <div><div class="modal-stat-label">Graduation</div><div class="modal-stat-val">June 2029</div></div>
-        </div>
-        <div class="modal-cols">
-          <div>
-            <h3>Experience</h3>
-            <p><strong>Hero Robot Lead</strong> — ARUW, Oct 2025–Present</p>
-            <p>Engineered a low-backlash yaw mechanism using nTop generative design and Solidworks FEA. Robot placed 3rd internationally. Replaced faulty drive pulley with zero-backlash components and sliding belt tensioner, achieving 28% total weight reduction. Leading team of 5 for complete 2027 redevelopment.</p>
-            <p><strong>Robot Lead</strong> — FRC Team, Aug 2022–May 2025</p>
-            <p>Directed 10 rookie students to design and build a 125 lb competition robot in 6 weeks using in-house CNC manufacturing. Created the best-performing robot in the team's 15-year history with zero failures.</p>
-          </div>
-          <div>
-            <h3>Projects &amp; Skills</h3>
-            <p><strong>Omni Wheel Suspension Module:</strong> Dual MGN9H rails, 0.25" 6061 + 4mm CF. ANSYS validated for 560N lateral impact (4x improvement). MATLAB spring/damper optimization.</p>
-            <p><strong>Wheel-Legged Balance Robot:</strong> ESP32 bipedal robot with PID control, progressing to LQR state-space control for jump recovery.</p>
-            <p><strong>Skills:</strong> Solidworks, ANSYS FEA, Onshape, nTop, CNC Machining, Manual Mill/Lathe, MATLAB, ESP32/C++</p>
-          </div>
-        </div>
-      `,
+  getModalContent(id) {
+    switch (id) {
+      case 'suspension':
+        return `
+          <div style="font-family: var(--font-sans); color: #1a1a1a;">
+            <div style="border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span style="font-family: var(--font-mono); font-size: 0.75rem; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 3px; font-weight: 700;">DWG: ARUW-2027-SUSP-01 &bull; REV B</span>
+                <h1 style="font-size: 1.7rem; font-weight: 800; margin-top: 6px;">2027, Linear Suspension V3, Assembly</h1>
+                <p style="font-size: 0.95rem; color: #555;">Advanced Robotics at the University of Washington (ARUW) &bull; 2027 Season</p>
+              </div>
+            </div>
 
-      suspension: `
-        <div class="modal-header">
-          <h1>Omni Wheel Suspension Module</h1>
-          <p>ARUW 2027 Competition Platform &bull; DWG: ARUW-SUSP-01 REV B</p>
-        </div>
-        <div class="modal-stats">
-          <div><div class="modal-stat-label">Lateral Impact</div><div class="modal-stat-val">560 N (4× 2026)</div></div>
-          <div><div class="modal-stat-label">Drop Rating</div><div class="modal-stat-val">+200% Height</div></div>
-          <div><div class="modal-stat-label">Guide System</div><div class="modal-stat-val">Dual MGN9H</div></div>
-          <div><div class="modal-stat-label">Materials</div><div class="modal-stat-val">6061-T6 + CF</div></div>
-        </div>
-        <div class="modal-cols">
-          <div>
-            <h3>Engineering Challenge</h3>
-            <p>The 2026 suspension module suffered from binding during high lateral shear events and structural cracking under rapid drop tests. For 2027, the architecture was completely reimagined using CNC-machined 0.25" 6061 aluminum plates paired with rigid 4mm carbon fiber composite plates.</p>
-            <p>Dual high-load MGN9H linear rails eliminate all binding off-axis moments, while a tuned helical spring provides optimal energy absorption.</p>
-          </div>
-          <div>
-            <h3>MATLAB &amp; FEA Optimization</h3>
-            <p>A dedicated MATLAB simulation solved the non-linear mass-spring-damper response under impulse shock inputs. Spring constant k and viscous damping factor c were optimized against field obstacle geometries.</p>
-            <p>ANSYS Mechanical validated a 2.4× yield safety factor under 560 N lateral shock loading — a 4× improvement over the 2026 season platform.</p>
-          </div>
-        </div>
-      `,
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; background: #f4f4f0; padding: 16px; border-radius: 6px; margin-bottom: 24px; border: 1px solid #d4d4ce;">
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">LATERAL IMPACT</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">560 N (4x 2026 Season)</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">DROP TEST RATING</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">+200% Higher Drop</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">MOTION SYSTEM</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">Dual MGN9H Rails</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">MATERIAL SPEC</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">0.25" 6061-T6 + 4mm CF</div>
+              </div>
+            </div>
 
-      yaw: `
-        <div class="modal-header">
-          <h1>Hero Robot Yaw Drive Assembly</h1>
-          <p>3rd Place International &bull; DWG: HERO-YAW-03 REV C</p>
-        </div>
-        <div class="modal-stats">
-          <div><div class="modal-stat-label">Weight Saved</div><div class="modal-stat-val">-28% Total</div></div>
-          <div><div class="modal-stat-label">Backlash</div><div class="modal-stat-val">±0.012°</div></div>
-          <div><div class="modal-stat-label">Optimization</div><div class="modal-stat-val">nTop Generative</div></div>
-          <div><div class="modal-stat-label">Result</div><div class="modal-stat-val">3rd Place Intl</div></div>
-        </div>
-        <div class="modal-cols">
-          <div>
-            <h3>Mechanism Innovation</h3>
-            <p>The Hero robot's high-caliber launcher requires instantaneous targeting lock with zero mechanical hysteresis. Legacy gearboxes suffered from backlash slop that degraded long-range projectile grouping.</p>
-            <p>The yaw drive was re-engineered using zero-backlash drive pulley mounting paired with a custom serviceable sliding belt tensioner that maintains uniform pre-tension under rapid reversal torques.</p>
-          </div>
-          <div>
-            <h3>nTop Generative Design</h3>
-            <p>Using nTop, a field-driven TPMS lattice infill was generated for the structural gimbal housing, validated via Solidworks FEA to withstand direct projectile impacts while cutting overall assembly mass by 28%.</p>
-            <p>Currently leading a team of 5 engineers to rebuild the complete 2027 robot, optimizing modular electronics accessibility and shot trajectory consistency.</p>
-          </div>
-        </div>
-      `,
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; line-height: 1.6; font-size: 0.92rem; color: #333;">
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">ENGINEERING RE-DESIGN</h3>
+                <p>Designed a suspension and drive module for use on two ARUW 2027 robots. Sturdy construction of 0.25" 6061-T6 aluminum and 4mm carbon fiber plates, combined with dual MGN9H linear rails for motion, directly correcting faults of the previous year's defective modules.</p>
+                <p>Eliminated off-axis carriage binding during rapid field obstacle transitions, providing smooth dampening and rigid tracking for the computer vision turret.</p>
+              </div>
 
-      balance: `
-        <div class="modal-header">
-          <h1>Bipedal Wheel-Legged Balancing Robot</h1>
-          <p>Personal Project &bull; ESP32 PID Control &bull; DWG: BAL-BOT-01 REV A</p>
-        </div>
-        <div class="modal-stats">
-          <div><div class="modal-stat-label">Controller</div><div class="modal-stat-val">ESP32 240MHz</div></div>
-          <div><div class="modal-stat-label">IMU</div><div class="modal-stat-val">MPU-6050</div></div>
-          <div><div class="modal-stat-label">Status</div><div class="modal-stat-val">Balances In Place</div></div>
-          <div><div class="modal-stat-label">Next</div><div class="modal-stat-val">LQR + Jump</div></div>
-        </div>
-        <div class="modal-cols">
-          <div>
-            <h3>Hardware</h3>
-            <p>Custom bipedal wheel-legged robot using high-torque brushless hub motors with field-oriented control drivers, paired with lightweight carbon fiber articulated linkage legs.</p>
-            <p>The ESP32 microcontroller executes balance loops at 500 Hz using complementary-filtered gyro and accelerometer feedback.</p>
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">FEA &amp; MATLAB OPTIMIZATION</h3>
+                <p>Validated structure via ANSYS FEA, confirming it handles drops from 200% higher and lateral impacts of 560 N (4x more than 2026).</p>
+                <p>Wrote a dedicated MATLAB script to optimize spring and damper constants with drop test and bumpy surface stability constraints, to ensure the core robot CV targeting and firing system remains precise throughout unpredictable field obstacles.</p>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3>Control Theory Roadmap</h3>
-            <p>Currently balances using dual cascaded PID loops (pitch stabilization inner loop + velocity position outer loop).</p>
-            <p>Formulating a full 4th-order state-space model to implement Linear Quadratic Regulator (LQR) optimal control, enabling dynamic leg retraction during jumps and automated fall recovery.</p>
-          </div>
-        </div>
-      `,
+        `;
 
-      frc: `
-        <div class="modal-header">
-          <h1>125 lb FRC Competition Robot</h1>
-          <p>FRC Team, Scottsdale AZ &bull; DWG: FRC-COMP-01</p>
-        </div>
-        <div class="modal-stats">
-          <div><div class="modal-stat-label">Weight</div><div class="modal-stat-val">125 lb</div></div>
-          <div><div class="modal-stat-label">Team</div><div class="modal-stat-val">10 Rookies</div></div>
-          <div><div class="modal-stat-label">Build Time</div><div class="modal-stat-val">6 Weeks</div></div>
-          <div><div class="modal-stat-label">Record</div><div class="modal-stat-val">Best in 15 Years</div></div>
-        </div>
-        <div class="modal-cols">
-          <div>
-            <h3>Leadership</h3>
-            <p>Inherited a team with recurring electrical faults and gearbox failures. Restructured the engineering workflow, trained 10 rookie team members in CAD modeling, wiring harness best practices, and precision machining on manual knee mills and lathes.</p>
-          </div>
-          <div>
-            <h3>Technical Architecture</h3>
-            <p>Engineered an articulated 4-bar linkage intake and scoring mechanism from in-house CNC-machined 6061 box tubing and polycarbonate.</p>
-            <p>The robot competed with zero electrical or mechanical failures throughout the entire season, breaking all previous team records.</p>
-          </div>
-        </div>
-      `
-    };
+      case 'hero':
+        return `
+          <div style="font-family: var(--font-sans); color: #1a1a1a;">
+            <div style="border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span style="font-family: var(--font-mono); font-size: 0.75rem; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 3px; font-weight: 700;">HERO ROBOT LEAD &bull; ARUW 2026-2027</span>
+                <h1 style="font-size: 1.7rem; font-weight: 800; margin-top: 6px;">2026 Hero Mk1 Assembly &amp; Turret Base EI Tensioner</h1>
+                <p style="font-size: 0.95rem; color: #555;">Advanced Robotics at the University of Washington &bull; 3rd Place International Finish</p>
+              </div>
+            </div>
 
-    return content[key] || '';
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; background: #f4f4f0; padding: 16px; border-radius: 6px; margin-bottom: 24px; border: 1px solid #d4d4ce;">
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">BACKLASH</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">&plusmn;0.012&deg; (Zero Backlash)</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">WEIGHT SAVINGS</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">-28% Total Weight</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">OPTIMIZATION</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">nTop Generative Lattice</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">COMPETITION</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">3rd Place International</div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; line-height: 1.6; font-size: 0.92rem; color: #333;">
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">YAW MECHANISM &amp; EI TENSIONER</h3>
+                <p>Engineered a low-backlash yaw mechanism for the 'Hero' robot. Used nTop generative design and Solidworks FEA to increase impact resistance and overall stiffness. The robot placed 3rd in international competition.</p>
+                <p>Replaced faulty drive pulley mounting with zero backlash components. Introduced a serviceable sliding belt tensioner (Turret Base EI Tensioner) to ensure ease of control throughout the robot's lifetime, reducing total robot weight by 28%.</p>
+              </div>
+
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">2027 REDEVELOPMENT TEAM LEAD</h3>
+                <p>Currently leading a team of 5 engineers to fully redevelop the robot for the 2027 season, aiming to reduce weight, increase electronics accessibility, increase shot accuracy, and place 1st in competition.</p>
+                <p>Hovering over the CAD drawing on the desk engages the vertical exploded assembly view, displaying the internal gimbal architecture and drive tensioner alignment.</p>
+              </div>
+            </div>
+          </div>
+        `;
+
+      case 'resume':
+        return `
+          <div style="font-family: var(--font-sans); color: #1a1a1a;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 18px;">
+              <div>
+                <h1 style="font-size: 1.6rem; font-weight: 800;">Gavin Higgins — Resume</h1>
+                <p style="font-size: 0.88rem; color: #555;">University of Washington, Seattle &bull; B.S. Mechanical Engineering</p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <a href="Gavin_Higgins_Resume.pdf" download="Gavin_Higgins_Resume.pdf" style="background: #1e293b; color: #fff; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                  ⬇ Download PDF
+                </a>
+                <a href="Gavin_Higgins_Resume.pdf" target="_blank" style="background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 0.82rem; text-decoration: none;">
+                  ↗ Open in New Tab
+                </a>
+              </div>
+            </div>
+
+            <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; display: flex; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+              <canvas id="modalResumeCanvas" style="max-width: 100%; height: auto; display: block;"></canvas>
+            </div>
+          </div>
+        `;
+
+      case 'postit':
+        return `
+          <div style="font-family: var(--font-sans); color: #1a1a1a;">
+            <h1 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 6px;">Gavin Higgins</h1>
+            <p style="font-size: 1rem; color: #555; margin-bottom: 16px;">Mechanical &amp; Robotics Engineer &bull; UW Seattle (3.60 GPA)</p>
+            
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 18px; border-radius: 6px; margin-bottom: 20px; line-height: 1.6;">
+              <p><strong>Primary Focus:</strong> High-performance robotic mechanisms, generative design (nTop), precision kinematics, and rapid prototyping.</p>
+              <p style="margin-top: 8px;"><strong>Current Roles:</strong> Hero Robot Lead at Advanced Robotics at the University of Washington (ARUW). Leading 5 engineers for the 2027 international season.</p>
+            </div>
+
+            <div style="display: flex; gap: 14px;">
+              <a href="mailto:ghigg385@uw.edu" style="color: #0284c7; font-weight: 700; text-decoration: none;">✉ ghigg385@uw.edu</a>
+              <a href="tel:602-471-8078" style="color: #0284c7; font-weight: 700; text-decoration: none;">☎ 602-471-8078</a>
+              <a href="https://linkedin.com/in/gavin-higgins-640293334/" target="_blank" style="color: #0284c7; font-weight: 700; text-decoration: none;">🔗 LinkedIn Profile ↗</a>
+            </div>
+          </div>
+        `;
+
+      default:
+        return '';
+    }
   }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  new PortfolioApp();
+  window.appController = new AppController();
 });
