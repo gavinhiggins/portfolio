@@ -1,1579 +1,469 @@
 /* ==========================================================================
-   GAVIN HIGGINS - SKEUOMORPHIC ENGINEERING WORKBENCH PORTFOLIO
-   Design: Top-Down Engineer Drafting Board, Scattered Blueprints & Post-It
+   SKEUOMORPHIC DESK PORTFOLIO — CLEAN REDESIGN
+   Dark walnut wood, scattered papers, generous negative space
    ========================================================================== */
 
 :root {
-  --wood-bg-1: #1e130c;
-  --wood-bg-2: #2d1c12;
-  --wood-highlight: #3b2518;
-  
-  --mat-green-bg: #1b382b;
-  --mat-green-dark: #13271e;
-  --mat-grid-major: rgba(255, 255, 255, 0.18);
-  --mat-grid-minor: rgba(255, 255, 255, 0.07);
-  --mat-ruler-tick: rgba(255, 255, 255, 0.4);
-  --mat-text: rgba(255, 255, 255, 0.6);
-
-  --post-it-yellow: #fff37a;
-  --post-it-dark: #fae455;
-  --post-it-shadow: rgba(45, 30, 10, 0.35);
-  --post-it-ink: #1e1c14;
-  --post-it-pencil: #2c291d;
-
-  --paper-cream: #faf7f0;
-  --paper-edge: #eee8d8;
-  --paper-shadow: rgba(10, 8, 5, 0.45);
-  --paper-ink: #111111;
-  --paper-subtext: #444444;
-
-  --blueprint-blue: #0c2340;
-  --blueprint-dark: #081629;
-  --blueprint-cyan: #38bdf8;
-  --blueprint-grid: rgba(56, 189, 248, 0.12);
-  --blueprint-line: #bae6fd;
-  --blueprint-border: #0284c7;
-
-  --brass-clip: linear-gradient(135deg, #f7d070 0%, #d49c28 50%, #8c5b05 100%);
-  --tape-color: rgba(240, 240, 210, 0.42);
-
-  --font-handwriting: 'Caveat', cursive;
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-serif: 'Newsreader', Georgia, serif;
-  --font-sans: 'Space Grotesk', system-ui, sans-serif;
-
-  --shadow-resting: 
-    0 2px 4px rgba(0, 0, 0, 0.25),
-    0 8px 16px rgba(0, 0, 0, 0.3),
-    0 16px 32px rgba(0, 0, 0, 0.2);
-  
-  --shadow-hover: 
-    0 8px 16px rgba(0, 0, 0, 0.3),
-    0 20px 40px rgba(0, 0, 0, 0.45),
-    0 35px 70px rgba(0, 0, 0, 0.35);
-
-  --shadow-drag: 
-    0 15px 30px rgba(0, 0, 0, 0.35),
-    0 35px 70px rgba(0, 0, 0, 0.55),
-    0 60px 100px rgba(0, 0, 0, 0.45);
+  --wood-1: #1a120b;
+  --wood-2: #2a1c12;
+  --wood-3: #3a2a1a;
+  --paper-white: #f8f6f1;
+  --paper-shadow: rgba(0, 0, 0, 0.5);
+  --ink: #1a1a1a;
+  --ink-light: #555;
+  --ink-dim: #999;
+  --postit-bg: #ffe066;
+  --postit-dark: #f5d442;
+  --postit-ink: #2a2205;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-hand: 'Caveat', cursive;
 }
 
-/* Base Reset */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
-  width: 100%;
-  min-height: 100%;
-  background-color: #12100e;
-  color: #e5e5e5;
-  font-family: var(--font-sans);
-  overflow-x: hidden;
-  user-select: none;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ==========================================================================
-   DESK SURFACE THEMES
-   ========================================================================== */
-
-/* Theme 1: Self-Healing Cutting Mat (Default) */
-body.theme-workbench {
-  background-color: var(--mat-green-bg);
-  background-image: 
-    linear-gradient(var(--mat-grid-major) 1px, transparent 1px),
-    linear-gradient(90deg, var(--mat-grid-major) 1px, transparent 1px),
-    linear-gradient(var(--mat-grid-minor) 1px, transparent 1px),
-    linear-gradient(90deg, var(--mat-grid-minor) 1px, transparent 1px),
-    radial-gradient(circle at 50% 50%, rgba(35, 78, 60, 0.4) 0%, rgba(14, 28, 22, 0.85) 100%);
-  background-size: 50px 50px, 50px 50px, 10px 10px, 10px 10px, 100% 100%;
-  background-position: 0 0, 0 0, 0 0, 0 0, center center;
-}
-
-/* Theme 2: Fine Hardwood Workbench */
-body.theme-wood {
-  background-color: var(--wood-bg-2);
-  background-image: 
-    radial-gradient(ellipse at 50% 20%, rgba(85, 52, 34, 0.45), rgba(18, 11, 7, 0.95)),
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 2px, transparent 2px, transparent 60px),
-    repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 12px);
-  background-size: 100% 100%, 100% 100%, 100% 100%;
-}
-
-/* Theme 3: Dark Nocturnal Blueprint Lab */
-body.theme-blueprint {
-  background-color: #06111f;
-  background-image: 
-    radial-gradient(circle at 50% 30%, rgba(14, 42, 75, 0.8), rgba(4, 9, 16, 0.98)),
-    linear-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
-  background-size: 100% 100%, 30px 30px, 30px 30px;
-}
-
-/* Dynamic Desk Lighting / Lamp Glow */
-.desk-lighting {
-  position: fixed;
-  top: 0;
-  left: 0;
+/* -----------------------------------------------------------------------
+   DESK — Full viewport dark walnut wood surface
+   ----------------------------------------------------------------------- */
+body {
+  background: var(--wood-1);
+  overflow: hidden;
   width: 100vw;
   height: 100vh;
-  pointer-events: none;
-  z-index: 2;
-  background: radial-gradient(circle 650px at 50% 35%, rgba(255, 245, 210, 0.08) 0%, rgba(0, 0, 0, 0.45) 85%);
-  transition: opacity 0.5s ease;
-}
-
-/* ==========================================================================
-   ENGINEERING TOOLBAR DOCK (Top bar)
-   ========================================================================== */
-.desk-toolbar {
-  position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 52px;
-  background: rgba(18, 22, 25, 0.82);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem;
-  z-index: 100;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
-
-.dock-left .status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  background-color: #22c55e;
-  border-radius: 50%;
-  box-shadow: 0 0 10px #22c55e;
-  animation: pulseGreen 2.5s infinite;
-}
-
-@keyframes pulseGreen {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
-}
-
-.status-text {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  color: #a3e635;
-  font-weight: 600;
-}
-
-.dock-center {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.tool-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #e2e8f0;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.8rem;
   font-family: var(--font-sans);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: default;
 }
 
-.tool-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
-.tool-btn:active {
-  transform: translateY(1px);
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.tool-divider {
-  width: 1px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.15);
-  margin: 0 4px;
-}
-
-.dock-right .hint-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  color: #fde68a;
-  font-family: var(--font-mono);
-}
-
-/* ==========================================================================
-   WORKBENCH CANVAS & SCATTERED PAPERS LAYOUT
-   ========================================================================== */
-.workbench-canvas {
+.desk {
   position: relative;
-  width: 100%;
-  min-height: calc(100vh - 52px);
-  padding: 50px 40px 100px 40px;
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 30px;
-  z-index: 10;
-  overflow: visible;
-}
-
-/* Cutting Mat Rulers along top & left */
-.mat-ruler {
-  position: absolute;
-  pointer-events: none;
-  z-index: 3;
-}
-
-.mat-ruler-top {
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 18px;
-  border-bottom: 1px solid var(--mat-ruler-tick);
-  background: repeating-linear-gradient(90deg, 
-    var(--mat-ruler-tick) 0px, var(--mat-ruler-tick) 1px, 
-    transparent 1px, transparent 10px);
-}
-
-.mat-ruler-left {
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 18px;
-  border-right: 1px solid var(--mat-ruler-tick);
-  background: repeating-linear-gradient(0deg, 
-    var(--mat-ruler-tick) 0px, var(--mat-ruler-tick) 1px, 
-    transparent 1px, transparent 10px);
-}
-
-/* ==========================================================================
-   DESK PROPS: COFFEE MUG, CALIPER, PENCIL
-   ========================================================================== */
-.desk-prop {
-  position: absolute;
-  z-index: 15;
-  cursor: grab;
-  user-select: none;
-  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.45));
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.desk-prop:active {
-  cursor: grabbing;
-}
-
-/* Ceramic Coffee Mug */
-.ceramic-coffee-mug {
-  top: 35px;
-  right: 45px;
-  width: 90px;
-  height: 90px;
-}
-
-.mug-top {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  background: #ece8df;
-  border: 7px solid #d9d3c5;
-  box-shadow: 
-    inset 0 3px 6px rgba(0,0,0,0.4),
-    inset 0 -2px 4px rgba(255,255,255,0.8),
-    0 8px 20px rgba(0,0,0,0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 2;
-}
-
-.coffee-liquid {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #5a3825 0%, #2b1810 65%, #180c07 100%);
-  box-shadow: inset 0 2px 5px rgba(0,0,0,0.7);
-  position: relative;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
+
+  /* Layered wood grain texture */
+  background:
+    /* Vignette */
+    radial-gradient(ellipse 120% 120% at 50% 40%,
+      rgba(50, 35, 22, 0.0) 30%,
+      rgba(8, 5, 3, 0.7) 100%),
+    /* Subtle warm lamp glow from top-center */
+    radial-gradient(ellipse 70% 50% at 50% 15%,
+      rgba(120, 85, 50, 0.15) 0%,
+      transparent 70%),
+    /* Base grain */
+    repeating-linear-gradient(92deg,
+      rgba(255,255,255,0.0) 0px,
+      rgba(255,255,255,0.012) 1px,
+      rgba(255,255,255,0.0) 2px,
+      rgba(255,255,255,0.0) 24px),
+    repeating-linear-gradient(90deg,
+      rgba(0,0,0,0.0) 0px,
+      rgba(0,0,0,0.08) 0.5px,
+      rgba(0,0,0,0.0) 1px,
+      rgba(0,0,0,0.0) 18px),
+    /* Knot / color variation */
+    radial-gradient(ellipse at 25% 60%, rgba(60,40,20,0.35) 0%, transparent 40%),
+    radial-gradient(ellipse at 75% 30%, rgba(55,38,22,0.25) 0%, transparent 35%),
+    /* Base color */
+    linear-gradient(175deg, #2e1f14 0%, #1f1409 50%, #170e08 100%);
+
+  background-color: #1a120b;
 }
 
-.crema-ring {
+/* -----------------------------------------------------------------------
+   PAPER — Base class for all desk items
+   ----------------------------------------------------------------------- */
+.paper {
   position: absolute;
-  top: 8px;
-  left: 12px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 2px dashed rgba(212, 163, 115, 0.35);
-  filter: blur(1px);
-}
-
-.mug-handle {
-  position: absolute;
-  top: 25px;
-  right: -16px;
-  width: 22px;
-  height: 40px;
-  background: #ece8df;
-  border-radius: 12px;
-  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.35);
-}
-
-.coffee-stain {
-  position: absolute;
-  top: 15px;
-  left: -25px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: 3px solid rgba(80, 50, 30, 0.18);
-  filter: blur(1.5px);
-  pointer-events: none;
+  transform: rotate(var(--angle, 0deg));
+  transition:
+    transform 0.45s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+  cursor: pointer;
+  will-change: transform;
   z-index: 1;
 }
 
-/* Stainless Steel Precision Caliper */
-.precision-caliper {
-  bottom: 40px;
-  left: 80px;
-  width: 280px;
-  height: 70px;
-  background: linear-gradient(180deg, #d8d8d8 0%, #adadad 50%, #888888 100%);
-  border-radius: 3px;
-  border: 1px solid #777;
-  display: flex;
-  align-items: center;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-  transform: rotate(-6deg);
+.paper:hover {
+  z-index: 20;
 }
 
-.caliper-beam {
-  flex: 1;
-  height: 24px;
-  margin-left: 55px;
-  background: linear-gradient(180deg, #e6e6e6 0%, #cccccc 100%);
-  border-top: 1px solid #fff;
-  border-bottom: 1px solid #666;
+/* -----------------------------------------------------------------------
+   POST-IT NOTE — Compact, top-left
+   ----------------------------------------------------------------------- */
+.post-it {
+  width: 240px;
+  z-index: 30;
+}
+
+.post-it-body {
+  background: linear-gradient(178deg, #fff176 0%, var(--postit-bg) 40%, var(--postit-dark) 100%);
+  padding: 18px 16px 14px;
+  border-radius: 1px 1px 1px 12px;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.15),
+    0 8px 20px rgba(0,0,0,0.3),
+    inset 0 -6px 16px rgba(200,160,30,0.15);
+  color: var(--postit-ink);
   position: relative;
 }
 
-.caliper-scale {
+.post-it:hover {
+  transform: rotate(0deg) translateY(-6px) scale(1.03);
+  box-shadow:
+    0 12px 30px rgba(0,0,0,0.45),
+    0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* Sticky fold at top */
+.post-it-fold {
   width: 100%;
-  height: 10px;
-  background: repeating-linear-gradient(90deg, #333 0, #333 1px, transparent 1px, transparent 4px);
-}
-
-.caliper-fixed-jaw {
-  position: absolute;
-  left: 0;
-  top: -12px;
-  width: 55px;
-  height: 90px;
-  background: linear-gradient(135deg, #e0e0e0 0%, #999 100%);
-  clip-path: polygon(0 0, 75% 0, 100% 100%, 0 85%);
-  border-left: 2px solid #fff;
-}
-
-.caliper-slider {
-  position: absolute;
-  left: 120px;
-  top: -8px;
-  width: 78px;
-  height: 82px;
-  background: linear-gradient(180deg, #f0f0f0 0%, #b8b8b8 100%);
-  border: 1px solid #666;
-  border-radius: 4px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 4px;
-}
-
-.caliper-lcd {
-  background: #a3b899;
-  border: 2px inset #6b7d63;
-  padding: 2px 6px;
-  border-radius: 2px;
-  display: flex;
-  gap: 3px;
-  align-items: baseline;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.lcd-value {
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: #1a2416;
-  letter-spacing: -0.05em;
-}
-
-.lcd-unit {
-  font-size: 0.65rem;
-  font-family: var(--font-mono);
-  color: #1a2416;
-}
-
-/* Rotring 600 Technical Pencil */
-.technical-pencil {
-  bottom: 75px;
-  right: 120px;
-  width: 230px;
-  height: 14px;
-  background: #1e1e1e;
-  border-radius: 2px;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.5);
-  transform: rotate(18deg);
-  display: flex;
-  align-items: center;
-  border: 1px solid #333;
-}
-
-.pencil-eraser-cap {
-  width: 25px;
-  height: 12px;
-  background: #b3261e;
-  border-radius: 2px 0 0 2px;
-}
-
-.pencil-body {
-  flex: 1;
-  text-align: center;
-  padding: 0 8px;
-}
-
-.pencil-brand {
-  font-family: var(--font-mono);
-  font-size: 0.45rem;
-  color: #888;
-  letter-spacing: 0.15em;
-}
-
-.pencil-grip {
-  width: 40px;
-  height: 14px;
-  background: repeating-linear-gradient(45deg, #111, #111 2px, #2a2a2a 2px, #2a2a2a 4px);
-}
-
-.pencil-tip {
-  width: 15px;
-  height: 14px;
-  background: #c0c0c0;
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
-}
-
-.pencil-lead {
-  width: 6px;
-  height: 2px;
-  background: #0a0a0a;
-}
-
-/* ==========================================================================
-   COMMON DESK ITEM / PAPER STYLING & DRAGGING
-   ========================================================================== */
-.desk-item {
-  position: relative;
-  cursor: grab;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
-  transform: rotate(var(--rotation, 0deg));
-  transform-origin: center center;
-  will-change: transform, box-shadow;
-}
-
-.desk-item:hover {
-  z-index: 40 !important;
-  transform: translateY(-8px) scale(1.025) rotate(calc(var(--rotation, 0deg) * 0.7));
-  box-shadow: var(--shadow-hover);
-}
-
-.desk-item.dragging {
-  cursor: grabbing !important;
-  z-index: 60 !important;
-  transform: translateY(-16px) scale(1.045) rotate(calc(var(--rotation, 0deg) * 0.5));
-  box-shadow: var(--shadow-drag);
-  transition: none !important;
-}
-
-/* Organized (Neaten) Mode */
-.workbench-canvas.neat-layout .desk-item {
-  transform: none !important;
-  box-shadow: var(--shadow-resting);
-}
-
-/* ==========================================================================
-   ITEM 1: BIG SKEUOMORPHIC CANARY YELLOW POST-IT NOTE
-   ========================================================================== */
-.post-it-note {
-  grid-column: span 4;
-  background: linear-gradient(175deg, var(--post-it-yellow) 0%, var(--post-it-dark) 100%);
-  color: var(--post-it-ink);
-  padding: 26px 24px 22px 24px;
-  border-radius: 2px 2px 14px 2px;
-  box-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.12),
-    0 12px 28px -4px var(--post-it-shadow),
-    inset 0 -10px 20px rgba(220, 190, 40, 0.25);
-  font-family: var(--font-sans);
-  position: relative;
-  min-height: 490px;
-  border-top: 2px solid rgba(255, 255, 255, 0.5);
-}
-
-/* Translucent Tape strip at top */
-.post-it-tape {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 110px;
-  height: 26px;
-  background: var(--tape-color);
-  backdrop-filter: blur(2px);
-  border-radius: 1px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  border-left: 2px dashed rgba(255, 255, 255, 0.4);
-  border-right: 2px dashed rgba(255, 255, 255, 0.4);
-}
-
-/* Curled peeling bottom right corner */
-.post-it-peel-corner {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 38px;
-  height: 38px;
-  background: linear-gradient(135deg, transparent 50%, rgba(200, 160, 20, 0.55) 50%);
-  box-shadow: -4px -4px 8px rgba(0, 0, 0, 0.18);
-  border-bottom-right-radius: 14px;
-}
-
-.post-it-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  border-bottom: 1.5px dashed rgba(60, 50, 10, 0.25);
-  padding-bottom: 6px;
-}
-
-.post-it-tag {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.1em;
-  font-weight: 800;
-  color: #785a08;
-}
-
-.post-it-date {
-  font-family: var(--font-handwriting);
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #523b03;
+  height: 8px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.06) 0%, transparent 100%);
+  border-radius: 1px 1px 0 0;
 }
 
 .post-it-name {
-  font-family: var(--font-handwriting);
-  font-size: 2.85rem;
+  font-family: var(--font-hand);
+  font-size: 2rem;
   font-weight: 700;
   line-height: 1;
-  color: #121008;
-  margin-bottom: 4px;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
-  letter-spacing: -0.02em;
+  margin-bottom: 2px;
+  color: #1a1505;
 }
 
-.post-it-subtitle {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #3d3209;
-  margin-bottom: 10px;
-  letter-spacing: -0.01em;
-}
-
-.post-it-affiliation {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #4a3e10;
-  margin-bottom: 8px;
-}
-
-.uw-pill {
-  background: #39275b; /* Official Husky Purple */
-  color: #e8d3a2; /* Official Husky Gold */
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 4px;
-  letter-spacing: 0.05em;
-}
-
-.post-it-lead-role {
-  background: rgba(255, 255, 255, 0.65);
-  padding: 6px 10px;
-  border-radius: 5px;
-  border: 1px solid rgba(140, 110, 20, 0.25);
+.post-it-title {
   font-size: 0.78rem;
-  color: #272005;
-  margin-bottom: 14px;
-}
-
-.role-badge {
-  background: #c2410c;
-  color: #fff;
-  font-size: 0.62rem;
-  font-weight: 800;
-  padding: 1px 5px;
-  border-radius: 3px;
-  margin-right: 5px;
-  text-transform: uppercase;
+  font-weight: 600;
+  color: #4a3d10;
+  margin-bottom: 8px;
 }
 
 .post-it-divider {
-  border: none;
-  border-top: 1px solid rgba(80, 60, 10, 0.18);
-  margin: 12px 0;
+  height: 1px;
+  background: rgba(100, 80, 20, 0.18);
+  margin: 8px 0;
 }
 
-.post-it-contact-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 14px;
+.post-it-detail {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #3d3210;
+  line-height: 1.4;
 }
 
 .post-it-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #1f1b0a;
-  text-decoration: none;
-  font-size: 0.82rem;
+  display: block;
+  font-size: 0.7rem;
   font-weight: 600;
-  transition: color 0.15s ease;
+  color: #2a2008;
+  text-decoration: none;
+  line-height: 1.5;
+  transition: color 0.15s;
 }
 
 .post-it-link:hover {
-  color: #0369a1;
+  color: #0066cc;
   text-decoration: underline;
 }
 
-.post-it-location {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.76rem;
-  color: #554716;
-  font-weight: 500;
+/* -----------------------------------------------------------------------
+   DRAWING SHEETS — White paper with canvas
+   ----------------------------------------------------------------------- */
+.drawing-sheet {
+  width: 520px;
+  height: 380px;
+  background: var(--paper-white);
+  border: 1px solid #e0dcd4;
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.12),
+    0 6px 16px rgba(0,0,0,0.35),
+    0 14px 35px rgba(0,0,0,0.25);
 }
 
-.post-it-skills-box {
-  margin-bottom: 12px;
+.drawing-sheet:hover {
+  transform: rotate(0deg) translateY(-12px) scale(1.02);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.5),
+    0 4px 10px rgba(0,0,0,0.25);
 }
 
-.skills-heading {
+.drawing-sheet canvas {
   display: block;
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  font-weight: 800;
-  color: #634e0a;
-  letter-spacing: 0.08em;
-  margin-bottom: 6px;
-}
-
-.post-it-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.post-it-tags .tag {
-  background: rgba(40, 30, 5, 0.08);
-  border: 1px solid rgba(60, 45, 10, 0.2);
-  padding: 2px 7px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #241e06;
-}
-
-.post-it-checklist {
-  background: rgba(255, 255, 255, 0.45);
-  border: 1px dashed rgba(80, 65, 15, 0.35);
-  padding: 8px 10px;
-  border-radius: 4px;
-  margin-bottom: 16px;
-}
-
-.checklist-title {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  font-weight: 800;
-  color: #574308;
-  letter-spacing: 0.06em;
-  margin-bottom: 6px;
-}
-
-.check-item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-family: var(--font-handwriting);
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #272108;
-  margin-bottom: 3px;
-}
-
-.check-item.checked {
-  text-decoration: line-through;
-  opacity: 0.75;
-}
-
-.post-it-footer {
-  margin-top: auto;
-}
-
-.post-it-btn {
   width: 100%;
-  padding: 9px 12px;
-  border-radius: 6px;
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 0.84rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  border: 1px solid rgba(0,0,0,0.25);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.4);
-  transition: all 0.15s ease;
+  height: 100%;
 }
 
-.post-it-btn.primary {
-  background: #1e293b;
-  color: #fff;
+/* -----------------------------------------------------------------------
+   RESUME — Right side, bond paper
+   ----------------------------------------------------------------------- */
+.resume-sheet {
+  width: 420px;
+  min-height: 580px;
+  background: var(--paper-white);
+  border: 1px solid #e0dcd4;
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.12),
+    0 6px 16px rgba(0,0,0,0.35),
+    0 14px 35px rgba(0,0,0,0.25);
+  z-index: 5;
 }
 
-.post-it-btn.primary:hover {
-  background: #0f172a;
-  transform: translateY(-1px);
+.resume-sheet:hover {
+  transform: rotate(0deg) translateY(-10px) scale(1.02);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.5),
+    0 4px 10px rgba(0,0,0,0.25);
 }
 
-/* ==========================================================================
-   ITEM 2: FORMAL RESUME (TEXTURED PHYSICAL BOND PAPER)
-   ========================================================================== */
-.resume-paper {
-  grid-column: span 4;
-  background-color: var(--paper-cream);
-  color: var(--paper-ink);
-  padding: 30px 28px 24px 28px;
-  border-radius: 2px;
-  box-shadow: 
-    0 1px 4px rgba(0,0,0,0.1),
-    0 14px 32px -4px var(--paper-shadow);
-  border: 1px solid var(--paper-edge);
-  position: relative;
-  min-height: 490px;
+.resume-body {
+  padding: 28px 26px 22px;
+  color: var(--ink);
 }
 
-/* Brass Paperclip at top */
-.paper-clip-brass {
-  position: absolute;
-  top: -10px;
-  left: 28px;
-  width: 16px;
-  height: 44px;
-  border-radius: 8px;
-  background: var(--brass-clip);
-  border: 1.5px solid #6b4502;
-  box-shadow: 2px 5px 8px rgba(0, 0, 0, 0.4);
-  z-index: 10;
-}
-
-.paper-clip-brass.clip-right {
-  left: auto;
-  right: 28px;
-}
-
-.paper-watermark {
-  position: absolute;
-  bottom: 25px;
-  right: 25px;
-  font-family: var(--font-mono);
-  font-size: 3.2rem;
-  font-weight: 800;
-  color: rgba(0, 0, 0, 0.03);
-  pointer-events: none;
-  transform: rotate(-15deg);
-}
-
-.resume-sheet-header {
+.res-header {
+  border-bottom: 1.5px solid #222;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  border-bottom: 2px solid #222;
-  padding-bottom: 8px;
-  margin-bottom: 12px;
 }
 
-.resume-name {
-  font-family: var(--font-serif);
-  font-size: 1.85rem;
+.res-name {
+  font-size: 1.4rem;
   font-weight: 700;
-  color: #111;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
-.resume-meta-right {
-  font-family: var(--font-sans);
-  font-size: 0.68rem;
-  color: #333;
+.res-contact {
   text-align: right;
-  line-height: 1.35;
+  font-size: 0.62rem;
+  color: var(--ink-light);
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
 }
 
-.resume-sheet-section {
-  margin-bottom: 11px;
+.res-section {
+  margin-bottom: 10px;
 }
 
-.resume-sec-title {
-  font-family: var(--font-sans);
-  font-size: 0.74rem;
-  font-weight: 800;
+.res-section h3 {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #111;
-  border-bottom: 1px solid #777;
+  border-bottom: 0.75px solid #999;
   padding-bottom: 2px;
   margin-bottom: 6px;
+  color: var(--ink);
 }
 
-.resume-entry {
-  margin-bottom: 8px;
+.res-entry {
+  margin-bottom: 7px;
 }
 
-.entry-header {
+.res-row {
   display: flex;
   justify-content: space-between;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #111;
-}
-
-.entry-sub {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.7rem;
-  color: #444;
-  margin-bottom: 4px;
-}
-
-.resume-bullets {
-  padding-left: 14px;
-  font-family: var(--font-serif);
-  font-size: 0.72rem;
-  line-height: 1.35;
-  color: #222;
-}
-
-.resume-bullets li {
-  margin-bottom: 3px;
-}
-
-.resume-compact-p {
-  font-size: 0.7rem;
-  line-height: 1.35;
-  color: #222;
-  margin-bottom: 3px;
-}
-
-.click-hint-banner {
-  margin-top: 14px;
-  padding: 6px 10px;
-  background: #f1ebd9;
-  border: 1px dashed #c4b998;
-  border-radius: 4px;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  color: #5c5234;
-  font-weight: 600;
-}
-
-/* ==========================================================================
-   BLUEPRINT & DRAFTING SHEETS (ENGINEERING DRAWINGS)
-   ========================================================================== */
-.blueprint-sheet {
-  grid-column: span 4;
-  background: var(--blueprint-blue);
-  color: #e0f2fe;
-  border-radius: 2px;
-  padding: 16px;
-  box-shadow: 
-    0 1px 4px rgba(0,0,0,0.2),
-    0 14px 34px -4px var(--paper-shadow);
-  border: 1.5px solid var(--blueprint-border);
-  position: relative;
-  min-height: 490px;
-  display: flex;
-  flex-direction: column;
-}
-
-.blueprint-sheet.dark-blueprint {
-  background: #081a2e;
-  border-color: #0369a1;
-}
-
-/* Drafting Vellum (Yellowish-cream technical paper) */
-.drafting-vellum-sheet {
-  grid-column: span 6;
-  background: #fdfbf7;
-  color: #1c2833;
-  border-radius: 2px;
-  padding: 16px;
-  border: 1.5px solid #cbd5e1;
-  box-shadow: 0 14px 34px -4px var(--paper-shadow);
-  position: relative;
-}
-
-.drafting-vellum-sheet .blueprint-header-bar {
-  border-color: #334155;
-  color: #0f172a;
-}
-
-.drafting-vellum-sheet .dwg-title {
-  color: #0f172a;
-}
-
-.drafting-vellum-sheet .blueprint-title-block {
-  border-color: #334155;
-}
-
-.drafting-vellum-sheet .block-cell {
-  border-color: #334155;
-  color: #1e293b;
-}
-
-/* Lab Notebook Sheet (Lined with binder holes) */
-.notebook-sheet {
-  grid-column: span 6;
-  background: #ffffff;
-  color: #1e293b;
-  border-radius: 2px;
-  padding: 18px 20px 18px 42px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 14px 34px -4px var(--paper-shadow);
-  position: relative;
-}
-
-.binder-holes {
-  position: absolute;
-  top: 30px;
-  bottom: 30px;
-  left: 14px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.binder-holes .hole {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #1b382b; /* Shows through to cutting mat */
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.7);
-  border: 1px solid rgba(0,0,0,0.15);
-}
-
-body.theme-wood .binder-holes .hole {
-  background: #2d1c12;
-}
-
-body.theme-blueprint .binder-holes .hole {
-  background: #06111f;
-}
-
-.notebook-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid #ef4444; /* Classic red margin line */
-  padding-bottom: 6px;
-  margin-bottom: 12px;
-}
-
-.nb-title {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.nb-tag {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  background: #fee2e2;
-  color: #991b1b;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-weight: 600;
-}
-
-.notebook-footer-notes {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px dashed #cbd5e1;
-}
-
-.handwritten-note {
-  font-family: var(--font-handwriting);
-  font-size: 1.15rem;
-  color: #1e3a8a;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.click-to-read {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  color: #64748b;
-  font-weight: 600;
-  text-align: right;
-}
-
-/* Translucent Tape on corners */
-.tape-corner {
-  position: absolute;
-  width: 65px;
-  height: 22px;
-  background: var(--tape-color);
-  backdrop-filter: blur(1.5px);
-  z-index: 10;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.tape-top-left {
-  top: -8px;
-  left: -12px;
-  transform: rotate(-35deg);
-}
-
-.tape-bottom-right {
-  bottom: -8px;
-  right: -12px;
-  transform: rotate(-35deg);
-}
-
-.tape-top-right {
-  top: -8px;
-  right: -12px;
-  transform: rotate(35deg);
-}
-
-/* Blueprint Header Bar */
-.blueprint-header-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1.5px solid var(--blueprint-cyan);
-  padding-bottom: 6px;
-  margin-bottom: 10px;
-  font-family: var(--font-mono);
-}
-
-.dwg-info {
-  display: flex;
-  gap: 8px;
   font-size: 0.68rem;
-  color: #94a3b8;
+  line-height: 1.35;
 }
 
-.dwg-rev {
-  background: rgba(56, 189, 248, 0.2);
-  color: #38bdf8;
-  padding: 1px 4px;
-  border-radius: 2px;
+.res-row strong { font-weight: 700; color: var(--ink); }
+.res-row em { font-style: italic; color: var(--ink-light); }
+.res-row span { color: var(--ink-dim); font-size: 0.62rem; }
+
+.res-entry ul {
+  padding-left: 14px;
+  margin-top: 3px;
 }
 
-.dwg-title {
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: #f0f9ff;
-  letter-spacing: 0.05em;
-}
-
-.dwg-scale {
-  font-size: 0.65rem;
-  color: #7dd3fc;
-}
-
-/* Canvas Viewport */
-.blueprint-canvas-container {
-  position: relative;
-  width: 100%;
-  height: 260px;
-  background: rgba(2, 6, 23, 0.45);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
-}
-
-.drawing-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.canvas-live-badge {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  padding: 2px 7px;
-  border-radius: 3px;
-  pointer-events: none;
-}
-
-.live-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #38bdf8;
-  box-shadow: 0 0 6px #38bdf8;
-  animation: pulseCyan 2s infinite;
-}
-
-.live-dot.pulse-amber {
-  background: #f59e0b;
-  box-shadow: 0 0 6px #f59e0b;
-}
-
-@keyframes pulseCyan {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-.live-text {
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  color: #bae6fd;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-}
-
-.telemetry-overlay {
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  right: 8px;
-  display: flex;
-  justify-content: space-between;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(4px);
-  padding: 4px 10px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  pointer-events: none;
-}
-
-.tele-row {
-  display: flex;
-  gap: 5px;
-  font-family: var(--font-mono);
+.res-entry li {
   font-size: 0.62rem;
+  line-height: 1.4;
+  color: #333;
+  margin-bottom: 2px;
 }
 
-.tele-label {
-  color: #94a3b8;
+.res-section > p {
+  font-size: 0.62rem;
+  line-height: 1.4;
+  color: #333;
+  margin-bottom: 2px;
 }
 
-.tele-val {
-  color: #e2e8f0;
-  font-weight: 700;
-}
-
-.tele-val.highlight {
-  color: #38bdf8;
-}
-
-/* Blueprint ISO Title Block (Engineering standard) */
-.blueprint-title-block {
-  margin-top: auto;
-  padding-top: 10px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  border: 1.5px solid var(--blueprint-cyan);
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  margin-top: 10px;
-}
-
-.block-cell {
-  padding: 5px 6px;
-  border-right: 1px solid var(--blueprint-cyan);
-  color: #bae6fd;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.block-cell:last-child {
-  border-right: none;
-}
-
-.cell-action {
-  color: #fbbf24;
-  font-weight: 700;
-  text-align: right;
-}
-
-/* ==========================================================================
-   FULLSCREEN INSPECTION MODAL (BRINGS PAPER UP TO FRONT VIEW)
-   ========================================================================== */
-.modal-backdrop {
+/* -----------------------------------------------------------------------
+   FULLSCREEN MODAL
+   ----------------------------------------------------------------------- */
+.modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(10, 14, 18, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  inset: 0;
+  background: rgba(8, 5, 3, 0.92);
+  backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.3s ease;
 }
 
-.modal-backdrop.open {
+.modal-overlay.open {
   opacity: 1;
   pointer-events: auto;
 }
 
-.modal-workbench {
-  position: relative;
+.modal-content {
+  background: var(--paper-white);
+  border-radius: 4px;
+  max-width: 920px;
   width: 90vw;
-  max-width: 1080px;
-  max-height: 90vh;
+  max-height: 88vh;
   overflow-y: auto;
-  border-radius: 8px;
-  box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.8),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
-  padding: 10px;
-  transform: scale(0.92) translateY(20px);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 40px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+  transform: scale(0.94) translateY(15px);
+  transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  color: var(--ink);
 }
 
-.modal-backdrop.open .modal-workbench {
+.modal-overlay.open .modal-content {
   transform: scale(1) translateY(0);
 }
 
-.modal-close-btn {
+.modal-close {
   position: fixed;
-  top: 25px;
-  right: 35px;
-  background: rgba(239, 68, 68, 0.9);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 8px 16px;
-  border-radius: 30px;
-  font-family: var(--font-sans);
-  font-weight: 700;
+  top: 24px;
+  right: 30px;
+  background: rgba(200, 50, 50, 0.9);
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 20px;
   font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-  transition: all 0.2s ease;
-  z-index: 1010;
-}
-
-.modal-close-btn:hover {
-  background: #dc2626;
-  transform: translateY(-2px);
-}
-
-/* Modal Content Variations */
-.modal-detailed-view {
-  background: #ffffff;
-  color: #0f172a;
-  border-radius: 6px;
-  padding: 36px 44px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  font-weight: 700;
   font-family: var(--font-sans);
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  z-index: 1010;
+  transition: background 0.2s;
 }
 
-.modal-detailed-view.blueprint-theme {
-  background: #081a2e;
-  color: #f0f9ff;
-  border: 1px solid #0284c7;
+.modal-close:hover {
+  background: #c0392b;
 }
 
-.modal-header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  border-bottom: 2px solid #cbd5e1;
-  padding-bottom: 16px;
-  margin-bottom: 24px;
+/* Modal content styles */
+.modal-header {
+  border-bottom: 2px solid #222;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
 }
 
-.blueprint-theme .modal-header-section {
-  border-bottom-color: #0284c7;
-}
-
-.modal-title-main {
-  font-size: 1.85rem;
-  font-weight: 800;
+.modal-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
   margin-bottom: 4px;
 }
 
-.modal-subtitle {
-  font-size: 1rem;
-  color: #64748b;
-  font-weight: 600;
+.modal-header p {
+  font-size: 0.9rem;
+  color: var(--ink-light);
 }
 
-.blueprint-theme .modal-subtitle {
-  color: #93c5fd;
-}
-
-.modal-meta-grid {
+.modal-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  gap: 14px;
+  background: #f1efe9;
   padding: 16px;
+  border-radius: 6px;
   margin-bottom: 24px;
 }
 
-.blueprint-theme .modal-meta-grid {
-  background: #0d233a;
-  border-color: #1e3a5f;
-}
-
-.meta-box-label {
+.modal-stat-label {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  color: #64748b;
+  font-size: 0.62rem;
+  color: var(--ink-dim);
   text-transform: uppercase;
-  margin-bottom: 4px;
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
 }
 
-.meta-box-val {
-  font-size: 0.95rem;
+.modal-stat-val {
+  font-size: 0.88rem;
   font-weight: 700;
-  color: #0f172a;
 }
 
-.blueprint-theme .meta-box-val {
-  color: #38bdf8;
-}
-
-.modal-columns-2 {
+.modal-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  margin-bottom: 24px;
+  gap: 28px;
+  margin-bottom: 20px;
 }
 
-.modal-section-title {
-  font-size: 1.15rem;
+.modal-cols h3 {
+  font-size: 1rem;
   font-weight: 700;
-  margin-bottom: 12px;
-  border-left: 4px solid #0284c7;
+  margin-bottom: 8px;
+  border-left: 3px solid #222;
   padding-left: 10px;
 }
 
-.modal-text {
-  font-size: 0.92rem;
+.modal-cols p {
+  font-size: 0.88rem;
   line-height: 1.6;
-  color: #334155;
-  margin-bottom: 14px;
+  color: #333;
+  margin-bottom: 10px;
 }
 
-.blueprint-theme .modal-text {
-  color: #cbd5e1;
-}
-
-.specs-table {
+.modal-canvas-wrap {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-  margin-top: 10px;
-}
-
-.specs-table td, .specs-table th {
-  padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  text-align: left;
-}
-
-.blueprint-theme .specs-table td, 
-.blueprint-theme .specs-table th {
-  border-color: #1e3a5f;
-}
-
-.specs-table th {
-  background: #f1f5f9;
-  font-weight: 700;
-}
-
-.blueprint-theme .specs-table th {
-  background: #0f2d4a;
-  color: #bae6fd;
-}
-
-.modal-interactive-simulation {
-  width: 100%;
-  height: 380px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  background: #040910;
-  margin-bottom: 20px;
-  position: relative;
+  height: 320px;
+  background: #faf8f3;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 24px;
   overflow: hidden;
 }
 
-.blueprint-theme .modal-interactive-simulation {
-  border-color: #0284c7;
+.modal-canvas-wrap canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-.modal-actions-bar {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.blueprint-theme .modal-actions-bar {
-  border-top-color: #1e3a5f;
-}
-
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 6px;
-  font-weight: 700;
-  font-size: 0.88rem;
-  cursor: pointer;
-  border: none;
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.action-btn.primary {
-  background: #0284c7;
-  color: #fff;
-}
-
-.action-btn.primary:hover {
-  background: #0369a1;
-}
-
-.action-btn.secondary {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-.blueprint-theme .action-btn.secondary {
-  background: #1e293b;
-  color: #e2e8f0;
-}
-
-/* ==========================================================================
-   RESPONSIVE DESIGN (Tablets & Mobile View)
-   ========================================================================== */
-@media (max-width: 1200px) {
-  .post-it-note { grid-column: span 6; }
-  .resume-paper { grid-column: span 6; }
-  .blueprint-sheet { grid-column: span 6; }
-  .drafting-vellum-sheet { grid-column: span 12; }
-  .notebook-sheet { grid-column: span 12; }
-}
-
-@media (max-width: 768px) {
-  .desk-toolbar {
+/* -----------------------------------------------------------------------
+   RESPONSIVE
+   ----------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .desk {
     height: auto;
-    padding: 8px 12px;
-    flex-direction: column;
-    gap: 8px;
+    min-height: 100vh;
+    overflow: visible;
   }
-  .dock-right { display: none; }
-  .workbench-canvas {
-    padding: 20px 14px 60px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-  }
-  .desk-prop { display: none; } /* Hide heavy props on small mobile */
-  .desk-item {
+  body { overflow: auto; }
+  .paper {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    margin: 20px auto;
     transform: none !important;
-    width: 100%;
-    margin-bottom: 10px;
   }
-  .modal-columns-2 {
-    grid-template-columns: 1fr;
+  .paper:hover {
+    transform: translateY(-6px) scale(1.01) !important;
   }
-  .modal-meta-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .modal-workbench {
-    width: 95vw;
-    padding: 5px;
-  }
-  .modal-detailed-view {
-    padding: 20px 16px;
-  }
+  .drawing-sheet { width: 90vw; max-width: 520px; height: auto; aspect-ratio: 520/380; }
+  .resume-sheet { width: 90vw; max-width: 420px; }
+  .post-it { width: 80vw; max-width: 240px; }
+  .modal-cols { grid-template-columns: 1fr; }
+  .modal-stats { grid-template-columns: 1fr 1fr; }
 }
