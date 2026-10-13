@@ -11,8 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Three.js & GLTFLoader for Real 3D CAD Assembly Rendering -->
+  <!-- Three.js + GLTFLoader + DRACOLoader (Required for Draco compressed GLB models) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
   <!-- PDF.js for 100% Authentic Vector Resume Rendering -->
@@ -22,15 +23,15 @@
 </head>
 <body>
 
-  <!-- Natural Wooden Desk Canvas (Procedural vertical timber planks matching screenshot) -->
-  <canvas id="deskWoodCanvas"></canvas>
+  <!-- Authentic Wooden Desk Texture from physical reference -->
+  <div class="desk-background-layer"></div>
 
   <main class="desk-container">
 
     <!-- ========================================================
          ITEM 1: BIG CANARY YELLOW POST-IT NOTE (Top-Left)
          ======================================================== -->
-    <div class="post-it-note" id="postIt" style="left: 55px; top: 45px; --angle: -2.5deg;">
+    <div class="post-it-note" id="postIt" style="--angle: -2.5deg;">
       <div class="post-it-tape"></div>
       <div class="post-it-peel"></div>
       <div class="post-it-content">
@@ -42,7 +43,7 @@
 
         <div class="post-it-role">
           Hero Robot Lead @ ARUW<br>
-          <span style="font-size:0.62rem; font-weight:normal; color:#444;">Advanced Robotics at UW &bull; 3rd Place Intl</span>
+          <span style="font-size:0.65rem; font-weight:normal; color:#444;">Advanced Robotics at UW &bull; 3rd Place Intl</span>
         </div>
 
         <div class="post-it-links">
@@ -61,99 +62,90 @@
 
     <!-- ========================================================
          ITEM 2: DRAWING 1 — 2027 LINEAR SUSPENSION V3 ASSEMBLY
-         (Flat White Paper, Exact Zone Grid & Title Block from User Image)
+         (Flat White Paper, Matching 75vh Proportions, Isometric + Ortho)
          ======================================================== -->
-    <article class="paper-item drawing-sheet" id="sheetSuspension" data-id="suspension" style="left: 140px; top: 350px; --angle: 2.8deg;">
+    <article class="paper-item drawing-sheet sheet-suspension" id="sheetSuspension" data-id="suspension" style="--angle: 3deg;">
       <div class="drawing-frame">
         <!-- Zone Border Overlay (4, 3, 2, 1 and D, C, B, A) -->
-        <svg class="zone-border-svg" viewBox="0 0 580 420" preserveAspectRatio="none">
-          <!-- Outer border -->
-          <rect x="2" y="2" width="576" height="416" fill="none" stroke="#777" stroke-width="1.2" />
-          <!-- Inner border -->
-          <rect x="14" y="14" width="552" height="392" fill="none" stroke="#555" stroke-width="1.5" />
+        <svg class="zone-border-svg" viewBox="0 0 1000 700" preserveAspectRatio="none">
+          <rect x="2" y="2" width="996" height="696" fill="none" stroke="#777" stroke-width="1.5" />
+          <rect x="18" y="18" width="964" height="664" fill="none" stroke="#555" stroke-width="1.8" />
           
           <!-- Zone Ticks Top & Bottom -->
-          <line x1="152" y1="2" x2="152" y2="14" stroke="#777" stroke-width="1" />
-          <line x1="290" y1="2" x2="290" y2="14" stroke="#777" stroke-width="1" />
-          <line x1="428" y1="2" x2="428" y2="14" stroke="#777" stroke-width="1" />
-          <line x1="152" y1="406" x2="152" y2="418" stroke="#777" stroke-width="1" />
-          <line x1="290" y1="406" x2="290" y2="418" stroke="#777" stroke-width="1" />
-          <line x1="428" y1="406" x2="428" y2="418" stroke="#777" stroke-width="1" />
+          <line x1="265" y1="2" x2="265" y2="18" stroke="#777" stroke-width="1.2" />
+          <line x1="500" y1="2" x2="500" y2="18" stroke="#777" stroke-width="1.2" />
+          <line x1="735" y1="2" x2="735" y2="18" stroke="#777" stroke-width="1.2" />
+          <line x1="265" y1="682" x2="265" y2="698" stroke="#777" stroke-width="1.2" />
+          <line x1="500" y1="682" x2="500" y2="698" stroke="#777" stroke-width="1.2" />
+          <line x1="735" y1="682" x2="735" y2="698" stroke="#777" stroke-width="1.2" />
 
           <!-- Zone Numbers Top -->
-          <text x="83" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">4</text>
-          <text x="221" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">3</text>
-          <text x="359" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">2</text>
-          <text x="497" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">1</text>
+          <text x="145" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">4</text>
+          <text x="382" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">3</text>
+          <text x="618" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">2</text>
+          <text x="855" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">1</text>
 
           <!-- Zone Numbers Bottom -->
-          <text x="83" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">4</text>
-          <text x="221" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">3</text>
-          <text x="359" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">2</text>
-          <text x="497" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">1</text>
+          <text x="145" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">4</text>
+          <text x="382" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">3</text>
+          <text x="618" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">2</text>
+          <text x="855" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">1</text>
 
           <!-- Zone Ticks Left & Right -->
-          <line x1="2" y1="112" x2="14" y2="112" stroke="#777" stroke-width="1" />
-          <line x1="2" y1="210" x2="14" y2="210" stroke="#777" stroke-width="1" />
-          <line x1="2" y1="308" x2="14" y2="308" stroke="#777" stroke-width="1" />
-          <line x1="566" y1="112" x2="578" y2="112" stroke="#777" stroke-width="1" />
-          <line x1="566" y1="210" x2="578" y2="210" stroke="#777" stroke-width="1" />
-          <line x1="566" y1="308" x2="578" y2="308" stroke="#777" stroke-width="1" />
+          <line x1="2" y1="185" x2="18" y2="185" stroke="#777" stroke-width="1.2" />
+          <line x1="2" y1="350" x2="18" y2="350" stroke="#777" stroke-width="1.2" />
+          <line x1="2" y1="515" x2="18" y2="515" stroke="#777" stroke-width="1.2" />
+          <line x1="982" y1="185" x2="998" y2="185" stroke="#777" stroke-width="1.2" />
+          <line x1="982" y1="350" x2="998" y2="350" stroke="#777" stroke-width="1.2" />
+          <line x1="982" y1="515" x2="998" y2="515" stroke="#777" stroke-width="1.2" />
 
           <!-- Zone Letters Left -->
-          <text x="8" y="66" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">D</text>
-          <text x="8" y="164" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">C</text>
-          <text x="8" y="262" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">B</text>
-          <text x="8" y="360" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">A</text>
+          <text x="10" y="105" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">D</text>
+          <text x="10" y="272" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">C</text>
+          <text x="10" y="438" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">B</text>
+          <text x="10" y="605" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">A</text>
 
           <!-- Zone Letters Right -->
-          <text x="572" y="66" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">D</text>
-          <text x="572" y="164" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">C</text>
-          <text x="572" y="262" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">B</text>
-          <text x="572" y="360" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">A</text>
+          <text x="990" y="105" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">D</text>
+          <text x="990" y="272" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">C</text>
+          <text x="990" y="438" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">B</text>
+          <text x="990" y="605" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">A</text>
         </svg>
 
         <span class="drawing-loading-badge" id="badgeSuspension">LOADING CAD ASSEMBLY...</span>
 
-        <!-- WebGL 3D CAD Canvas for Linear Suspension (Top-Left: Isometric, Top-Right: Front, Bottom-Left: Side) -->
+        <!-- WebGL 3D CAD Canvas for Linear Suspension -->
         <canvas class="cad-webgl-canvas" id="canvasSuspension3D"></canvas>
 
         <!-- SolidWorks Style Title Block in Bottom Right -->
         <div class="drawing-title-block">
-          <!-- Info Box replacing ARUW logo -->
           <div class="title-cell cell-info-box">
             <span class="info-box-org">UNIV OF WASH</span>
             <span class="info-box-sub">ADVANCED ROBOTICS</span>
             <span class="info-box-lead">ARUW &bull; 2027</span>
           </div>
 
-          <!-- Units cell -->
           <div class="title-cell cell-units">
             UNITS IN MILLIMETERS<br>UNLESS SPECIFIED.<br>REMOVE ALL BURRS.
           </div>
 
-          <!-- Part Name cell -->
           <div class="title-cell cell-part-name">
             <span class="part-name-label">PART NAME</span>
             <span class="part-name-text">2027, Linear Suspension V3, Assembly</span>
           </div>
 
-          <!-- Drawn -->
           <div class="title-cell cell-drawn">
             DRAWN: G.H. ☑
           </div>
 
-          <!-- Config & Qty -->
           <div class="title-cell cell-config">
             CONFIG: Default &nbsp; QTY: 1 &nbsp; SIZE: A
           </div>
 
-          <!-- Checked -->
           <div class="title-cell cell-checked">
             CHECKED: G.H. ☑
           </div>
 
-          <!-- Material & Scale -->
           <div class="title-cell cell-mat">
             MAT: Al 6061-T6 / CF &nbsp; SCALE: 1:1
           </div>
@@ -163,56 +155,53 @@
 
     <!-- ========================================================
          ITEM 3: DRAWING 2 — 2026 HERO MK1 ASSEMBLY & EI TENSIONER
-         (Hero explodes along vertical axis on hover, includes EI tensioner on same page)
+         (Hero explodes vertically on hover, EI tensioner in bottom-left)
          ======================================================== -->
-    <article class="paper-item drawing-sheet" id="sheetHero" data-id="hero" style="left: 360px; top: 75px; --angle: -4.5deg;">
+    <article class="paper-item drawing-sheet sheet-hero" id="sheetHero" data-id="hero" style="--angle: -4deg;">
       <div class="drawing-frame">
         <!-- Zone Border Overlay -->
-        <svg class="zone-border-svg" viewBox="0 0 580 420" preserveAspectRatio="none">
-          <rect x="2" y="2" width="576" height="416" fill="none" stroke="#777" stroke-width="1.2" />
-          <rect x="14" y="14" width="552" height="392" fill="none" stroke="#555" stroke-width="1.5" />
+        <svg class="zone-border-svg" viewBox="0 0 1000 700" preserveAspectRatio="none">
+          <rect x="2" y="2" width="996" height="696" fill="none" stroke="#777" stroke-width="1.5" />
+          <rect x="18" y="18" width="964" height="664" fill="none" stroke="#555" stroke-width="1.8" />
           
-          <line x1="152" y1="2" x2="152" y2="14" stroke="#777" stroke-width="1" />
-          <line x1="290" y1="2" x2="290" y2="14" stroke="#777" stroke-width="1" />
-          <line x1="428" y1="2" x2="428" y2="14" stroke="#777" stroke-width="1" />
-          <line x1="152" y1="406" x2="152" y2="418" stroke="#777" stroke-width="1" />
-          <line x1="290" y1="406" x2="290" y2="418" stroke="#777" stroke-width="1" />
-          <line x1="428" y1="406" x2="428" y2="418" stroke="#777" stroke-width="1" />
+          <line x1="265" y1="2" x2="265" y2="18" stroke="#777" stroke-width="1.2" />
+          <line x1="500" y1="2" x2="500" y2="18" stroke="#777" stroke-width="1.2" />
+          <line x1="735" y1="2" x2="735" y2="18" stroke="#777" stroke-width="1.2" />
+          <line x1="265" y1="682" x2="265" y2="698" stroke="#777" stroke-width="1.2" />
+          <line x1="500" y1="682" x2="500" y2="698" stroke="#777" stroke-width="1.2" />
+          <line x1="735" y1="682" x2="735" y2="698" stroke="#777" stroke-width="1.2" />
 
-          <text x="83" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">4</text>
-          <text x="221" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">3</text>
-          <text x="359" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">2</text>
-          <text x="497" y="11" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">1</text>
+          <text x="145" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">4</text>
+          <text x="382" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">3</text>
+          <text x="618" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">2</text>
+          <text x="855" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">1</text>
 
-          <text x="83" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">4</text>
-          <text x="221" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">3</text>
-          <text x="359" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">2</text>
-          <text x="497" y="415" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">1</text>
+          <text x="145" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">4</text>
+          <text x="382" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">3</text>
+          <text x="618" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">2</text>
+          <text x="855" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">1</text>
 
-          <line x1="2" y1="112" x2="14" y2="112" stroke="#777" stroke-width="1" />
-          <line x1="2" y1="210" x2="14" y2="210" stroke="#777" stroke-width="1" />
-          <line x1="2" y1="308" x2="14" y2="308" stroke="#777" stroke-width="1" />
-          <line x1="566" y1="112" x2="578" y2="112" stroke="#777" stroke-width="1" />
-          <line x1="566" y1="210" x2="578" y2="210" stroke="#777" stroke-width="1" />
-          <line x1="566" y1="308" x2="578" y2="308" stroke="#777" stroke-width="1" />
+          <line x1="2" y1="185" x2="18" y2="185" stroke="#777" stroke-width="1.2" />
+          <line x1="2" y1="350" x2="18" y2="350" stroke="#777" stroke-width="1.2" />
+          <line x1="2" y1="515" x2="18" y2="515" stroke="#777" stroke-width="1.2" />
+          <line x1="982" y1="185" x2="998" y2="185" stroke="#777" stroke-width="1.2" />
+          <line x1="982" y1="350" x2="998" y2="350" stroke="#777" stroke-width="1.2" />
+          <line x1="982" y1="515" x2="998" y2="515" stroke="#777" stroke-width="1.2" />
 
-          <text x="8" y="66" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">D</text>
-          <text x="8" y="164" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">C</text>
-          <text x="8" y="262" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">B</text>
-          <text x="8" y="360" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">A</text>
+          <text x="10" y="105" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">D</text>
+          <text x="10" y="272" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">C</text>
+          <text x="10" y="438" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">B</text>
+          <text x="10" y="605" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">A</text>
 
-          <text x="572" y="66" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">D</text>
-          <text x="572" y="164" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">C</text>
-          <text x="572" y="262" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">B</text>
-          <text x="572" y="360" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#333" text-anchor="middle">A</text>
+          <text x="990" y="105" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">D</text>
+          <text x="990" y="272" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">C</text>
+          <text x="990" y="438" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">B</text>
+          <text x="990" y="605" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">A</text>
         </svg>
 
         <span class="drawing-loading-badge" id="badgeHero">LOADING HERO CAD MODEL...</span>
 
         <!-- WebGL Canvas for 2026 Hero & EI Tensioner -->
-        <!-- Top-Left: Hero Isometric (Exploded on hover) -->
-        <!-- Top-Right: Hero Front Orthographic (Exploded on hover) -->
-        <!-- Bottom-Left: EI Tensioner Subassembly -->
         <canvas class="cad-webgl-canvas" id="canvasHero3D"></canvas>
 
         <div class="drawing-title-block">
@@ -251,10 +240,170 @@
     </article>
 
     <!-- ========================================================
-         ITEM 4: FORMAL RESUME (Exact PDF from Folder rendered onto Canvas)
+         ITEM 4: BLANK DRAWING PAGE 1 (Center-Right Tilt)
+         (As drawn by user in redline screenshot)
+         ======================================================== -->
+    <article class="paper-item drawing-sheet sheet-blank-1" id="sheetBlank1" data-id="blank1" style="--angle: -8deg;">
+      <div class="drawing-frame">
+        <svg class="zone-border-svg" viewBox="0 0 1000 700" preserveAspectRatio="none">
+          <rect x="2" y="2" width="996" height="696" fill="none" stroke="#777" stroke-width="1.5" />
+          <rect x="18" y="18" width="964" height="664" fill="none" stroke="#555" stroke-width="1.8" />
+          
+          <line x1="265" y1="2" x2="265" y2="18" stroke="#777" stroke-width="1.2" />
+          <line x1="500" y1="2" x2="500" y2="18" stroke="#777" stroke-width="1.2" />
+          <line x1="735" y1="2" x2="735" y2="18" stroke="#777" stroke-width="1.2" />
+          <line x1="265" y1="682" x2="265" y2="698" stroke="#777" stroke-width="1.2" />
+          <line x1="500" y1="682" x2="500" y2="698" stroke="#777" stroke-width="1.2" />
+          <line x1="735" y1="682" x2="735" y2="698" stroke="#777" stroke-width="1.2" />
+
+          <text x="145" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">4</text>
+          <text x="382" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">3</text>
+          <text x="618" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">2</text>
+          <text x="855" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">1</text>
+
+          <text x="145" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">4</text>
+          <text x="382" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">3</text>
+          <text x="618" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">2</text>
+          <text x="855" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">1</text>
+
+          <line x1="2" y1="185" x2="18" y2="185" stroke="#777" stroke-width="1.2" />
+          <line x1="2" y1="350" x2="18" y2="350" stroke="#777" stroke-width="1.2" />
+          <line x1="2" y1="515" x2="18" y2="515" stroke="#777" stroke-width="1.2" />
+          <line x1="982" y1="185" x2="998" y2="185" stroke="#777" stroke-width="1.2" />
+          <line x1="982" y1="350" x2="998" y2="350" stroke="#777" stroke-width="1.2" />
+          <line x1="982" y1="515" x2="998" y2="515" stroke="#777" stroke-width="1.2" />
+
+          <text x="10" y="105" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">D</text>
+          <text x="10" y="272" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">C</text>
+          <text x="10" y="438" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">B</text>
+          <text x="10" y="605" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">A</text>
+
+          <text x="990" y="105" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">D</text>
+          <text x="990" y="272" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">C</text>
+          <text x="990" y="438" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">B</text>
+          <text x="990" y="605" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">A</text>
+        </svg>
+
+        <div class="drawing-title-block">
+          <div class="title-cell cell-info-box">
+            <span class="info-box-org">UNIV OF WASH</span>
+            <span class="info-box-sub">MECHANICAL ENG</span>
+            <span class="info-box-lead">G. HIGGINS</span>
+          </div>
+
+          <div class="title-cell cell-units">
+            UNITS IN MILLIMETERS<br>UNLESS SPECIFIED.<br>REMOVE ALL BURRS.
+          </div>
+
+          <div class="title-cell cell-part-name">
+            <span class="part-name-label">PART NAME</span>
+            <span class="part-name-text">Engineering Drawing Sheet &bull; Subsystem A</span>
+          </div>
+
+          <div class="title-cell cell-drawn">
+            DRAWN: G.H. ☑
+          </div>
+
+          <div class="title-cell cell-config">
+            CONFIG: Default &nbsp; QTY: 1 &nbsp; SIZE: A
+          </div>
+
+          <div class="title-cell cell-checked">
+            CHECKED: G.H. ☑
+          </div>
+
+          <div class="title-cell cell-mat">
+            MAT: Al 6061-T6 &nbsp; SCALE: 1:1
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ========================================================
+         ITEM 5: BLANK DRAWING PAGE 2 (Bottom-Left Tilt)
+         (As drawn by user in redline screenshot)
+         ======================================================== -->
+    <article class="paper-item drawing-sheet sheet-blank-2" id="sheetBlank2" data-id="blank2" style="--angle: 7deg;">
+      <div class="drawing-frame">
+        <svg class="zone-border-svg" viewBox="0 0 1000 700" preserveAspectRatio="none">
+          <rect x="2" y="2" width="996" height="696" fill="none" stroke="#777" stroke-width="1.5" />
+          <rect x="18" y="18" width="964" height="664" fill="none" stroke="#555" stroke-width="1.8" />
+          
+          <line x1="265" y1="2" x2="265" y2="18" stroke="#777" stroke-width="1.2" />
+          <line x1="500" y1="2" x2="500" y2="18" stroke="#777" stroke-width="1.2" />
+          <line x1="735" y1="2" x2="735" y2="18" stroke="#777" stroke-width="1.2" />
+          <line x1="265" y1="682" x2="265" y2="698" stroke="#777" stroke-width="1.2" />
+          <line x1="500" y1="682" x2="500" y2="698" stroke="#777" stroke-width="1.2" />
+          <line x1="735" y1="682" x2="735" y2="698" stroke="#777" stroke-width="1.2" />
+
+          <text x="145" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">4</text>
+          <text x="382" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">3</text>
+          <text x="618" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">2</text>
+          <text x="855" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">1</text>
+
+          <text x="145" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">4</text>
+          <text x="382" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">3</text>
+          <text x="618" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">2</text>
+          <text x="855" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">1</text>
+
+          <line x1="2" y1="185" x2="18" y2="185" stroke="#777" stroke-width="1.2" />
+          <line x1="2" y1="350" x2="18" y2="350" stroke="#777" stroke-width="1.2" />
+          <line x1="2" y1="515" x2="18" y2="515" stroke="#777" stroke-width="1.2" />
+          <line x1="982" y1="185" x2="998" y2="185" stroke="#777" stroke-width="1.2" />
+          <line x1="982" y1="350" x2="998" y2="350" stroke="#777" stroke-width="1.2" />
+          <line x1="982" y1="515" x2="998" y2="515" stroke="#777" stroke-width="1.2" />
+
+          <text x="10" y="105" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">D</text>
+          <text x="10" y="272" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">C</text>
+          <text x="10" y="438" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">B</text>
+          <text x="10" y="605" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">A</text>
+
+          <text x="990" y="105" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">D</text>
+          <text x="990" y="272" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">C</text>
+          <text x="990" y="438" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">B</text>
+          <text x="990" y="605" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">A</text>
+        </svg>
+
+        <div class="drawing-title-block">
+          <div class="title-cell cell-info-box">
+            <span class="info-box-org">UNIV OF WASH</span>
+            <span class="info-box-sub">MECHANICAL ENG</span>
+            <span class="info-box-lead">G. HIGGINS</span>
+          </div>
+
+          <div class="title-cell cell-units">
+            UNITS IN MILLIMETERS<br>UNLESS SPECIFIED.<br>REMOVE ALL BURRS.
+          </div>
+
+          <div class="title-cell cell-part-name">
+            <span class="part-name-label">PART NAME</span>
+            <span class="part-name-text">Engineering Drawing Sheet &bull; Subsystem B</span>
+          </div>
+
+          <div class="title-cell cell-drawn">
+            DRAWN: G.H. ☑
+          </div>
+
+          <div class="title-cell cell-config">
+            CONFIG: Default &nbsp; QTY: 1 &nbsp; SIZE: A
+          </div>
+
+          <div class="title-cell cell-checked">
+            CHECKED: G.H. ☑
+          </div>
+
+          <div class="title-cell cell-mat">
+            MAT: Al 6061-T6 &nbsp; SCALE: 1:1
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ========================================================
+         ITEM 6: FORMAL RESUME (Fills 75% of user height on desk)
          (Right Side — Flat White Paper matching Drawing Sheets)
          ======================================================== -->
-    <article class="paper-item resume-sheet-item" id="sheetResume" data-id="resume" style="right: 80px; top: 60px; --angle: 1.8deg;">
+    <article class="paper-item resume-sheet-item" id="sheetResume" data-id="resume" style="--angle: 1.5deg;">
       <div class="resume-paper-frame">
         <canvas id="resumeCanvas"></canvas>
         <div class="resume-hint-tag">GAVIN HIGGINS RESUME &bull; CLICK TO ENLARGE</div>

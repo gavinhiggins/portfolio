@@ -1,123 +1,24 @@
 /* ==========================================================================
-   GAVIN HIGGINS — CAD DRAWINGS & PROCEDURAL WOOD DESK ENGINE
-   - Natural vertical wood plank tabletop canvas (matching screenshot)
-   - Three.js multi-viewport CAD renderer for GLB assemblies
-   - Flat white technical drawing shader with black feature edges
-   - Hero full assembly vertical explosion animation on hover
+   GAVIN HIGGINS — CAD DRAWINGS & PROCEDURAL THREE.JS ENGINE
+   - GLTFLoader configured with DRACOLoader (decodes KHR_draco_mesh_compression)
+   - Multi-viewport technical drawing views with flat white shading & black edges
+   - Hero full assembly vertical explosion along vertical axis on hover
    - EI Tensioner subassembly on the same sheet
-   - PDF.js rendering of Gavin_Higgins_Resume.pdf
+   - PDF.js rendering of Gavin_Higgins_Resume.pdf at 75vh
    ========================================================================== */
 
-// ==========================================================================
-// 1. PROCEDURAL NATURAL WOODEN DESK CANVAS
-// ==========================================================================
-class WoodDeskRenderer {
-  constructor() {
-    this.canvas = document.getElementById('deskWoodCanvas');
-    if (!this.canvas) return;
-    this.ctx = this.canvas.getContext('2d');
-    this.render();
-    window.addEventListener('resize', () => this.render());
-  }
-
-  render() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    this.canvas.width = w;
-    this.canvas.height = h;
-    const ctx = this.ctx;
-
-    // Base warm timber background
-    ctx.fillStyle = '#3a2414';
-    ctx.fillRect(0, 0, w, h);
-
-    // Vertical plank parameters
-    const plankWidth = Math.max(140, Math.floor(w / 8));
-    const numPlanks = Math.ceil(w / plankWidth) + 1;
-
-    // Color palettes for planks (warm amber oak / walnut planks)
-    const plankColors = [
-      '#422b17', '#3c2613', '#49301b', '#382210', 
-      '#462e19', '#3f2815', '#4d331c', '#3a2311'
-    ];
-
-    for (let i = 0; i < numPlanks; i++) {
-      const px = i * plankWidth;
-      const baseCol = plankColors[i % plankColors.length];
-      
-      // Plank body
-      ctx.fillStyle = baseCol;
-      ctx.fillRect(px, 0, plankWidth, h);
-
-      // Fine vertical wood grain streaks inside each plank
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
-      ctx.lineWidth = 1;
-      const numGrains = 28;
-      for (let g = 0; g < numGrains; g++) {
-        const gx = px + (g / numGrains) * plankWidth + (Math.sin(g * 3.7 + i) * 3);
-        ctx.beginPath();
-        ctx.moveTo(gx, 0);
-        // Subtle wavy grain
-        const waveAmp = (g % 3 === 0 ? 4 : 2);
-        ctx.bezierCurveTo(
-          gx + waveAmp, h * 0.3,
-          gx - waveAmp, h * 0.7,
-          gx, h
-        );
-        ctx.stroke();
-      }
-
-      // Darker grain fiber lines
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
-      for (let dg = 0; dg < 14; dg++) {
-        const dgx = px + (dg / 14) * plankWidth;
-        ctx.beginPath();
-        ctx.moveTo(dgx, 0);
-        ctx.lineTo(dgx + (Math.sin(dg * 5 + i) * 2), h);
-        ctx.stroke();
-      }
-
-      // Subtle wood knot on select planks
-      if (i % 3 === 1) {
-        const knotY = (h * 0.25) + ((i * 137) % (h * 0.5));
-        const knotX = px + plankWidth * 0.45;
-        for (let r = 4; r < 28; r += 5) {
-          ctx.strokeStyle = 'rgba(25, 14, 6, 0.12)';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.ellipse(knotX, knotY, r * 0.7, r * 1.6, 0.1, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-      }
-
-      // Plank Seam: Dark shadow groove on left, subtle highlight on right
-      // Dark groove
-      ctx.fillStyle = 'rgba(10, 6, 3, 0.55)';
-      ctx.fillRect(px - 1, 0, 2.5, h);
-      // Soft ambient shadow next to groove
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
-      ctx.fillRect(px - 4, 0, 3, h);
-      // Edge highlight
-      ctx.fillStyle = 'rgba(255, 235, 205, 0.06)';
-      ctx.fillRect(px + 1.5, 0, 1.5, h);
-    }
-
-    // Soft global vignette (darker edges like workshop lighting)
-    const vignette = ctx.createRadialGradient(w * 0.5, h * 0.45, w * 0.25, w * 0.5, h * 0.5, w * 0.75);
-    vignette.addColorStop(0, 'rgba(0, 0, 0, 0.0)');
-    vignette.addColorStop(1, 'rgba(12, 6, 2, 0.48)');
-    ctx.fillStyle = vignette;
-    ctx.fillRect(0, 0, w, h);
-  }
-}
-
-// ==========================================================================
-// 2. THREE.JS MULTI-VIEWPORT CAD DRAWINGS ENGINE
-// ==========================================================================
 class CadDrawingsEngine {
   constructor() {
-    this.loader = new THREE.GLTFLoader();
     this.sheets = {};
+
+    // 1. Initialize Draco Decoder for Draco-compressed GLB files
+    this.dracoLoader = new THREE.DRACOLoader();
+    this.dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+    this.dracoLoader.preload();
+
+    // 2. Configure GLTFLoader with Draco support
+    this.loader = new THREE.GLTFLoader();
+    this.loader.setDRACOLoader(this.dracoLoader);
     
     this.initSuspensionSheet();
     this.initHeroSheet();
@@ -129,8 +30,8 @@ class CadDrawingsEngine {
   // ------------------------------------------------------------------------
   applyCadMaterial(object) {
     const cadMat = new THREE.MeshStandardMaterial({
-      color: 0xf5f5f3,
-      roughness: 0.38,
+      color: 0xf4f4f2,
+      roughness: 0.35,
       metalness: 0.08,
       flatShading: true,
       polygonOffset: true,
@@ -151,7 +52,7 @@ class CadDrawingsEngine {
 
         // Add feature edge lines (SolidWorks drawing style)
         try {
-          const edges = new THREE.EdgesGeometry(child.geometry, 28);
+          const edges = new THREE.EdgesGeometry(child.geometry, 26);
           const line = new THREE.LineSegments(edges, edgeMat);
           child.add(line);
         } catch (e) {}
@@ -173,23 +74,23 @@ class CadDrawingsEngine {
 
     const scene = new THREE.Scene();
 
-    // Subtle CAD Lighting
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xd0d0cc, 1.2);
+    // Technical CAD Lighting
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xd0d0cc, 1.3);
     scene.add(hemiLight);
 
     const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.9);
-    dirLight1.position.set(5, 10, 7);
+    dirLight1.position.set(6, 12, 8);
     scene.add(dirLight1);
 
     const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
-    dirLight2.position.set(-5, -5, -5);
+    dirLight2.position.set(-6, -6, -6);
     scene.add(dirLight2);
 
     // Three Multi-View Cameras:
     // 1. Top-Left: Isometric View
     // 2. Top-Right: Front Orthographic View
     // 3. Bottom-Left: Side Orthographic View
-    const camIso = new THREE.PerspectiveCamera(38, 1, 0.1, 1000);
+    const camIso = new THREE.PerspectiveCamera(36, 1, 0.1, 1000);
     const camFront = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
     const camSide = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
 
@@ -212,7 +113,7 @@ class CadDrawingsEngine {
 
     this.sheets.suspension = sheetState;
 
-    // Load Suspension Assembly GLB
+    // Load Suspension Assembly GLB with Draco Support
     const glbUrl = encodeURI('2027,_Linear_Suspension_V3,_Assembly (1).glb');
     this.loader.load(
       glbUrl,
@@ -220,7 +121,7 @@ class CadDrawingsEngine {
         const model = gltf.scene;
         this.applyCadMaterial(model);
 
-        // Center and normalize bounding box
+        // Compute Bounding Box & Center
         const bbox = new THREE.Box3().setFromObject(model);
         const center = bbox.getCenter(new THREE.Vector3());
         const size = bbox.getSize(new THREE.Vector3());
@@ -230,28 +131,26 @@ class CadDrawingsEngine {
         const scale = 2.4 / maxDim;
         model.scale.set(scale, scale, scale);
 
-        // Group to hold model
         const group = new THREE.Group();
         group.add(model);
         scene.add(group);
         sheetState.modelGroup = group;
 
-        // Detect carriage or linear rail slider parts for animation
+        // Detect moving carriage/slider parts
         model.traverse((child) => {
           if (child.isMesh) {
             child.userData.initY = child.position.y;
-            // Identify moving carriage components
-            if (child.name.toLowerCase().includes('carriage') || child.name.toLowerCase().includes('slider') || child.position.y > 0.1) {
+            if (child.name.toLowerCase().includes('carriage') || child.name.toLowerCase().includes('slider') || child.position.y > 0.05) {
               sheetState.movingParts.push(child);
             }
           }
         });
 
-        // Set Cameras to look at center
-        camIso.position.set(2.8, 2.4, 2.8);
+        // Set Cameras
+        camIso.position.set(2.6, 2.3, 2.6);
         camIso.lookAt(0, 0, 0);
 
-        const orthoViewSize = 1.6;
+        const orthoViewSize = 1.45;
         camFront.left = -orthoViewSize;
         camFront.right = orthoViewSize;
         camFront.top = orthoViewSize;
@@ -273,7 +172,6 @@ class CadDrawingsEngine {
       undefined,
       (err) => {
         console.warn('Suspension GLB load note:', err);
-        if (badge) badge.innerText = 'CAD DISPLAY ACTIVE';
       }
     );
   }
@@ -293,11 +191,10 @@ class CadDrawingsEngine {
 
     const scene = new THREE.Scene();
 
-    // CAD Lighting
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0xd0d0cc, 1.3);
     scene.add(hemiLight);
 
-    const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.9);
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.95);
     dirLight1.position.set(6, 12, 8);
     scene.add(dirLight1);
 
@@ -307,7 +204,7 @@ class CadDrawingsEngine {
 
     const camIso = new THREE.PerspectiveCamera(36, 1, 0.1, 1000);
     const camFront = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
-    const camTensioner = new THREE.PerspectiveCamera(35, 1, 0.1, 1000);
+    const camTensioner = new THREE.PerspectiveCamera(34, 1, 0.1, 1000);
 
     const sheetState = {
       canvas,
@@ -336,7 +233,7 @@ class CadDrawingsEngine {
 
     this.sheets.hero = sheetState;
 
-    // 1. Load Hero Full Assembly GLB
+    // 1. Load Hero Full Assembly GLB with Draco Support
     const heroGlbUrl = encodeURI('Hero_Mk1 (1).glb');
     this.loader.load(
       heroGlbUrl,
@@ -366,25 +263,24 @@ class CadDrawingsEngine {
             const meshCenter = meshBBox.getCenter(new THREE.Vector3());
             
             child.userData.initY = child.position.y;
-            // The explode delta along the vertical axis (Y):
-            // Parts above center expand upward, parts below stay or shift downward
+            // Explode delta along vertical axis (Y):
             const relativeY = meshCenter.y - center.y;
-            child.userData.explodeDeltaY = relativeY * 1.8 + Math.sign(relativeY || 1) * 0.4;
+            child.userData.explodeDeltaY = relativeY * 1.85 + Math.sign(relativeY || 1) * 0.45;
             sheetState.heroMeshes.push(child);
           }
         });
 
         // Set Isometric & Front Cameras
-        camIso.position.set(3.4, 2.8, 3.4);
+        camIso.position.set(3.2, 2.7, 3.2);
         camIso.lookAt(0, 0, 0);
 
-        const orthoViewSize = 1.7;
+        const orthoViewSize = 1.55;
         camFront.left = -orthoViewSize;
         camFront.right = orthoViewSize;
         camFront.top = orthoViewSize;
         camFront.bottom = -orthoViewSize;
-        camFront.position.set(0, 0.2, 5);
-        camFront.lookAt(0, 0.2, 0);
+        camFront.position.set(0, 0.1, 5);
+        camFront.lookAt(0, 0.1, 0);
         camFront.updateProjectionMatrix();
 
         if (badge) badge.classList.add('loaded');
@@ -392,7 +288,6 @@ class CadDrawingsEngine {
       undefined,
       (err) => {
         console.warn('Hero GLB load note:', err);
-        if (badge) badge.innerText = 'CAD DISPLAY ACTIVE';
       }
     );
 
@@ -413,14 +308,12 @@ class CadDrawingsEngine {
         const scale = 2.0 / maxDim;
         tensionerModel.scale.set(scale, scale, scale);
 
-        // Put in its own isolated subscene or offset
         const tensGroup = new THREE.Group();
-        tensGroup.position.set(100, 0, 0); // Offset in scene
+        tensGroup.position.set(100, 0, 0);
         tensGroup.add(tensionerModel);
         scene.add(tensGroup);
         sheetState.tensionerGroup = tensGroup;
 
-        // Tensioner camera looks at tensioner offset
         camTensioner.position.set(100 + 2.2, 1.8, 2.2);
         camTensioner.lookAt(100, 0, 0);
       },
@@ -443,7 +336,6 @@ class CadDrawingsEngine {
     requestAnimationFrame(loop);
   }
 
-  // Render Sheet 1 (Suspension)
   renderSuspension() {
     const s = this.sheets.suspension;
     if (!s || !s.modelGroup) return;
@@ -462,7 +354,6 @@ class CadDrawingsEngine {
       s.compression = THREE.MathUtils.lerp(s.compression, 0, 0.08);
     }
 
-    // Animate moving carriage slider parts
     s.movingParts.forEach((part) => {
       part.position.y = part.userData.initY + s.compression;
     });
@@ -502,7 +393,6 @@ class CadDrawingsEngine {
     s.renderer.setScissorTest(false);
   }
 
-  // Render Sheet 2 (Hero Full Assembly & EI Tensioner)
   renderHero() {
     const s = this.sheets.hero;
     if (!s || !s.heroGroup) return;
@@ -524,9 +414,8 @@ class CadDrawingsEngine {
       mesh.position.y = mesh.userData.initY + (mesh.userData.explodeDeltaY * s.explodeAmount);
     });
 
-    // Subtle gentle rotation on hover
     if (s.hovered) {
-      s.heroGroup.rotation.y = Math.sin(s.time * 0.8) * 0.25;
+      s.heroGroup.rotation.y = Math.sin(s.time * 0.8) * 0.22;
       if (s.tensionerGroup) {
         s.tensionerGroup.rotation.y = s.time * 0.5;
       }
@@ -575,7 +464,7 @@ class CadDrawingsEngine {
 }
 
 // ==========================================================================
-// 3. AUTHENTIC VECTOR RESUME PDF RENDERER (PDF.JS)
+// 2. AUTHENTIC VECTOR RESUME PDF RENDERER (PDF.JS)
 // ==========================================================================
 class ResumePdfRenderer {
   constructor() {
@@ -586,18 +475,16 @@ class ResumePdfRenderer {
 
   renderPdf() {
     if (typeof pdfjsLib === 'undefined') {
-      console.warn('PDF.js loading...');
-      setTimeout(() => this.renderPdf(), 400);
+      setTimeout(() => this.renderPdf(), 350);
       return;
     }
 
-    // Set worker
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     const pdfUrl = encodeURI('Gavin_Higgins_Resume.pdf');
     pdfjsLib.getDocument(pdfUrl).promise.then((pdf) => {
       pdf.getPage(1).then((page) => {
-        const viewport = page.getViewport({ scale: 2.0 });
+        const viewport = page.getViewport({ scale: 2.2 });
         const canvas = this.canvas;
         const ctx = canvas.getContext('2d');
 
@@ -618,7 +505,6 @@ class ResumePdfRenderer {
 
 // Initialize on DOM Ready
 window.addEventListener('DOMContentLoaded', () => {
-  window.woodDesk = new WoodDeskRenderer();
   window.cadEngine = new CadDrawingsEngine();
   window.resumePdf = new ResumePdfRenderer();
 });
