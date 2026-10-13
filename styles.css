@@ -31,10 +31,10 @@
      3. RESUME SHEET (Right Side — Fills 75% of user height)
      Adjust height, width, and position here
      ========================================================================== */
-  --resume-height: 75vh;
-  --resume-width: calc(75vh * 0.77); /* Standard 8.5x11 Letter ratio */
+  --resume-height: 80vh;
+  --resume-width: calc(80vh * 0.77); /* Standard 8.5x11 Letter ratio */
   --resume-top: 12.5vh;
-  --resume-right: 4vw;
+  --resume-right: 2vw;
   --resume-angle: 1.5deg;
 
   /* ==========================================================================
@@ -47,7 +47,7 @@
   /* Position & Angle for Sheet 1: Hero Robot Full Assembly */
   --hero-top: 4vh;
   --hero-left: 17vw;
-  --hero-angle: -3.5deg;
+  --hero-angle: -2.0deg;
 
   /* Position & Angle for Sheet 2: Linear Suspension V3 */
   --suspension-top: 27vh;
