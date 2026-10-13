@@ -1,20 +1,77 @@
 /* ==========================================================================
-   GAVIN HIGGINS — MECHANICAL ENGINEERING PORTFOLIO
-   Theme: Realistic Wooden Desk with Scattered Engineering Drawings
-   75vh Drawing Sheets, Authentic SolidWorks Borders & Title Blocks
+   GAVIN HIGGINS — MECHANICAL ENGINEERING PORTFOLIO STYLES
+   
+   EASY CUSTOMIZATION GUIDE:
+   Edit the CSS variables below in :root to change any size, position, font, or color!
    ========================================================================== */
 
 :root {
+  /* ==========================================================================
+     1. DESK BACKGROUND
+     Change the image or fallback color here
+     ========================================================================== */
+  --desk-image: url('desk_background.png');
+  --desk-fallback-color: #3b2513;
+
+  /* ==========================================================================
+     2. POST-IT NOTE (Top-Left)
+     Adjust position, size, and fonts here
+     ========================================================================== */
+  --postit-width: 300px;
+  --postit-min-height: 330px;
+  --postit-top: 3.5vh;
+  --postit-left: 2.2vw;
+  --postit-angle: -2.5deg;
+  --postit-bg-color: #fff275;
+  --postit-bg-dark: #f5dc49;
+  --postit-name-size: 2.6rem;
+  --postit-title-size: 0.88rem;
+
+  /* ==========================================================================
+     3. RESUME SHEET (Right Side — Fills 75% of user height)
+     Adjust height, width, and position here
+     ========================================================================== */
+  --resume-height: 75vh;
+  --resume-width: calc(75vh * 0.77); /* Standard 8.5x11 Letter ratio */
+  --resume-top: 12.5vh;
+  --resume-right: 4vw;
+  --resume-angle: 1.5deg;
+
+  /* ==========================================================================
+     4. ENGINEERING DRAWING SHEETS (Height & Width)
+     All 4 drawing sheets scale proportionally
+     ========================================================================== */
+  --sheet-height: 48vh;
+  --sheet-width: calc(48vh * 1.4); /* Standard Landscape CAD ratio */
+
+  /* Position & Angle for Sheet 1: Hero Robot Full Assembly */
+  --hero-top: 4vh;
+  --hero-left: 17vw;
+  --hero-angle: -3.5deg;
+
+  /* Position & Angle for Sheet 2: Linear Suspension V3 */
+  --suspension-top: 27vh;
+  --suspension-left: 5vw;
+  --suspension-angle: 3deg;
+
+  /* Position & Angle for Sheet 3: Blank Drawing Page 1 (Center-Right Tilt) */
+  --blank1-top: 18vh;
+  --blank1-left: 46vw;
+  --blank1-angle: -8deg;
+
+  /* Position & Angle for Sheet 4: Blank Drawing Page 2 (Bottom-Left Tilt) */
+  --blank2-top: 54vh;
+  --blank2-left: 12vw;
+  --blank2-angle: 7.5deg;
+
+  /* ==========================================================================
+     5. COLORS & FONTS
+     ========================================================================== */
   --paper-white: #f7f7f5;
   --paper-border: #d4d4ce;
-  --paper-shadow: rgba(15, 8, 3, 0.48);
+  --paper-shadow: rgba(15, 8, 3, 0.45);
   --paper-shadow-hover: rgba(10, 5, 2, 0.65);
-  --cad-black: #1a1a1a;
   --cad-border: #666666;
-  --cad-subtle: #888888;
-  --postit-yellow: #fff275;
-  --postit-dark: #f5dc49;
-  --postit-ink: #1f1b0a;
   --font-mono: 'IBM Plex Mono', monospace;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-hand: 'Caveat', cursive;
@@ -26,35 +83,25 @@
   padding: 0;
 }
 
+/* --------------------------------------------------------------------------
+   DESK SURFACE (Full Viewport with Timber Background)
+   -------------------------------------------------------------------------- */
 html, body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background-color: #2e1d0f;
-  font-family: var(--font-sans);
-  color: var(--cad-black);
-  user-select: none;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* --------------------------------------------------------------------------
-   AUTHENTIC WOODEN DESK BACKGROUND LAYER
-   Uses desk_background.png with seamless timber plank coverage
-   -------------------------------------------------------------------------- */
-.desk-background-layer {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  background-color: #3b2513;
+  background-color: var(--desk-fallback-color);
   background-image: 
-    radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.45) 100%),
-    url('desk_background.png');
+    radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.4) 100%),
+    var(--desk-image);
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  pointer-events: none;
+  background-attachment: fixed;
+  font-family: var(--font-sans);
+  color: #1a1a1a;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
 }
 
 .desk-container {
@@ -66,7 +113,7 @@ html, body {
 }
 
 /* --------------------------------------------------------------------------
-   BASE PAPER ITEM STYLING (Scattered on the Desk)
+   BASE PAPER ITEM STYLING (Scattered across the Desk)
    -------------------------------------------------------------------------- */
 .paper-item {
   position: absolute;
@@ -74,40 +121,38 @@ html, body {
   border: 1px solid var(--paper-border);
   border-radius: 2px;
   box-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.2),
-    0 10px 28px var(--paper-shadow),
-    0 22px 55px -10px rgba(0, 0, 0, 0.4);
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 10px 25px var(--paper-shadow),
+    0 24px 55px -10px rgba(0, 0, 0, 0.4);
   cursor: pointer;
   transform: rotate(var(--angle, 0deg));
   transform-origin: center center;
   transition: 
     transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1),
-    box-shadow 0.45s cubic-bezier(0.2, 0.9, 0.3, 1),
-    z-index 0s 0s;
+    box-shadow 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
   will-change: transform, box-shadow;
-  z-index: 2;
 }
 
 .paper-item:hover {
-  z-index: 60 !important;
+  z-index: 80 !important;
   transform: rotate(0deg) translateY(-14px) scale(1.02);
   box-shadow: 
-    0 4px 10px rgba(0, 0, 0, 0.18),
+    0 4px 10px rgba(0, 0, 0, 0.2),
     0 24px 60px var(--paper-shadow-hover),
-    0 40px 90px -10px rgba(0, 0, 0, 0.55);
+    0 45px 95px -10px rgba(0, 0, 0, 0.55);
 }
 
 /* --------------------------------------------------------------------------
-   BIGGER CANARY YELLOW POST-IT NOTE (Top-Left)
+   CANARY YELLOW POST-IT NOTE (Top-Left)
    -------------------------------------------------------------------------- */
 .post-it-note {
   position: absolute;
-  top: 3.5vh;
-  left: 2.8vw;
-  width: 295px;
-  min-height: 330px;
-  background: linear-gradient(176deg, var(--postit-yellow) 0%, var(--postit-dark) 100%);
-  color: var(--postit-ink);
+  top: var(--postit-top);
+  left: var(--postit-left);
+  width: var(--postit-width);
+  min-height: var(--postit-min-height);
+  background: linear-gradient(176deg, var(--postit-bg-color) 0%, var(--postit-bg-dark) 100%);
+  color: #1f1b0a;
   padding: 24px 22px 20px;
   border-radius: 1px 1px 1px 14px;
   box-shadow: 
@@ -115,17 +160,15 @@ html, body {
     0 14px 32px rgba(20, 10, 2, 0.5),
     inset 0 -8px 20px rgba(210, 175, 40, 0.2);
   cursor: pointer;
-  z-index: 25;
-  transform: rotate(var(--angle, -2.5deg));
+  z-index: 30;
+  transform: rotate(var(--postit-angle));
   transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 0.4s ease;
 }
 
 .post-it-note:hover {
-  z-index: 70 !important;
+  z-index: 90 !important;
   transform: rotate(0deg) translateY(-10px) scale(1.03);
-  box-shadow: 
-    0 4px 8px rgba(0,0,0,0.2),
-    0 22px 48px rgba(20, 10, 2, 0.6);
+  box-shadow: 0 24px 50px rgba(20, 10, 2, 0.6);
 }
 
 .post-it-tape {
@@ -138,7 +181,6 @@ html, body {
   background: rgba(255, 255, 255, 0.48);
   backdrop-filter: blur(1.5px);
   border: 1px dashed rgba(200, 180, 100, 0.45);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 
 .post-it-peel {
@@ -149,21 +191,19 @@ html, body {
   height: 32px;
   background: linear-gradient(135deg, transparent 50%, rgba(180, 140, 20, 0.45) 50%);
   border-bottom-right-radius: 14px;
-  box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.15);
 }
 
 .post-it-name {
   font-family: var(--font-hand);
-  font-size: 2.6rem;
+  font-size: var(--postit-name-size);
   font-weight: 700;
   line-height: 1;
   color: #120e04;
   margin-bottom: 4px;
-  letter-spacing: -0.01em;
 }
 
 .post-it-title {
-  font-size: 0.88rem;
+  font-size: var(--postit-title-size);
   font-weight: 700;
   color: #42360a;
   margin-bottom: 6px;
@@ -208,7 +248,6 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: color 0.15s ease;
 }
 
 .post-it-link:hover {
@@ -217,19 +256,18 @@ html, body {
 }
 
 /* --------------------------------------------------------------------------
-   75% VIEWPORT HEIGHT SIZING FOR RESUME & DRAWING SHEETS
+   FORMAL RESUME (Fills exactly 75% of user viewport height)
    -------------------------------------------------------------------------- */
-
-/* Resume: Fills exactly 75% of user's screen height (aspect ratio ~ 1 : 1.29) */
 .resume-sheet-item {
-  top: 12.5vh;
-  right: 4.5vw;
-  height: 75vh;
-  width: calc(75vh * 0.77);
+  top: var(--resume-top);
+  right: var(--resume-right);
+  height: var(--resume-height);
+  width: var(--resume-width);
   background: var(--paper-white);
   padding: 12px;
-  z-index: 10;
+  z-index: 20;
   overflow: hidden;
+  transform: rotate(var(--resume-angle));
 }
 
 .resume-paper-frame {
@@ -239,7 +277,6 @@ html, body {
   border: 1px solid #d4d4ce;
   background: #ffffff;
   overflow: hidden;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.04);
 }
 
 #resumeCanvas {
@@ -262,10 +299,12 @@ html, body {
   pointer-events: none;
 }
 
-/* Drawing Sheets: Matching size (Landscape CAD sheet, height ~ 54vh, width ~ 75vh) */
+/* --------------------------------------------------------------------------
+   ENGINEERING DRAWING SHEETS (All 4 sheets scale with CSS variables)
+   -------------------------------------------------------------------------- */
 .drawing-sheet {
-  height: 52vh;
-  width: calc(52vh * 1.4);
+  height: var(--sheet-height);
+  width: var(--sheet-width);
   background: var(--paper-white);
   padding: 10px;
   display: flex;
@@ -273,32 +312,36 @@ html, body {
   overflow: hidden;
 }
 
-/* Sheet Positions Matching User Redline Diagram */
+/* Individual Sheet Positions & Layering */
 .sheet-hero {
-  top: 6vh;
-  left: 21vw;
-  z-index: 8;
+  top: var(--hero-top);
+  left: var(--hero-left);
+  transform: rotate(var(--hero-angle));
+  z-index: 10;
 }
 
 .sheet-suspension {
-  top: 36vh;
-  left: 8vw;
-  z-index: 12;
+  top: var(--suspension-top);
+  left: var(--suspension-left);
+  transform: rotate(var(--suspension-angle));
+  z-index: 15;
 }
 
 .sheet-blank-1 {
-  top: 19vh;
-  left: 45vw;
-  z-index: 6;
+  top: var(--blank1-top);
+  left: var(--blank1-left);
+  transform: rotate(var(--blank1-angle));
+  z-index: 8;
 }
 
 .sheet-blank-2 {
-  top: 52vh;
-  left: 23vw;
-  z-index: 14;
+  top: var(--blank2-top);
+  left: var(--blank2-left);
+  transform: rotate(var(--blank2-angle));
+  z-index: 18;
 }
 
-/* The Exact Engineering Drawing Border Container */
+/* Inner Frame with Engineering Drawing Border */
 .drawing-frame {
   position: relative;
   width: 100%;
@@ -308,7 +351,6 @@ html, body {
   overflow: hidden;
 }
 
-/* Zone Margins (Numbers 4, 3, 2, 1 and Letters D, C, B, A) */
 .zone-border-svg {
   position: absolute;
   top: 0;
@@ -319,7 +361,6 @@ html, body {
   z-index: 5;
 }
 
-/* Three.js WebGL Rendering Canvas */
 .cad-webgl-canvas {
   position: absolute;
   top: 14px;
@@ -331,7 +372,6 @@ html, body {
   background: transparent;
 }
 
-/* Loading Badge on Drawing */
 .drawing-loading-badge {
   position: absolute;
   top: 22px;
@@ -340,7 +380,7 @@ html, body {
   font-size: 0.65rem;
   font-weight: 600;
   color: #666;
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.9);
   padding: 3px 8px;
   border: 1px solid #ccc;
   border-radius: 2px;
@@ -354,7 +394,7 @@ html, body {
 }
 
 /* --------------------------------------------------------------------------
-   TITLE BLOCK IN BOTTOM RIGHT (Matching User Image exactly)
+   SOLIDWORKS STYLE TITLE BLOCK IN BOTTOM RIGHT
    -------------------------------------------------------------------------- */
 .drawing-title-block {
   position: absolute;
@@ -370,7 +410,7 @@ html, body {
   grid-template-rows: 44px 20px 20px;
   font-family: var(--font-mono);
   font-size: 0.58rem;
-  color: var(--cad-black);
+  color: #1a1a1a;
 }
 
 .title-cell {
@@ -384,11 +424,8 @@ html, body {
   line-height: 1.25;
 }
 
-.title-cell:nth-child(3n) {
-  border-right: none;
-}
+.title-cell:nth-child(3n) { border-right: none; }
 
-/* Top Row: Info box replacing ARUW logo */
 .cell-info-box {
   grid-row: span 3;
   border-bottom: none;
@@ -398,53 +435,13 @@ html, body {
   justify-content: center;
 }
 
-.info-box-org {
-  font-weight: 800;
-  font-size: 0.62rem;
-  color: #111;
-  letter-spacing: 0.02em;
-}
-
-.info-box-sub {
-  font-size: 0.5rem;
-  color: #555;
-  margin-top: 2px;
-}
-
-.info-box-lead {
-  font-size: 0.52rem;
-  font-weight: 700;
-  color: #222;
-  margin-top: 4px;
-}
-
-/* Units cell */
-.cell-units {
-  font-size: 0.44rem;
-  color: #444;
-  line-height: 1.2;
-}
-
-/* Part Name cell */
-.cell-part-name {
-  grid-column: span 1;
-  padding: 2px 4px;
-}
-
-.part-name-label {
-  font-size: 0.46rem;
-  color: #666;
-}
-
-.part-name-text {
-  font-size: 0.6rem;
-  font-weight: 800;
-  color: #111;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
+.info-box-org { font-weight: 800; font-size: 0.62rem; color: #111; }
+.info-box-sub { font-size: 0.5rem; color: #555; margin-top: 2px; }
+.info-box-lead { font-size: 0.52rem; font-weight: 700; color: #222; margin-top: 4px; }
+.cell-units { font-size: 0.44rem; color: #444; line-height: 1.2; }
+.cell-part-name { grid-column: span 1; padding: 2px 4px; }
+.part-name-label { font-size: 0.46rem; color: #666; }
+.part-name-text { font-size: 0.6rem; font-weight: 800; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cell-config { font-size: 0.5rem; }
 .cell-mat { font-size: 0.5rem; border-bottom: none; }
 .cell-drawn { font-size: 0.5rem; }
@@ -509,44 +506,4 @@ html, body {
   z-index: 1010;
 }
 
-.modal-close-btn:hover {
-  background: #b91c1c;
-}
-
-/* --------------------------------------------------------------------------
-   RESPONSIVE DESIGN (Tablets & Mobile)
-   -------------------------------------------------------------------------- */
-@media (max-width: 1200px) {
-  .desk-container {
-    overflow-y: auto;
-    height: auto;
-    min-height: 100vh;
-    padding: 30px 20px 80px;
-  }
-  body { overflow: auto; }
-  .paper-item {
-    position: relative !important;
-    left: auto !important;
-    top: auto !important;
-    right: auto !important;
-    margin: 25px auto !important;
-    transform: none !important;
-    max-width: 95vw;
-    width: 95vw !important;
-    height: auto !important;
-  }
-  .drawing-sheet {
-    height: 440px !important;
-  }
-  .resume-sheet-item {
-    height: 650px !important;
-  }
-  .post-it-note {
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    margin: 20px auto !important;
-    width: 90vw;
-    max-width: 320px;
-  }
-}
+.modal-close-btn:hover { background: #b91c1c; }
