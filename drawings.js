@@ -1,77 +1,51 @@
 /* ==========================================================================
    GAVIN HIGGINS — CAD DRAWINGS & THREE.JS ENGINE
-   - Hero sheet:        LEFT HALF  = vertical exploded view (hover), by subsystem
-                        TOP RIGHT  = static isometric of the EI tensioner
-   - Suspension sheet:  LEFT HALF  = full assembly (hover: wheel spins up,
-                                     carriage bumps 10-20 mm on the rails)
-                        TOP RIGHT  = static beauty shot, no wheel / gearbox
+   - Hero sheet:        LEFT HALF  = Exploded view of EI Tensioner Assembly (on hover)
+                        RIGHT SIDE = Static beauty shot of full Hero Mk1 Assembly
+   - Suspension sheet:  LEFT HALF  = Full assembly (wheel spins concentric with gearbox,
+                                      carriage & all rail plates bump 10-20mm on rails)
+                        TOP RIGHT  = Static beauty shot, no wheel / gearbox
+   - Models scaled & framed to fill most of each page cleanly
+   - Floating/detached components removed in both assemblies
    - Flat white shading with crisp black feature edges (SolidWorks style)
-   - Procedural CAD baseline so canvases are NEVER blank while GLBs load
-   - Safe Draco decompression & isolated PDF.js resume rendering
+   - Procedural CAD baseline so canvases are never blank while GLBs load
    ========================================================================== */
 
 // ==========================================================================
-// 0. CONFIG — tweak things here
+// 0. CONFIG
 // ==========================================================================
 const CAD_CONFIG = {
-  hero: {
-    // --- Subsystem grouping for the exploded view -------------------------
-    // Leave empty for automatic grouping (see groupHeroSubsystems). To pin the
-    // grouping exactly, list subsystems with keywords. Keywords are matched
-    // against part / assembly names in the GLB (case-insensitive, spaces and
-    // underscores ignored, nearest name in the hierarchy wins). Open the
-    // browser console after load: the engine prints every node name it found.
-    //
-    // EXAMPLE ONLY (names are guesses, replace with your real part names):
-    // subsystems: [
-    //   { name: 'Launcher',   keywords: ['launcher', 'flywheel', 'feeder', 'barrel'] },
-    //   { name: 'Pitch arm',  keywords: ['pitch', 'linkage', 'arm'] },
-    //   { name: 'Main frame', keywords: ['frame', 'tube', 'standoff', 'lattice'] },
-    //   { name: 'Yaw drive',  keywords: ['yaw', 'tensioner', 'belt', 'bearing'] },
-    //   { name: 'Chassis',    keywords: ['chassis', 'omni', 'wheel', 'battery', 'ring'] }
-    // ],
-    subsystems: [],
-
-    minAutoGroups: 3,     // auto mode needs 3-14 top-level subassemblies,
-    maxAutoGroups: 14,    // otherwise it falls back to vertical bands
-    fallbackBands: 5,     // number of vertical bands in the fallback
-    explodeGap: 0.30      // spacing between subsystems, as a fraction of model height
+  tensioner: {
+    explodeGap: 0.55 // vertical spacing multiplier when exploded
   },
 
   suspension: {
-    // Names are matched the same way as above. Checked in this order, nearest
-    // name in the hierarchy wins. Anything that matches nothing stays FIXED.
-    parts: {
-      fixed:    ['rail', 'mgnr', 'mgn9r'],
-      wheel:    ['wheel', 'tire', 'tyre', 'omni', 'mecanum'],
-      gearbox:  ['gearbox', 'reducer', 'planetary', 'motor'],
-      carriage: ['carriage', 'mgn9h', 'slider', 'truck']
-    },
-    travelAxis: 'y',            // axis the rails run along ('x' | 'y' | 'z')
-    nativeUnitMm: null,         // GLB units in mm (1 = mm, 1000 = meters). null = auto-detect
-    wheelSpinRadPerSec: 16,     // top wheel speed while hovered
+    travelAxis: 'y',            // rails run along Y axis
+    nativeUnitMm: null,         // null = auto-detect
+    wheelSpinRadPerSec: 16,     // wheel spin speed while hovered
     bump: {
-      minMm: 10, maxMm: 20,     // bump height range
-      minGapSec: 0.8, maxGapSec: 2.2,  // random gap between bumps
-      holdSec: 0.12,            // how long the "bump" pushes the carriage up
-      freqHz: 4.0, damping: 0.65       // spring-back feel
+      minMm: 10, maxMm: 20,     // bump travel range
+      minGapSec: 0.8, maxGapSec: 2.2,
+      holdSec: 0.12,
+      freqHz: 4.0, damping: 0.65 // spring-back damping
     }
   }
 };
 
 // Viewport layout inside each canvas (fractions of canvas, origin bottom-left)
+// Enlarged to fill most of the page normally without clipping
 const VIEWS = {
-  main:     { x: 0.02, y: 0.03, w: 0.48, h: 0.94 },  // left half, full height
-  topRight: { x: 0.52, y: 0.30, w: 0.46, h: 0.67 }   // above the title block
+  main:  { x: 0.02, y: 0.02, w: 0.48, h: 0.96 }, // left half, fills height
+  right: { x: 0.50, y: 0.14, w: 0.48, h: 0.83 }  // right side, fills space above/beside title block
 };
 
 // Camera directions (from the target toward the camera)
-const HERO_MAIN_DIR       = new THREE.Vector3(0.62, 0.34, 1.0);
-const HERO_TENSIONER_DIR  = new THREE.Vector3(1.0, 0.75, 1.0);
-const SUSP_MAIN_DIR       = new THREE.Vector3(0.9, 0.5, 1.0);
-const SUSP_BEAUTY_DIR     = new THREE.Vector3(-0.85, 0.45, 1.0);
+const HERO_TENSIONER_DIR = new THREE.Vector3(0.92, 0.58, 0.95); // isometric for EI tensioner
+const HERO_BEAUTY_DIR    = new THREE.Vector3(0.68, 0.45, 0.82); // isometric beauty shot for Hero Mk1
+const SUSP_MAIN_DIR      = new THREE.Vector3(0.92, 0.46, 1.0);
+const SUSP_BEAUTY_DIR    = new THREE.Vector3(-0.85, 0.45, 1.0);
 
-const TENSIONER_X = 100;   // tensioner lives off to the side in the hero scene
+const HERO_BEAUTY_X = 200; // Hero Mk1 lives off to the side in the hero scene
 
 const normName = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
@@ -83,7 +57,6 @@ class CadDrawingsEngine {
     this.sheets = {};
 
     try {
-      // Configure DracoLoader if available
       if (typeof THREE.DRACOLoader !== 'undefined') {
         this.dracoLoader = new THREE.DRACOLoader();
         this.dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
@@ -114,20 +87,19 @@ class CadDrawingsEngine {
 
   createLitScene() {
     const scene = new THREE.Scene();
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xd0d0cc, 1.3));
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xd0d0cc, 1.35));
 
     const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.95);
     dirLight1.position.set(6, 12, 8);
     scene.add(dirLight1);
 
-    const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+    const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.42);
     dirLight2.position.set(-6, -6, -6);
     scene.add(dirLight2);
 
     return scene;
   }
 
-  // Keeps the WebGL buffer matched to the CSS size. Returns false if hidden.
   syncSize(s) {
     const w = s.canvas.clientWidth;
     const h = s.canvas.clientHeight;
@@ -168,15 +140,15 @@ class CadDrawingsEngine {
   }
 
   // Places a perspective camera so a box of `size` centered at `center` fits
-  // the viewport aspect, looking from direction `dir`.
-  frameCamera(cam, center, dir, size, aspect, margin = 1.1) {
+  // the viewport aspect tightly so the models fill most of the page normally.
+  frameCamera(cam, center, dir, size, aspect, margin = 1.04) {
     const d = dir.clone().normalize();
     const elev = Math.asin(THREE.MathUtils.clamp(d.y, -1, 1));
     const rXZ = 0.5 * Math.hypot(size.x, size.z);
     const halfW = rXZ * margin;
     const halfH = (0.5 * size.y * Math.cos(elev) + rXZ * Math.abs(Math.sin(elev))) * margin;
     const tanV = Math.tan(THREE.MathUtils.degToRad(cam.fov) * 0.5);
-    const dist = Math.max(halfH / tanV, halfW / (tanV * aspect)) + rXZ * 0.6;
+    const dist = Math.max(halfH / tanV, halfW / (tanV * aspect));
 
     cam.aspect = aspect;
     cam.near = Math.max(0.01, dist * 0.05);
@@ -193,33 +165,7 @@ class CadDrawingsEngine {
     return { center: box.getCenter(new THREE.Vector3()), size: box.getSize(new THREE.Vector3()) };
   }
 
-  // Unique node names under a model (printed so you can tune keywords)
-  uniqueNames(model) {
-    const names = new Set();
-    model.traverse((c) => { if (c.name) names.add(c.name); });
-    return [...names];
-  }
-
-  // Walks from a mesh up through its parents and returns the label of the
-  // first category whose keywords match a node name (nearest name wins).
-  classifyByName(mesh, root, categories) {
-    let n = mesh;
-    while (n) {
-      const name = normName(n.name);
-      if (name) {
-        for (const [label, keywords] of categories) {
-          if (keywords.some((k) => name.includes(normName(k)))) return label;
-        }
-      }
-      if (n === root) break;
-      n = n.parent;
-    }
-    return null;
-  }
-
-  // ------------------------------------------------------------------------
-  // HELPER: Convert meshes to Flat White CAD material with Crisp Edges
-  // ------------------------------------------------------------------------
+  // Convert meshes to flat white CAD material with crisp feature edges
   applyCadMaterial(object) {
     const cadMat = new THREE.MeshStandardMaterial({
       color: 0xf6f6f4,
@@ -252,7 +198,7 @@ class CadDrawingsEngine {
   }
 
   // ------------------------------------------------------------------------
-  // PROCEDURAL CAD BASELINES (guarantee the drawings are never blank)
+  // PROCEDURAL CAD BASELINES
   // ------------------------------------------------------------------------
   makeBaselineMesh(geom, pos, rot) {
     const cadMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f3, roughness: 0.35, flatShading: true });
@@ -274,59 +220,98 @@ class CadDrawingsEngine {
     };
     const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
-    // Fixed: base plate, dual MGN9H rails, spring
+    // Fixed: base mounting plate, dual rails, shock body
     add('fixed', new THREE.BoxGeometry(1.8, 0.22, 1.2), V(0, -0.95, 0));
     add('fixed', new THREE.BoxGeometry(0.18, 1.7, 0.22), V(-0.55, -0.05, 0));
     add('fixed', new THREE.BoxGeometry(0.18, 1.7, 0.22), V(0.55, -0.05, 0));
     add('fixed', new THREE.CylinderGeometry(0.14, 0.14, 1.0, 16), V(0, 0.1, -0.35));
 
-    // Carriage assembly (moves along the rails)
+    // Moving carriage assembly (carriages, plates, gearbox, wheel)
     add('carriage', new THREE.BoxGeometry(1.6, 0.3, 0.5), V(0, 0.0, 0));
+    add('carriage', new THREE.BoxGeometry(1.2, 0.15, 0.6), V(0, -0.15, 0.2));
     add('gearbox', new THREE.BoxGeometry(0.5, 0.5, 0.4), V(0, -0.2, 0.5));
     add('wheel', new THREE.CylinderGeometry(0.55, 0.55, 0.22, 32), V(0, -0.2, 0.9), [0, 0, Math.PI / 2]);
 
     return { root, parts };
   }
 
-  createHeroProceduralCad() {
+  createProceduralTensionerLayers() {
     const root = new THREE.Group();
     const V = (x, y, z) => new THREE.Vector3(x, y, z);
+    const layers = [];
 
-    const makeSub = (name, defs) => {
+    const makeLayer = (name, defs, offset) => {
       const g = new THREE.Group();
       g.name = name;
-      defs.forEach(([geom, pos]) => g.add(this.makeBaselineMesh(geom, pos)));
+      defs.forEach(([geom, pos, rot]) => g.add(this.makeBaselineMesh(geom, pos, rot)));
       root.add(g);
-      return { name, group: g };
+      layers.push({ name, group: g, offset });
     };
 
-    const subsystems = [
-      makeSub('Chassis', [[new THREE.CylinderGeometry(1.4, 1.5, 0.3, 32), V(0, -0.9, 0)]]),
-      makeSub('Yaw bearing', [[new THREE.CylinderGeometry(1.2, 1.2, 0.22, 28), V(0, -0.6, 0)]]),
-      makeSub('Gimbal uprights', [
-        [new THREE.BoxGeometry(0.3, 1.1, 0.8), V(-0.75, 0.05, 0)],
-        [new THREE.BoxGeometry(0.3, 1.1, 0.8), V(0.75, 0.05, 0)]
-      ]),
-      makeSub('Launcher', [
-        [new THREE.BoxGeometry(1.1, 0.55, 1.4), V(0, 0.7, 0)],
-        [new THREE.CylinderGeometry(0.16, 0.16, 1.8, 16), V(0, 0.75, 0.8)]
-      ])
-    ];
+    // 5 vertical stacked layers matching true tensioner
+    // Layer 1: Motor & Driving Pulley
+    makeLayer('Motor & Drive', [
+      [new THREE.CylinderGeometry(0.38, 0.38, 0.55, 24), V(0.45, -0.5, 0)],
+      [new THREE.CylinderGeometry(0.25, 0.25, 0.3, 20), V(0.45, -0.1, 0)]
+    ], -0.65);
 
-    return { root, subsystems };
+    // Layer 2: Nut & Bottom Plate + Belt
+    makeLayer('Bottom Plate & Belt', [
+      [new THREE.BoxGeometry(1.4, 0.12, 0.9), V(0, -0.2, 0)],
+      [new THREE.TorusGeometry(0.52, 0.06, 12, 28), V(0, -0.15, 0), [Math.PI / 2, 0, 0]]
+    ], -0.32);
+
+    // Layer 3: Main Bearing & Driven Pulley
+    makeLayer('Bearing & Driven Pulley', [
+      [new THREE.CylinderGeometry(0.75, 0.75, 0.18, 32), V(-0.35, 0, 0)],
+      [new THREE.CylinderGeometry(0.62, 0.62, 0.22, 32), V(-0.35, 0, 0)]
+    ], 0.0);
+
+    // Layer 4: Sandwich Plate & Spacers
+    makeLayer('Sandwich Plate', [
+      [new THREE.BoxGeometry(1.5, 0.12, 1.0), V(0, 0.2, 0)],
+      [new THREE.CylinderGeometry(0.08, 0.08, 0.3, 12), V(0.6, 0.2, 0.3)],
+      [new THREE.CylinderGeometry(0.08, 0.08, 0.3, 12), V(-0.6, 0.2, -0.3)]
+    ], 0.32);
+
+    // Layer 5: Top Plate & Encoder
+    makeLayer('Top Plate & Encoder', [
+      [new THREE.BoxGeometry(1.4, 0.12, 0.9), V(0, 0.45, 0)],
+      [new THREE.CylinderGeometry(0.24, 0.24, 0.18, 20), V(0, 0.6, 0)]
+    ], 0.65);
+
+    return { root, layers };
   }
 
-  createTensionerProceduralCad() {
-    const g = new THREE.Group();
-    g.add(this.makeBaselineMesh(new THREE.CylinderGeometry(0.8, 0.8, 0.3, 24), new THREE.Vector3(0, 0, 0)));
-    g.add(this.makeBaselineMesh(new THREE.BoxGeometry(0.3, 0.2, 1.2), new THREE.Vector3(0, 0.25, 0.3)));
-    return g;
+  createProceduralHeroBeauty() {
+    const root = new THREE.Group();
+    const V = (x, y, z) => new THREE.Vector3(x, y, z);
+    const add = (geom, pos, rot) => root.add(this.makeBaselineMesh(geom, pos, rot));
+
+    // Chassis
+    add(new THREE.CylinderGeometry(1.4, 1.5, 0.3, 32), V(0, -0.85, 0));
+    add(new THREE.BoxGeometry(0.35, 0.3, 1.4), V(1.2, -0.85, 0));
+    add(new THREE.BoxGeometry(0.35, 0.3, 1.4), V(-1.2, -0.85, 0));
+
+    // Yaw bearing & Turret base
+    add(new THREE.CylinderGeometry(1.15, 1.15, 0.22, 28), V(0, -0.55, 0));
+
+    // Gimbal uprights & Pitch mechanism
+    add(new THREE.BoxGeometry(0.28, 1.1, 0.75), V(-0.7, 0.1, 0));
+    add(new THREE.BoxGeometry(0.28, 1.1, 0.75), V(0.7, 0.1, 0));
+
+    // Launcher barrel & feeder
+    add(new THREE.BoxGeometry(1.05, 0.55, 1.35), V(0, 0.7, 0));
+    add(new THREE.CylinderGeometry(0.16, 0.16, 1.9, 16), V(0, 0.75, 0.8), [Math.PI / 2, 0, 0]);
+
+    return root;
   }
 
   // ------------------------------------------------------------------------
   // SHEET 1: 2027 LINEAR SUSPENSION V3 ASSEMBLY
-  //   Left half : full assembly. Hover -> wheel ramps up, carriage bumps.
-  //   Top right : static beauty shot without the wheel and gearbox.
+  //   Left half : Full assembly (wheel spins concentric with gearbox,
+  //               carriage + plates bump up and down 10-20mm)
+  //   Top right : Static beauty shot (carriage at rest, no wheel / gearbox)
   // ------------------------------------------------------------------------
   initSuspensionSheet() {
     const canvas = document.getElementById('canvasSuspension3D');
@@ -344,30 +329,28 @@ class CadDrawingsEngine {
       w: 0, h: 0, dirty: true,
       hovered: false,
       time: 0, last: performance.now(),
-      // rig (filled by rigSuspension)
-      root: null, carriageGroup: null, wheelPivot: null, wheelAxis: 'z',
-      gearboxMeshes: [], unitsPerMm: 0.012,
+      root: null, carriageGroup: null, wheelSpinGroup: null,
+      hiddenInBeauty: [], unitsPerMm: 0.012,
       fullFrame: null, beautyFrame: null,
-      // motion state
       spin: 0, wheelAngle: 0,
       bumpY: 0, bumpV: 0, bumpTarget: 0, bumpReleaseAt: 0, nextBumpAt: 0
     };
     this.sheets.suspension = s;
 
-    // Procedural baseline so the view is NEVER empty
+    // Procedural baseline so canvas is NEVER blank
     const baseline = this.createSuspensionProceduralCad();
     scene.add(baseline.root);
-    this.rigSuspension(s, baseline.root, baseline.parts, 0.012);
+    this.rigSuspensionProcedural(s, baseline.root, baseline.parts);
 
     sheetEl.addEventListener('mouseenter', () => {
       s.hovered = true;
-      s.nextBumpAt = s.time + 0.45;
+      s.nextBumpAt = s.time + 0.35;
     });
     sheetEl.addEventListener('mouseleave', () => {
       s.hovered = false;
     });
 
-    // Load actual GLB in background
+    // Load actual Suspension GLB in background
     const glbUrl = encodeURI('2027,_Linear_Suspension_V3,_Assembly (1).glb');
     this.loader.load(
       glbUrl,
@@ -382,6 +365,7 @@ class CadDrawingsEngine {
           const size = bbox.getSize(new THREE.Vector3());
           const nativeMax = Math.max(size.x, size.y, size.z) || 1;
 
+          // Scale model to standard 2.4 scene units
           const scale = 2.4 / nativeMax;
           model.scale.setScalar(scale);
           model.position.copy(center).multiplyScalar(-scale);
@@ -392,21 +376,15 @@ class CadDrawingsEngine {
           scene.add(group);
           group.updateMatrixWorld(true);
 
-          // Split the model into fixed / carriage / wheel / gearbox
-          const parts = this.splitSuspensionParts(model);
-
-          // Real-world mm -> scene units (GLB exports are usually meters)
           const mmPerNativeUnit = cfg.nativeUnitMm || (nativeMax > 20 ? 1 : 1000);
           const unitsPerMm = scale / mmPerNativeUnit;
 
-          // Reset motion state, then build the rig
-          s.spin = 0; s.wheelAngle = 0;
-          s.bumpY = 0; s.bumpV = 0; s.bumpTarget = 0;
-          this.rigSuspension(s, group, parts, unitsPerMm);
+          // Rig true CAD assembly
+          this.rigSuspensionCad(s, group, model, unitsPerMm);
 
           if (badge) badge.classList.add('loaded');
         } catch (e) {
-          console.warn('Suspension model setup failed:', e);
+          console.warn('Suspension model setup fallback:', e);
           if (badge) badge.classList.add('loaded');
         }
       },
@@ -415,79 +393,128 @@ class CadDrawingsEngine {
     );
   }
 
-  splitSuspensionParts(model) {
-    const cfg = CAD_CONFIG.suspension.parts;
-    const categories = [
-      ['fixed', cfg.fixed],
-      ['wheel', cfg.wheel],
-      ['gearbox', cfg.gearbox],
-      ['carriage', cfg.carriage]
-    ];
-    const parts = { fixed: [], carriage: [], wheel: [], gearbox: [] };
+  rigSuspensionProcedural(s, root, parts) {
+    const carriageGroup = new THREE.Group();
+    carriageGroup.name = 'carriageGroup';
+    root.add(carriageGroup);
 
-    model.traverse((m) => {
-      if (!m.isMesh) return;
-      const label = this.classifyByName(m, model, categories) || 'fixed';
-      parts[label].push(m);
-    });
+    parts.carriage.forEach((m) => carriageGroup.add(m));
+    parts.gearbox.forEach((m) => carriageGroup.add(m));
 
-    console.info('[Suspension] node names (use these to tune CAD_CONFIG.suspension.parts):', this.uniqueNames(model));
-    console.info('[Suspension] parts per group:', {
-      fixed: parts.fixed.length, carriage: parts.carriage.length,
-      wheel: parts.wheel.length, gearbox: parts.gearbox.length
-    });
-    if (!parts.carriage.length && !parts.wheel.length && !parts.gearbox.length) {
-      console.warn('[Suspension] Nothing matched the carriage / wheel / gearbox keywords, so nothing will move. Edit CAD_CONFIG.suspension.parts using the node names above.');
+    const wheelSpinGroup = new THREE.Group();
+    wheelSpinGroup.name = 'wheelSpinGroup';
+    if (parts.wheel.length) {
+      wheelSpinGroup.position.copy(parts.wheel[0].position);
+      parts.wheel[0].position.set(0, 0, 0);
+      wheelSpinGroup.add(parts.wheel[0]);
     }
-    return parts;
+    carriageGroup.add(wheelSpinGroup);
+
+    const fullBox = new THREE.Box3().setFromObject(root);
+    const beautyBox = new THREE.Box3();
+    parts.fixed.forEach((m) => beautyBox.union(new THREE.Box3().setFromObject(m)));
+    parts.carriage.forEach((m) => beautyBox.union(new THREE.Box3().setFromObject(m)));
+
+    s.root = root;
+    s.carriageGroup = carriageGroup;
+    s.wheelSpinGroup = wheelSpinGroup;
+    s.hiddenInBeauty = [...parts.gearbox, wheelSpinGroup];
+    s.unitsPerMm = 0.012;
+    s.fullFrame = this.boxToFrame(fullBox);
+    s.beautyFrame = this.boxToFrame(beautyBox);
+    s.dirty = true;
   }
 
-  // Builds the moving carriage group (carriage + gearbox + wheel), a spin pivot
-  // for the wheel, and the camera frames for both views.
-  rigSuspension(s, root, parts, unitsPerMm) {
+  rigSuspensionCad(s, root, model, unitsPerMm) {
     root.updateMatrixWorld(true);
 
     const carriageGroup = new THREE.Group();
-    carriageGroup.name = 'carriage-assembly';
+    carriageGroup.name = 'carriageGroup';
     root.add(carriageGroup);
 
-    // Wheel spins about its thinnest bounding-box axis, around its center
-    let wheelPivot = null;
-    let wheelAxis = 'z';
-    if (parts.wheel.length) {
-      const wb = new THREE.Box3();
-      parts.wheel.forEach((m) => wb.union(new THREE.Box3().setFromObject(m)));
-      const c = wb.getCenter(new THREE.Vector3());
-      const sz = wb.getSize(new THREE.Vector3());
-      wheelAxis = (sz.x <= sz.y && sz.x <= sz.z) ? 'x' : (sz.y <= sz.z ? 'y' : 'z');
+    // Identify Omni Wheel node (node 50) and Gearbox
+    let omniWheelObj = null;
+    let gearboxMesh = null;
 
-      wheelPivot = new THREE.Group();
-      wheelPivot.name = 'wheel-pivot';
-      wheelPivot.position.copy(c);
-      carriageGroup.add(wheelPivot);
-      parts.wheel.forEach((m) => wheelPivot.attach(m));
+    model.traverse((obj) => {
+      const name = normName(obj.name);
+      if (name.includes('omniwheel') && obj.children && obj.children.length > 5) {
+        omniWheelObj = obj;
+      }
+      if (name.includes('gearbox') && obj.isMesh) {
+        gearboxMesh = obj;
+      }
+    });
+
+    // Create wheel spin group INSIDE omni wheel node
+    // In node 50 local space, origin is hub center and local Z is the concentric gearbox shaft axis!
+    let wheelSpinGroup = null;
+    if (omniWheelObj) {
+      wheelSpinGroup = new THREE.Group();
+      wheelSpinGroup.name = 'wheelSpinGroup';
+      omniWheelObj.add(wheelSpinGroup);
+
+      // Re-parent all wheel children into wheelSpinGroup (EXCEPT the stationary gearbox)
+      const kids = [...omniWheelObj.children];
+      kids.forEach((child) => {
+        if (child === wheelSpinGroup) return;
+        const cName = normName(child.name);
+        if (cName.includes('gearbox')) {
+          // Gearbox stays stationary on carriage
+          return;
+        }
+        wheelSpinGroup.attach(child);
+      });
     }
 
-    // attach() keeps each mesh's world transform while re-parenting
-    parts.gearbox.forEach((m) => carriageGroup.attach(m));
-    parts.carriage.forEach((m) => carriageGroup.attach(m));
+    // Identify moving carriage plates and components:
+    // Gearbox plate, rail carriages, carriage plate, bridge plates, standoff plate, screws 33-42
+    const movingMeshes = [];
+    const fixedMeshes = [];
 
-    // Camera frames: full assembly, and one without the wheel + gearbox
-    const hidden = new Set([...parts.wheel, ...parts.gearbox]);
-    const all = [...parts.fixed, ...parts.carriage, ...parts.wheel, ...parts.gearbox];
-    const fullBox = new THREE.Box3();
+    model.traverse((m) => {
+      if (!m.isMesh) return;
+      const n = normName(m.name);
+
+      // Wheel components are handled by omniWheelObj
+      if (n.includes('omniwheel') || (m.parent && normName(m.parent.name).includes('omniwheel'))) {
+        return;
+      }
+
+      const isCarriagePart =
+        n.includes('carriage') ||
+        n.includes('gearboxplate') ||
+        n.includes('bridgeplate') ||
+        n.includes('standoffplate') ||
+        n.includes('shockspacer2') ||
+        (n.includes('socketheadscrew') && (n.includes('33') || n.includes('34') || n.includes('35') || n.includes('36') || n.includes('37') || n.includes('38') || n.includes('39') || n.includes('40') || n.includes('42'))) ||
+        (n.includes('locknut') && n.includes('1'));
+
+      if (isCarriagePart) {
+        movingMeshes.push(m);
+      } else {
+        fixedMeshes.push(m);
+      }
+    });
+
+    // Attach all moving plates to carriageGroup (preserves world position)
+    movingMeshes.forEach((m) => carriageGroup.attach(m));
+    if (omniWheelObj) {
+      carriageGroup.attach(omniWheelObj);
+    }
+
+    // Compute bounding boxes for camera framing
+    const fullBox = new THREE.Box3().setFromObject(root);
     const beautyBox = new THREE.Box3();
-    all.forEach((m) => {
-      const b = new THREE.Box3().setFromObject(m);
-      fullBox.union(b);
-      if (!hidden.has(m)) beautyBox.union(b);
+    fixedMeshes.forEach((m) => beautyBox.union(new THREE.Box3().setFromObject(m)));
+    movingMeshes.forEach((m) => {
+      if (m !== gearboxMesh) beautyBox.union(new THREE.Box3().setFromObject(m));
     });
 
     s.root = root;
     s.carriageGroup = carriageGroup;
-    s.wheelPivot = wheelPivot;
-    s.wheelAxis = wheelAxis;
-    s.gearboxMeshes = parts.gearbox;
+    s.wheelSpinGroup = wheelSpinGroup;
+    s.hiddenInBeauty = [omniWheelObj].filter(Boolean);
     s.unitsPerMm = unitsPerMm;
     s.fullFrame = this.boxToFrame(fullBox);
     s.beautyFrame = this.boxToFrame(beautyBox);
@@ -498,14 +525,14 @@ class CadDrawingsEngine {
     const cfg = CAD_CONFIG.suspension;
     s.time += dt;
 
-    // Wheel: ramp up while hovered, coast back down when not
+    // Wheel spin: ramp up while hovered, coast down when not
     const spinTarget = s.hovered ? cfg.wheelSpinRadPerSec : 0;
-    const ramp = s.hovered ? 2.2 : 1.4;
+    const ramp = s.hovered ? 2.4 : 1.5;
     s.spin += (spinTarget - s.spin) * (1 - Math.exp(-ramp * dt));
     if (!s.hovered && Math.abs(s.spin) < 0.02) s.spin = 0;
     s.wheelAngle = (s.wheelAngle + s.spin * dt) % (Math.PI * 2);
 
-    // Bumps: every so often, push the carriage up 10-20 mm, then let it spring back
+    // Bumps: periodic upward displacement of carriage along linear rails
     if (s.hovered) {
       if (s.time >= s.nextBumpAt) {
         s.bumpTarget = this.rand(cfg.bump.minMm, cfg.bump.maxMm);
@@ -517,7 +544,7 @@ class CadDrawingsEngine {
     }
     if (s.bumpTarget && s.time >= s.bumpReleaseAt) s.bumpTarget = 0;
 
-    // Spring-damper chasing the target (mm), sub-stepped for stability
+    // Spring-damper displacement
     const w = 2 * Math.PI * cfg.bump.freqHz;
     const z = cfg.bump.damping;
     const steps = Math.max(1, Math.ceil(dt / (1 / 240)));
@@ -547,44 +574,48 @@ class CadDrawingsEngine {
 
     const animating = s.hovered || s.spin !== 0 || s.bumpY !== 0 || s.bumpV !== 0 || s.bumpTarget !== 0;
     if (!animating && !s.dirty) return;
-    s.dirty = animating; // one extra frame after settling to draw the final pose
+    s.dirty = animating;
 
+    // Bump all carriage plates along the Y rail axis
     const axis = CAD_CONFIG.suspension.travelAxis;
     s.carriageGroup.position[axis] = s.bumpY * s.unitsPerMm;
-    if (s.wheelPivot) s.wheelPivot.rotation[s.wheelAxis] = s.wheelAngle;
+
+    // Spin wheel concentrically around local Z axis of omni wheel hub
+    if (s.wheelSpinGroup) {
+      s.wheelSpinGroup.rotation.z = s.wheelAngle;
+    }
 
     const r = s.renderer;
     this.clearCanvas(s);
 
-    // LEFT HALF: full assembly (animated)
+    // LEFT HALF: Full animated assembly (fills left half of sheet)
     const rm = this.pxRect(VIEWS.main, s.w, s.h);
     this.useRect(r, rm);
-    this.frameCamera(s.camMain, s.fullFrame.center, SUSP_MAIN_DIR, s.fullFrame.size, rm.w / rm.h);
+    this.frameCamera(s.camMain, s.fullFrame.center, SUSP_MAIN_DIR, s.fullFrame.size, rm.w / rm.h, 1.05);
     r.render(s.scene, s.camMain);
 
-    // TOP RIGHT: static beauty shot (carriage at rest, no wheel, no gearbox)
-    const rb = this.pxRect(VIEWS.topRight, s.w, s.h);
+    // TOP RIGHT: Static beauty shot without wheel / gearbox
+    const rb = this.pxRect(VIEWS.right, s.w, s.h);
     this.useRect(r, rb);
-    this.frameCamera(s.camBeauty, s.beautyFrame.center, SUSP_BEAUTY_DIR, s.beautyFrame.size, rb.w / rb.h);
+    this.frameCamera(s.camBeauty, s.beautyFrame.center, SUSP_BEAUTY_DIR, s.beautyFrame.size, rb.w / rb.h, 1.05);
 
     const savedPos = s.carriageGroup.position.clone();
     s.carriageGroup.position.set(0, 0, 0);
-    if (s.wheelPivot) s.wheelPivot.visible = false;
-    s.gearboxMeshes.forEach((m) => { m.visible = false; });
+    s.hiddenInBeauty.forEach((obj) => { obj.visible = false; });
 
     r.render(s.scene, s.camBeauty);
 
-    s.gearboxMeshes.forEach((m) => { m.visible = true; });
-    if (s.wheelPivot) s.wheelPivot.visible = true;
+    s.hiddenInBeauty.forEach((obj) => { obj.visible = true; });
     s.carriageGroup.position.copy(savedPos);
 
     r.setScissorTest(false);
   }
 
   // ------------------------------------------------------------------------
-  // SHEET 2: 2026 HERO MK1 ASSEMBLY & EI TENSIONER
-  //   Left half : full robot, explodes vertically BY SUBSYSTEM on hover.
-  //   Top right : static isometric of the EI tensioner.
+  // SHEET 2: 2026 HERO MK1 & EI TENSIONER
+  //   Left half : Exploding view of the EI Tensioner Assembly (on hover)
+  //   Right side: Static beauty shot of full Hero Mk1 Assembly
+  //   Both scaled to fill most of each page, with floating components removed
   // ------------------------------------------------------------------------
   initHeroSheet() {
     const canvas = document.getElementById('canvasHero3D');
@@ -597,92 +628,40 @@ class CadDrawingsEngine {
 
     const s = {
       canvas, renderer, scene,
-      camMain: new THREE.PerspectiveCamera(30, 1, 0.1, 1000),
       camTens: new THREE.PerspectiveCamera(30, 1, 0.1, 1000),
+      camBeauty: new THREE.PerspectiveCamera(30, 1, 0.1, 1000),
       w: 0, h: 0, dirty: true,
       hovered: false,
       explode: 0, target: 0,
-      subsystems: [], heroRoot: null,
-      boundsRest: null, boundsExploded: null,
-      tensionerGroup: null,
-      tensFrame: {
-        center: new THREE.Vector3(TENSIONER_X, 0, 0),
-        size: new THREE.Vector3(1.8, 0.8, 1.8)
-      }
+      tensGroup: null, tensLayers: [],
+      tensFrameRest: null, tensFrameExploded: null,
+      heroGroup: null, heroFrame: null
     };
     this.sheets.hero = s;
 
-    // Procedural baselines so the view is NEVER empty
-    const baseline = this.createHeroProceduralCad();
-    scene.add(baseline.root);
-    s.heroRoot = baseline.root;
-    this.setupHeroExplode(s, baseline.root, baseline.subsystems);
+    // Procedural baseline so canvases are NEVER blank
+    const baselineTens = this.createProceduralTensionerLayers();
+    scene.add(baselineTens.root);
+    s.tensGroup = baselineTens.root;
+    s.tensLayers = baselineTens.layers;
+    this.measureTensionerFrames(s, baselineTens.root);
 
-    const baselineTens = this.createTensionerProceduralCad();
-    baselineTens.position.set(TENSIONER_X, 0, 0);
-    scene.add(baselineTens);
-    s.tensionerGroup = baselineTens;
+    const baselineHero = this.createProceduralHeroBeauty();
+    baselineHero.position.set(HERO_BEAUTY_X, 0, 0);
+    scene.add(baselineHero);
+    s.heroGroup = baselineHero;
+    s.heroFrame = this.boxToFrame(new THREE.Box3().setFromObject(baselineHero));
 
     sheetEl.addEventListener('mouseenter', () => {
       s.hovered = true;
-      s.target = 1.0; // vertical exploded view
+      s.target = 1.0; // explode EI tensioner on hover
     });
     sheetEl.addEventListener('mouseleave', () => {
       s.hovered = false;
-      s.target = 0.0;
+      s.target = 0.0; // collapse back together
     });
 
-    // Load actual Hero GLB in background
-    const heroGlbUrl = encodeURI('Hero_Mk1 (1).glb');
-    this.loader.load(
-      heroGlbUrl,
-      (gltf) => {
-        try {
-          const model = gltf.scene;
-          this.applyCadMaterial(model);
-
-          const bbox = new THREE.Box3().setFromObject(model);
-          const center = bbox.getCenter(new THREE.Vector3());
-          const size = bbox.getSize(new THREE.Vector3());
-          const maxDim = Math.max(size.x, size.y, size.z) || 1;
-
-          const scale = 2.5 / maxDim;
-          model.scale.setScalar(scale);
-          model.position.copy(center).multiplyScalar(-scale);
-
-          const heroGroup = new THREE.Group();
-          heroGroup.add(model);
-          scene.remove(baseline.root);
-          scene.add(heroGroup);
-          heroGroup.updateMatrixWorld(true);
-
-          // Group the meshes by subsystem, then move each group as one unit
-          const { mode, groups } = this.groupHeroSubsystems(model);
-          console.info('[Hero] subsystem grouping mode:', mode,
-            groups.map((g) => `${g.name}: ${g.meshes.length} meshes`));
-
-          const subs = groups.map((g) => {
-            const grp = new THREE.Group();
-            grp.name = g.name;
-            heroGroup.add(grp);
-            g.meshes.forEach((m) => grp.attach(m)); // keeps world transform
-            return { name: g.name, group: grp };
-          });
-
-          s.heroRoot = heroGroup;
-          this.setupHeroExplode(s, heroGroup, subs);
-
-          if (badge) badge.classList.add('loaded');
-        } catch (e) {
-          console.warn('Hero model setup failed:', e);
-          if (badge) badge.classList.add('loaded');
-        }
-      },
-      undefined,
-      () => { if (badge) badge.classList.add('loaded'); }
-    );
-
-    // Load EI Tensioner GLB in background (static isometric, top right)
+    // 1) Load EI Tensioner GLB (Left Half — Exploded View)
     const tensionerGlbUrl = encodeURI('Hero_Mk1_TurretBase_EITensioner (1).glb');
     this.loader.load(
       tensionerGlbUrl,
@@ -691,29 +670,75 @@ class CadDrawingsEngine {
           const model = gltf.scene;
           this.applyCadMaterial(model);
 
+          // Filter out detached/floating components from the tensioner scene
+          this.filterFloatingTensionerParts(model);
+
           const bbox = new THREE.Box3().setFromObject(model);
           const center = bbox.getCenter(new THREE.Vector3());
           const size = bbox.getSize(new THREE.Vector3());
           const maxDim = Math.max(size.x, size.y, size.z) || 1;
 
-          const scale = 2.0 / maxDim;
+          // Scale and center tensioner
+          const scale = 2.4 / maxDim;
           model.scale.setScalar(scale);
           model.position.copy(center).multiplyScalar(-scale);
 
-          const tensGroup = new THREE.Group();
-          tensGroup.position.set(TENSIONER_X, 0, 0);
-          tensGroup.add(model);
+          const tensRoot = new THREE.Group();
+          tensRoot.add(model);
+          scene.remove(s.tensGroup);
+          scene.add(tensRoot);
+          tensRoot.updateMatrixWorld(true);
 
-          scene.remove(s.tensionerGroup);
-          scene.add(tensGroup);
-          s.tensionerGroup = tensGroup;
-          s.tensFrame = {
-            center: new THREE.Vector3(TENSIONER_X, 0, 0),
-            size: size.clone().multiplyScalar(scale)
-          };
+          s.tensGroup = tensRoot;
+          s.tensLayers = this.groupTensionerLayers(model, tensRoot);
+          this.measureTensionerFrames(s, tensRoot);
+
+          s.dirty = true;
+          if (badge) badge.classList.add('loaded');
+        } catch (e) {
+          console.warn('EI Tensioner setup fallback:', e);
+          if (badge) badge.classList.add('loaded');
+        }
+      },
+      undefined,
+      () => { if (badge) badge.classList.add('loaded'); }
+    );
+
+    // 2) Load Hero Mk1 GLB (Right Side — Static Beauty Shot)
+    const heroGlbUrl = encodeURI('Hero_Mk1 (1).glb');
+    this.loader.load(
+      heroGlbUrl,
+      (gltf) => {
+        try {
+          const model = gltf.scene;
+          this.applyCadMaterial(model);
+
+          // Filter floating parts from Hero full assembly
+          this.filterFloatingHeroParts(model);
+
+          const bbox = new THREE.Box3().setFromObject(model);
+          const center = bbox.getCenter(new THREE.Vector3());
+          const size = bbox.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z) || 1;
+
+          // Scale and center on HERO_BEAUTY_X
+          const scale = 2.5 / maxDim;
+          model.scale.setScalar(scale);
+          model.position.copy(center).multiplyScalar(-scale);
+
+          const heroRoot = new THREE.Group();
+          heroRoot.position.set(HERO_BEAUTY_X, 0, 0);
+          heroRoot.add(model);
+
+          scene.remove(s.heroGroup);
+          scene.add(heroRoot);
+          heroRoot.updateMatrixWorld(true);
+
+          s.heroGroup = heroRoot;
+          s.heroFrame = this.boxToFrame(new THREE.Box3().setFromObject(heroRoot));
           s.dirty = true;
         } catch (e) {
-          console.warn('Tensioner model setup failed:', e);
+          console.warn('Hero static beauty model setup fallback:', e);
         }
       },
       undefined,
@@ -721,95 +746,104 @@ class CadDrawingsEngine {
     );
   }
 
-  // Decides which meshes belong to which subsystem.
-  //  1) CAD_CONFIG.hero.subsystems keywords, if you filled them in
-  //  2) otherwise the top-level subassemblies of the GLB (3-14 of them)
-  //  3) otherwise N vertical bands (fallback only, not true subsystems)
-  groupHeroSubsystems(model) {
-    const cfg = CAD_CONFIG.hero;
-    const meshes = [];
-    model.traverse((c) => { if (c.isMesh) meshes.push(c); });
+  // Removes detached/floating components from the EI Tensioner model
+  filterFloatingTensionerParts(model) {
+    const floatingKeywords = [
+      'tube2', 'verticalsupport', '8mminsert', 'c620', 'oled',
+      'supporttubeattachment', 'encodercover', 'covermount', 'topramp'
+    ];
 
-    console.info('[Hero] node names (use these to fill CAD_CONFIG.hero.subsystems):', this.uniqueNames(model));
-
-    // 1) Keyword groups
-    if (cfg.subsystems.length) {
-      const cats = cfg.subsystems.map((g) => [g.name, g.keywords]);
-      const buckets = new Map();
-      meshes.forEach((m) => {
-        const label = this.classifyByName(m, model, cats) || 'Other';
-        if (!buckets.has(label)) buckets.set(label, []);
-        buckets.get(label).push(m);
-      });
-      return { mode: 'keywords', groups: [...buckets].map(([name, ms]) => ({ name, meshes: ms })) };
-    }
-
-    // 2) Top-level subassemblies
-    let node = model;
-    while (node.children.length === 1 && !node.children[0].isMesh) node = node.children[0];
-
-    const collect = (n) => {
-      const out = [];
-      n.traverse((c) => { if (c.isMesh) out.push(c); });
-      return out;
-    };
-    const kids = node.children
-      .map((c) => ({ name: c.name || 'Subsystem', meshes: collect(c) }))
-      .filter((g) => g.meshes.length);
-
-    if (kids.length >= cfg.minAutoGroups && kids.length <= cfg.maxAutoGroups) {
-      return { mode: 'subassemblies', groups: kids };
-    }
-
-    // 3) Vertical bands (fallback)
-    const centers = meshes.map((m) => new THREE.Box3().setFromObject(m).getCenter(new THREE.Vector3()).y);
-    let lo = Infinity, hi = -Infinity;
-    centers.forEach((c) => { if (c < lo) lo = c; if (c > hi) hi = c; });
-    const n = cfg.fallbackBands;
-    const bands = Array.from({ length: n }, (_, i) => ({ name: `Band ${i + 1}`, meshes: [] }));
-    meshes.forEach((m, i) => {
-      const t = (centers[i] - lo) / ((hi - lo) || 1);
-      bands[Math.min(n - 1, Math.floor(t * n))].meshes.push(m);
+    model.traverse((child) => {
+      if (!child.isMesh) return;
+      const n = normName(child.name);
+      for (const kw of floatingKeywords) {
+        if (n.includes(kw)) {
+          child.visible = false;
+          break;
+        }
+      }
     });
-    return { mode: 'vertical-bands', groups: bands.filter((b) => b.meshes.length) };
   }
 
-  // Computes each subsystem's vertical offset and the camera bounds for the
-  // collapsed and exploded states. Subsystems are stacked in order of their
-  // height in the CAD and spread evenly about the middle along Y.
-  setupHeroExplode(s, root, subs) {
-    s.subsystems = subs;
-    subs.forEach((sub) => sub.group.position.set(0, 0, 0));
-    root.updateMatrixWorld(true);
+  // Removes detached/floating components from the Hero Mk1 model
+  filterFloatingHeroParts(model) {
+    const floatingKeywords = [
+      'c6203', 'c6204', 'oledbuttonboard', 'supporttubeattachment', 'toprampcfr'
+    ];
 
-    const H = new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3()).y || 1;
+    model.traverse((child) => {
+      if (!child.isMesh) return;
+      const n = normName(child.name);
+      for (const kw of floatingKeywords) {
+        if (n.includes(kw)) {
+          child.visible = false;
+          break;
+        }
+      }
+    });
+  }
 
-    subs.forEach((sub) => {
-      const b = new THREE.Box3().setFromObject(sub.group);
-      sub.centerY = b.isEmpty() ? 0 : b.getCenter(new THREE.Vector3()).y;
+  // Groups the EI Tensioner components into vertically stacked layers for the exploded view
+  groupTensionerLayers(model, tensRoot) {
+    tensRoot.updateMatrixWorld(true);
+
+    const layerDefs = [
+      { name: 'Layer 1: Motor & Drive Hub', offset: -0.65, keywords: ['rm3508', 'drivingpulley', 'hub2'] },
+      { name: 'Layer 2: Bottom Plate & Belt', offset: -0.32, keywords: ['bottomplate', 'nutplate', 'belt', 'flanged'] },
+      { name: 'Layer 3: Main Bearing & Driven Pulley', offset: 0.0, keywords: ['bearing', 'drivenpulley', 'innerbearing'] },
+      { name: 'Layer 4: Sandwich & Spacer Plates', offset: 0.32, keywords: ['sandwhich', 'sandwich', 'spacerplate'] },
+      { name: 'Layer 5: Top Plate & Encoder', offset: 0.65, keywords: ['topplate', 'encoder', 'amlamprey'] }
+    ];
+
+    const layers = layerDefs.map((def) => {
+      const grp = new THREE.Group();
+      grp.name = def.name;
+      tensRoot.add(grp);
+      return { name: def.name, group: grp, offset: def.offset, keywords: def.keywords, meshes: [] };
     });
 
-    const ordered = [...subs].sort((a, b) => a.centerY - b.centerY);
-    const gap = H * CAD_CONFIG.hero.explodeGap;
-    ordered.forEach((sub, i) => {
-      sub.offset = (i - (ordered.length - 1) / 2) * gap;
+    model.traverse((child) => {
+      if (!child.isMesh || !child.visible) return;
+      const n = normName(child.name);
+
+      let matchedLayer = layers[2]; // default to center layer
+      for (const l of layers) {
+        if (l.keywords.some((kw) => n.includes(kw))) {
+          matchedLayer = l;
+          break;
+        }
+      }
+      matchedLayer.meshes.push(child);
     });
 
-    const measure = (k) => {
-      subs.forEach((sub) => { sub.group.position.y = sub.offset * k; });
-      root.updateMatrixWorld(true);
-      return this.boxToFrame(new THREE.Box3().setFromObject(root));
-    };
-    s.boundsRest = measure(0);
-    s.boundsExploded = measure(1);
+    layers.forEach((l) => {
+      l.meshes.forEach((m) => l.group.attach(m));
+    });
 
-    subs.forEach((sub) => { sub.group.position.y = sub.offset * s.explode; });
-    s.dirty = true;
+    return layers;
+  }
+
+  measureTensionerFrames(s, tensRoot) {
+    tensRoot.updateMatrixWorld(true);
+    s.tensLayers.forEach((l) => l.group.position.set(0, 0, 0));
+    tensRoot.updateMatrixWorld(true);
+    s.tensFrameRest = this.boxToFrame(new THREE.Box3().setFromObject(tensRoot));
+
+    const H = s.tensFrameRest.size.y || 1.2;
+    s.tensLayers.forEach((l) => {
+      l.group.position.y = l.offset * H * CAD_CONFIG.tensioner.explodeGap;
+    });
+    tensRoot.updateMatrixWorld(true);
+    s.tensFrameExploded = this.boxToFrame(new THREE.Box3().setFromObject(tensRoot));
+
+    s.tensLayers.forEach((l) => {
+      l.group.position.y = l.offset * H * CAD_CONFIG.tensioner.explodeGap * s.explode;
+    });
   }
 
   renderHero() {
     const s = this.sheets.hero;
-    if (!s || !s.boundsRest || !this.syncSize(s)) return;
+    if (!s || !s.tensFrameRest || !s.heroFrame || !this.syncSize(s)) return;
 
     const prev = s.explode;
     s.explode = THREE.MathUtils.lerp(s.explode, s.target, 0.08);
@@ -818,25 +852,28 @@ class CadDrawingsEngine {
     if (s.explode === prev && !s.dirty) return;
     s.dirty = false;
 
-    s.subsystems.forEach((sub) => { sub.group.position.y = sub.offset * s.explode; });
+    // Apply vertical explosion offset to EI Tensioner layers
+    const H = s.tensFrameRest.size.y || 1.2;
+    s.tensLayers.forEach((l) => {
+      l.group.position.y = l.offset * H * CAD_CONFIG.tensioner.explodeGap * s.explode;
+    });
 
     const r = s.renderer;
     this.clearCanvas(s);
 
-    // LEFT HALF: full robot, exploded by subsystem along the vertical axis.
-    // The camera zooms out smoothly as it explodes so everything stays in frame.
+    // LEFT HALF: Exploding EI Tensioner Assembly (fills left half of sheet)
     const rm = this.pxRect(VIEWS.main, s.w, s.h);
     this.useRect(r, rm);
-    const size = s.boundsRest.size.clone().lerp(s.boundsExploded.size, s.explode);
-    const center = s.boundsRest.center.clone().lerp(s.boundsExploded.center, s.explode);
-    this.frameCamera(s.camMain, center, HERO_MAIN_DIR, size, rm.w / rm.h);
-    r.render(s.scene, s.camMain);
-
-    // TOP RIGHT: static isometric of the EI tensioner
-    const rt = this.pxRect(VIEWS.topRight, s.w, s.h);
-    this.useRect(r, rt);
-    this.frameCamera(s.camTens, s.tensFrame.center, HERO_TENSIONER_DIR, s.tensFrame.size, rt.w / rt.h);
+    const size = s.tensFrameRest.size.clone().lerp(s.tensFrameExploded.size, s.explode);
+    const center = s.tensFrameRest.center.clone().lerp(s.tensFrameExploded.center, s.explode);
+    this.frameCamera(s.camTens, center, HERO_TENSIONER_DIR, size, rm.w / rm.h, 1.05);
     r.render(s.scene, s.camTens);
+
+    // RIGHT SIDE: Static beauty shot of full Hero Mk1 Assembly
+    const rb = this.pxRect(VIEWS.right, s.w, s.h);
+    this.useRect(r, rb);
+    this.frameCamera(s.camBeauty, s.heroFrame.center, HERO_BEAUTY_DIR, s.heroFrame.size, rb.w / rb.h, 1.05);
+    r.render(s.scene, s.camBeauty);
 
     r.setScissorTest(false);
   }
@@ -850,7 +887,7 @@ class CadDrawingsEngine {
         this.renderSuspension();
         this.renderHero();
       } catch (e) {
-        console.warn('Render loop error:', e);
+        console.warn('Render loop note:', e);
       }
       requestAnimationFrame(loop);
     };

@@ -13,8 +13,8 @@ class AppController {
   }
 
   initEvents() {
-    // Click on Drawing Sheets to inspect fullscreen
-    const sheets = document.querySelectorAll('.paper-item');
+    // Click on Drawing Sheets and Folder Projects to inspect fullscreen
+    const sheets = document.querySelectorAll('.paper-item, .folder-paper-item');
     sheets.forEach(sheet => {
       sheet.addEventListener('click', (e) => {
         const id = sheet.dataset.id;
@@ -170,7 +170,137 @@ class AppController {
               <div>
                 <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">2027 REDEVELOPMENT TEAM LEAD</h3>
                 <p>Currently leading a team of 5 engineers to fully redevelop the robot for the 2027 season, aiming to reduce weight, increase electronics accessibility, increase shot accuracy, and place 1st in competition.</p>
-                <p>Hovering over the CAD drawing on the desk engages the vertical exploded assembly view, displaying the internal gimbal architecture and drive tensioner alignment.</p>
+                <p>On the drawing sheet, the left half features an interactive exploded view of the Turret Base EI Tensioner revealing its stacked bearing and belt architecture on hover, paired with a full assembly beauty shot on the right.</p>
+              </div>
+            </div>
+          </div>
+        `;
+
+      case 'blank1':
+        return `
+          <div style="font-family: var(--font-sans); color: #1a1a1a;">
+            <div style="border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span style="font-family: var(--font-mono); font-size: 0.75rem; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 3px; font-weight: 700;">DWG: ARUW-2027-GIMB-01 &bull; REV B</span>
+                <h1 style="font-size: 1.7rem; font-weight: 800; margin-top: 6px;">Turret Pitch Gimbal &amp; Bearing Housing</h1>
+                <p style="font-size: 0.95rem; color: #555;">Subsystem A &bull; 2-DoF Precision Drive &bull; Advanced Robotics at UW</p>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; background: #f4f4f0; padding: 16px; border-radius: 6px; margin-bottom: 24px; border: 1px solid #d4d4ce;">
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">PITCH RANGE</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">-25&deg; to +40&deg;</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">BACKLASH</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">&lt; 0.008&deg; (Harmonic)</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">DRIVE TYPE</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">Direct Harmonic Drive</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">MATERIAL</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">7075-T6 + Ti Hardware</div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; line-height: 1.6; font-size: 0.92rem; color: #333;">
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">HIGH ACCURACY GIMBAL ARCHITECTURE</h3>
+                <p>Engineered the 2027 pitch axis mounting incorporating preloaded duplex angular-contact thin-section bearings, eliminating axis deflection under high projectile recoil loads.</p>
+                <p>Integrated closed-loop absolute optical encoder feedback directly on the trunnion shaft to guarantee sub-milliradian pointing precision for automatic computer vision tracking.</p>
+              </div>
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">STRUCTURAL FEA &amp; MASS BUDGET</h3>
+                <p>Conducted topology optimization in nTop and SolidWorks Simulation to minimize inertia while maintaining rigidity, reducing pitch assembly mass by 22% compared to previous iterations.</p>
+              </div>
+            </div>
+          </div>
+        `;
+
+      case 'blank2':
+        return `
+          <div style="font-family: var(--font-sans); color: #1a1a1a;">
+            <div style="border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span style="font-family: var(--font-mono); font-size: 0.75rem; background: #ecfdf5; color: #047857; padding: 2px 8px; border-radius: 3px; font-weight: 700;">DWG: ARUW-2026-SUSP-04 &bull; REV C</span>
+                <h1 style="font-size: 1.7rem; font-weight: 800; margin-top: 6px;">Chassis 4-Bar Independent Suspension</h1>
+                <p style="font-size: 0.95rem; color: #555;">Subsystem B &bull; High-Speed Obstacle Dampening &bull; Advanced Robotics at UW</p>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; background: #f4f4f0; padding: 16px; border-radius: 6px; margin-bottom: 24px; border: 1px solid #d4d4ce;">
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">WHEEL TRAVEL</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">42 mm Progressive</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">DAMPENING</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">Oil-Damped Monoshock</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">CHASSIS TRACKING</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">Zero Camber Shift</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">MATERIAL</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">0.125" Carbon Fiber + 6061</div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; line-height: 1.6; font-size: 0.92rem; color: #333;">
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">FOUR-BAR KINEMATICS</h3>
+                <p>Synthesized a four-bar linkage geometry that maintains upright wheel ground contact across the full suspension stroke, preventing scrub during rapid omnidirectional drive maneuvers.</p>
+              </div>
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">IMPACT SURVIVABILITY</h3>
+                <p>FEA drop simulations validated under 4.5g shock loads on field obstacle ramps. Hard-anodized standoffs and PTFE pivot bushings ensure lifetime serviceability.</p>
+              </div>
+            </div>
+          </div>
+        `;
+
+      case 'dartfeeder':
+        return `
+          <div style="font-family: var(--font-sans); color: #1a1a1a;">
+            <div style="border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span style="font-family: var(--font-mono); font-size: 0.75rem; background: #fef2f2; color: #b91c1c; padding: 2px 8px; border-radius: 3px; font-weight: 700;">DWG: ARUW-2026-FEED-02 &bull; REV A</span>
+                <h1 style="font-size: 1.7rem; font-weight: 800; margin-top: 6px;">High-Throughput Dart Feeder &amp; Cycloidal Agitator</h1>
+                <p style="font-size: 0.95rem; color: #555;">Subsystem C &bull; Zero-Jam Indexing Mechanism &bull; Advanced Robotics at UW</p>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; background: #f4f4f0; padding: 16px; border-radius: 6px; margin-bottom: 24px; border: 1px solid #d4d4ce;">
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">FEED RATE</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">30 rounds / sec</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">JAM RATE</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">0.00% Zero-Jam</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">INDEXING</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">Continuous Cycloidal</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">MATERIAL</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">Delrin 150 + 6061 Alu</div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; line-height: 1.6; font-size: 0.92rem; color: #333;">
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">ANTI-JAM HOPPER INDEXING</h3>
+                <p>Designed a custom cycloidal starwheel agitator that actively separates compressed projectiles in the hopper, channeling individual rounds into the launch barrel without jamming.</p>
+              </div>
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">RAPID CYCLE LIFE</h3>
+                <p>CNC-machined Delrin starwheels minimize friction against polyurethane darts, delivering 15,000+ continuous test cycles without degradation.</p>
               </div>
             </div>
           </div>

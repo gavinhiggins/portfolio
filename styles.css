@@ -507,3 +507,165 @@ html, body {
 }
 
 .modal-close-btn:hover { background: #b91c1c; }
+
+/* --------------------------------------------------------------------------
+   MANILA PROJECT FOLDER (Peeking from bottom of screen)
+   Slides up on hover to reveal extra CAD project sheets
+   -------------------------------------------------------------------------- */
+.project-folder {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(calc(100% - 40px));
+  width: min(860px, 92vw);
+  z-index: 60;
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.42s ease;
+  will-change: transform;
+}
+
+.project-folder:hover,
+.project-folder:focus-within {
+  transform: translateX(-50%) translateY(0);
+}
+
+.folder-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 22px;
+  background: linear-gradient(180deg, #ecd5a4 0%, #dac088 100%);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 12px;
+  box-shadow: 0 -4px 14px rgba(15, 8, 3, 0.25);
+  border: 1px solid #c4a76c;
+  border-bottom: none;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #3d280b;
+  cursor: pointer;
+  user-select: none;
+  letter-spacing: 0.04em;
+  transition: background 0.2s ease, padding 0.2s ease;
+}
+
+.project-folder:hover .folder-tab {
+  background: linear-gradient(180deg, #f5dfb0 0%, #e0c890 100%);
+}
+
+.folder-tab-icon {
+  font-size: 1.1rem;
+}
+
+.folder-body {
+  background: linear-gradient(180deg, #dac088 0%, #caa96e 100%);
+  border: 1px solid #b8985c;
+  border-bottom: none;
+  border-top-right-radius: 10px;
+  box-shadow: 0 -8px 30px rgba(10, 5, 2, 0.38);
+  padding: 22px 20px 22px;
+}
+
+.folder-papers-container {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 18px;
+}
+
+.folder-paper-item {
+  flex: 1;
+  max-width: 260px;
+  background: var(--paper-white);
+  border: 1px solid var(--paper-border);
+  border-radius: 2px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+  padding: 8px;
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 0.35s ease;
+  will-change: transform, box-shadow;
+}
+
+.folder-paper-item:nth-child(1) { transform: rotate(-1.5deg); }
+.folder-paper-item:nth-child(2) { transform: rotate(0.8deg); }
+.folder-paper-item:nth-child(3) { transform: rotate(-0.5deg); }
+
+.folder-paper-item:hover {
+  transform: translateY(-16px) scale(1.03) rotate(0deg) !important;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35) !important;
+  z-index: 10;
+}
+
+.folder-paper-frame {
+  border: 1.5px solid #555;
+  padding: 10px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.mini-dwg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #777;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.mini-dwg-tag {
+  background: #f1f5f9;
+  padding: 1px 4px;
+  border-radius: 2px;
+  border: 1px solid #cbd5e1;
+}
+
+.mini-dwg-rev {
+  color: #0284c7;
+}
+
+.mini-dwg-body {
+  margin: 8px 0;
+}
+
+.mini-cad-title {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #111;
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+
+.mini-cad-sub {
+  font-family: var(--font-mono);
+  font-size: 0.60rem;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.mini-cad-meta {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  color: #777;
+}
+
+.mini-dwg-footer {
+  border-top: 1px solid #777;
+  padding-top: 4px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  font-weight: 700;
+  color: #444;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
