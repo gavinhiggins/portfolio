@@ -19,11 +19,11 @@ const CAD_CONFIG = {
   hero: {
     // Vertical explosion offsets for the 5 subsystems (matching Picture 2)
     offsets: {
-      firing:   0.33,
-      neck:     0.22,
-      turret:   0.12,
-      feeding:  0.00,
-      chassis: -0.10
+      firing:   0.14,
+      neck:     0.07,
+      turret:   0.00,
+      feeding: -0.07,
+      chassis: -0.14
     }
   },
 
