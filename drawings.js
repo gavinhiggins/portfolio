@@ -43,8 +43,8 @@ const CAD_CONFIG = {
 
 // Viewport layout inside each canvas (fractions of canvas, origin bottom-left)
 const VIEWS = {
-  main:  { x: 0.02, y: 0.02, w: 0.48, h: 0.96 }, // left half
-  right: { x: 0.50, y: 0.14, w: 0.48, h: 0.83 }  // right side, fills space above/beside title block
+  main:     { x: 0.02, y: 0.03, w: 0.48, h: 0.94 }, // left half, full height
+  topRight: { x: 0.52, y: 0.28, w: 0.46, h: 0.69 }  // upper right, cleanly above title block
 };
 
 // Camera directions
@@ -413,103 +413,104 @@ class CadDrawingsEngine {
   rigSuspensionCad(s, root, model, unitsPerMm) {
     root.updateMatrixWorld(true);
 
+    const node1 = model.children[0] || model;
     const carriageGroup = new THREE.Group();
     carriageGroup.name = 'carriageGroup';
-    root.add(carriageGroup);
+    node1.add(carriageGroup);
 
     // Identify Omni Wheel node (node 50) and Gearbox
     let omniWheelObj = null;
-
-    model.traverse((obj) => {
-      const name = normName(obj.name);
-      if (name.includes('omniwheel') && obj.children && obj.children.length > 5) {
-        omniWheelObj = obj;
+    node1.children.forEach((child) => {
+      const name = normName(child.name);
+      if (name.includes('omniwheel') && child.children && child.children.length > 5) {
+        omniWheelObj = child;
       }
     });
+    if (!omniWheelObj) {
+      model.traverse((obj) => {
+        const name = normName(obj.name);
+        if (name.includes('omniwheel') && obj.children && obj.children.length > 5) {
+          omniWheelObj = obj;
+        }
+      });
+    }
 
-    // Create wheel spin group INSIDE omni wheel node
-    // In node 50 local space, origin is hub center and local Z is the concentric gearbox shaft axis
+    // Inside omniWheelObj (Node 50), create wheelSpinGroup
+    // In local space of omniWheelObj, Z is the concentric wheel axle
     let wheelSpinGroup = null;
     if (omniWheelObj) {
       wheelSpinGroup = new THREE.Group();
       wheelSpinGroup.name = 'wheelSpinGroup';
       omniWheelObj.add(wheelSpinGroup);
 
-      // Re-parent all wheel children into wheelSpinGroup (EXCEPT the stationary gearbox)
-      const kids = [...omniWheelObj.children];
-      kids.forEach((child) => {
-        if (child === wheelSpinGroup) return;
-        const cName = normName(child.name);
-        if (cName.includes('gearbox')) {
-          // Gearbox stays stationary on carriage
-          return;
-        }
-        wheelSpinGroup.attach(child);
-      });
+      // Move wheel components (rollers, spacers, plates, dowels) into wheelSpinGroup (EXCEPT stationary gearbox)
+      const wheelKids = [...omniWheelObj.children].filter(
+        (c) => c !== wheelSpinGroup && !normName(c.name).includes('gearbox')
+      );
+      wheelKids.forEach((child) => wheelSpinGroup.add(child));
     }
 
-    // Identify moving carriage plates and components:
-    // Gearbox plate, rail carriages, carriage plate, bridge plates, standoff plate, screws 33-40 & 42
+    // Moving carriage plates and hardware inside node1:
+    // Gearbox plate, rail carriages, carriage plate, bridge plates, standoff plate, screws 33-40 & 42, shockspacer2, locknut3
     // Hub bolts that spin with wheel: Screws 1, 5, 6, 8, 9, 10, 11, 13, 14, 15, 16
     const hubBoltIndices = new Set([1, 5, 6, 8, 9, 10, 11, 13, 14, 15, 16]);
     const carriageBoltIndices = new Set([33, 34, 35, 36, 37, 38, 39, 40, 42]);
 
-    const movingPlates = [];
+    const movingParts = [];
+    const hubBolts = [];
 
-    model.traverse((m) => {
-      if (!m.isMesh) return;
-      const n = normName(m.name);
+    const candidates = [...node1.children];
+    candidates.forEach((child) => {
+      if (child === carriageGroup || child === omniWheelObj) return;
+      const n = normName(child.name);
 
-      // Wheel components are already inside omniWheelObj
-      if (n.includes('omniwheel') || (m.parent && normName(m.parent.name).includes('omniwheel'))) {
-        return;
-      }
-
-      // Check if it is a hub bolt: attach directly to wheelSpinGroup so it spins with the hub!
       const screwMatch = n.match(/socketheadscrewconfigured(\d+)/);
       if (screwMatch) {
         const idx = parseInt(screwMatch[1], 10);
-        if (hubBoltIndices.has(idx) && wheelSpinGroup) {
-          wheelSpinGroup.attach(m);
+        if (hubBoltIndices.has(idx)) {
+          hubBolts.push(child);
           return;
         }
         if (carriageBoltIndices.has(idx)) {
-          movingPlates.push(m);
+          movingParts.push(child);
           return;
         }
       }
 
-      // Check for lower shock nut (Locknut-3 moves with carriage, Locknut-1 at top stays fixed!)
       if (n.includes('locknut') && n.includes('3')) {
-        movingPlates.push(m);
+        movingParts.push(child);
         return;
       }
 
-      const isCarriagePlate =
+      const isCarriagePart =
         n.includes('carriage') ||
         n.includes('gearboxplate') ||
         n.includes('bridgeplate') ||
         n.includes('standoffplate') ||
         n.includes('shockspacer2');
 
-      if (isCarriagePlate) {
-        movingPlates.push(m);
+      if (isCarriagePart) {
+        movingParts.push(child);
       }
     });
 
-    // Attach moving plates and omni wheel assembly to carriageGroup
-    movingPlates.forEach((m) => carriageGroup.attach(m));
-    if (omniWheelObj) {
-      carriageGroup.attach(omniWheelObj);
+    // Add moving parts and omni wheel to carriageGroup
+    movingParts.forEach((p) => carriageGroup.add(p));
+    if (omniWheelObj) carriageGroup.add(omniWheelObj);
+
+    // Update world matrices so hub bolts can be attached cleanly to wheelSpinGroup
+    root.updateMatrixWorld(true);
+    if (wheelSpinGroup) {
+      hubBolts.forEach((b) => wheelSpinGroup.attach(b));
     }
 
-    // Full bounding box for camera framing
+    root.updateMatrixWorld(true);
     const fullBox = new THREE.Box3().setFromObject(root);
 
     s.modelGroup = root;
     s.carriageGroup = carriageGroup;
     s.wheelSpinGroup = wheelSpinGroup;
-    s.unitsPerMm = unitsPerMm;
+    s.unitsPerMm = 0.001; // 1mm = 0.001m in native CAD coordinates
     s.fullFrame = this.boxToFrame(fullBox);
     s.dirty = true;
   }
@@ -578,48 +579,32 @@ class CadDrawingsEngine {
     if (!animating && !s.dirty) return;
     s.dirty = animating;
 
-    // Bump all carriage plates along the Y rail axis
-    const axis = CAD_CONFIG.suspension.travelAxis;
-    s.carriageGroup.position[axis] = s.bumpY * s.unitsPerMm;
-
-    // Spin wheel & hub bolts concentrically around local Z axis of omni wheel hub
-    if (s.wheelSpinGroup) {
-      s.wheelSpinGroup.rotation.z = s.wheelAngle;
-    }
-
-    // Rotate entire assembly about the vertical axis while hovered (1 rad/s)
-    if (s.modelGroup) {
-      s.modelGroup.rotation.y = s.yaw;
-    }
-
     const r = s.renderer;
     this.clearCanvas(s);
 
-    // LEFT HALF: Full animated assembly (wheel spins, carriage bumps, rotates on Y)
+    // LEFT HALF: Full animated assembly (wheel spins, carriage bumps)
+    // Left view stays at resting Y angle (0)
+    if (s.modelGroup) s.modelGroup.rotation.y = 0;
+    if (s.carriageGroup) s.carriageGroup.position.y = s.bumpY * s.unitsPerMm;
+    if (s.wheelSpinGroup) s.wheelSpinGroup.rotation.z = s.wheelAngle;
+
     const rm = this.pxRect(VIEWS.main, s.w, s.h);
     this.useRect(r, rm);
-    this.frameCamera(s.camMain, s.fullFrame.center, SUSP_MAIN_DIR, s.fullFrame.size, rm.w / rm.h, 1.05);
+    this.frameCamera(s.camMain, s.fullFrame.center, SUSP_MAIN_DIR, s.fullFrame.size, rm.w / rm.h, 1.02);
     r.render(s.scene, s.camMain);
 
-    // TOP RIGHT: Static beauty shot showing the complete suspension assembly at rest
-    const rb = this.pxRect(VIEWS.right, s.w, s.h);
-    this.useRect(r, rb);
-
-    const savedPos = s.carriageGroup.position.clone();
-    const savedYaw = s.modelGroup ? s.modelGroup.rotation.y : 0;
-    const savedSpin = s.wheelSpinGroup ? s.wheelSpinGroup.rotation.z : 0;
-
-    s.carriageGroup.position.set(0, 0, 0);
-    if (s.modelGroup) s.modelGroup.rotation.y = 0;
+    // TOP RIGHT: Static carriage at rest, but rotates about vertical (Y) axis at 1 rad/s while hovered
+    if (s.carriageGroup) s.carriageGroup.position.y = 0;
     if (s.wheelSpinGroup) s.wheelSpinGroup.rotation.z = 0;
+    if (s.modelGroup) s.modelGroup.rotation.y = s.yaw;
 
-    this.frameCamera(s.camBeauty, s.fullFrame.center, SUSP_BEAUTY_DIR, s.fullFrame.size, rb.w / rb.h, 1.05);
+    const rb = this.pxRect(VIEWS.topRight, s.w, s.h);
+    this.useRect(r, rb);
+    this.frameCamera(s.camBeauty, s.fullFrame.center, SUSP_BEAUTY_DIR, s.fullFrame.size, rb.w / rb.h, 1.02);
     r.render(s.scene, s.camBeauty);
 
-    // Restore animated state
-    if (s.wheelSpinGroup) s.wheelSpinGroup.rotation.z = savedSpin;
-    if (s.modelGroup) s.modelGroup.rotation.y = savedYaw;
-    s.carriageGroup.position.copy(savedPos);
+    // Reset modelGroup rotation to 0 for next frame
+    if (s.modelGroup) s.modelGroup.rotation.y = 0;
 
     r.setScissorTest(false);
   }
@@ -647,7 +632,8 @@ class CadDrawingsEngine {
       explode: 0, target: 0,
       heroGroup: null, subsystems: [],
       heroFrameRest: null, heroFrameExploded: null,
-      turretGroup: null, turretFrame: null
+      turretGroup: null, turretFrame: null,
+      turretYaw: 0, last: performance.now()
     };
     this.sheets.hero = s;
 
@@ -690,8 +676,8 @@ class CadDrawingsEngine {
           const size = bbox.getSize(new THREE.Vector3());
           const maxDim = Math.max(size.x, size.y, size.z) || 1;
 
-          // Scale and center model
-          const scale = 2.5 / maxDim;
+          // Scale and center model (bigger to fill left half of page)
+          const scale = 3.3 / maxDim;
           model.scale.setScalar(scale);
           model.position.copy(center).multiplyScalar(-scale);
 
@@ -734,7 +720,8 @@ class CadDrawingsEngine {
           const size = bbox.getSize(new THREE.Vector3());
           const maxDim = Math.max(size.x, size.y, size.z) || 1;
 
-          const scale = 2.2 / maxDim;
+          // Scale and center TurretBase model (bigger to fill top right)
+          const scale = 2.9 / maxDim;
           model.scale.setScalar(scale);
           model.position.copy(center).multiplyScalar(-scale);
 
@@ -851,11 +838,27 @@ class CadDrawingsEngine {
     const s = this.sheets.hero;
     if (!s || !s.heroFrameRest || !s.turretFrame || !this.syncSize(s)) return;
 
+    const now = performance.now();
+    const dt = Math.min((now - (s.last || now)) / 1000, 0.05);
+    s.last = now;
+
     const prev = s.explode;
     s.explode = THREE.MathUtils.lerp(s.explode, s.target, 0.08);
     if (Math.abs(s.explode - s.target) < 0.0005) s.explode = s.target;
 
-    if (s.explode === prev && !s.dirty) return;
+    // TurretBase rotates about vertical axis at 1 rad/s while hovered
+    if (s.hovered) {
+      s.turretYaw = (s.turretYaw + 1.0 * dt) % (Math.PI * 2);
+    } else {
+      s.turretYaw = THREE.MathUtils.lerp(s.turretYaw, 0, 0.08);
+      if (Math.abs(s.turretYaw) < 0.005) s.turretYaw = 0;
+    }
+    if (s.turretGroup) {
+      s.turretGroup.rotation.y = s.turretYaw;
+    }
+
+    const animating = s.hovered || s.explode !== s.target || s.turretYaw !== 0;
+    if (!animating && s.explode === prev && !s.dirty) return;
     s.dirty = false;
 
     // Apply vertical explosion offset to the 5 subsystems (Picture 3 -> Picture 2)
@@ -868,18 +871,18 @@ class CadDrawingsEngine {
     const r = s.renderer;
     this.clearCanvas(s);
 
-    // LEFT HALF: Full Hero Assembly (assembled at rest [Pic 3] -> exploded on hover [Pic 2])
+    // LEFT HALF: Full Hero Assembly (assembled at rest -> exploded on hover, enlarged to fill)
     const rm = this.pxRect(VIEWS.main, s.w, s.h);
     this.useRect(r, rm);
     const size = s.heroFrameRest.size.clone().lerp(s.heroFrameExploded.size, s.explode);
     const center = s.heroFrameRest.center.clone().lerp(s.heroFrameExploded.center, s.explode);
-    this.frameCamera(s.camMain, center, HERO_MAIN_DIR, size, rm.w / rm.h, 1.05);
+    this.frameCamera(s.camMain, center, HERO_MAIN_DIR, size, rm.w / rm.h, 0.92);
     r.render(s.scene, s.camMain);
 
-    // RIGHT SIDE: Static beauty shot of TurretBase (TurretBaseRender.glb)
-    const rb = this.pxRect(VIEWS.right, s.w, s.h);
+    // TOP RIGHT: TurretBase beauty shot (spins at 1 rad/s while hovered, enlarged above title block)
+    const rb = this.pxRect(VIEWS.topRight, s.w, s.h);
     this.useRect(r, rb);
-    this.frameCamera(s.camTurret, s.turretFrame.center, TURRET_BASE_DIR, s.turretFrame.size, rb.w / rb.h, 1.05);
+    this.frameCamera(s.camTurret, s.turretFrame.center, TURRET_BASE_DIR, s.turretFrame.size, rb.w / rb.h, 0.90);
     r.render(s.scene, s.camTurret);
 
     r.setScissorTest(false);
