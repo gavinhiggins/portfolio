@@ -188,7 +188,7 @@ class CadDrawingsEngine {
     });
 
     object.traverse((child) => {
-      if (child.isMesh) {
+      if (child.isMesh && child.visible) {
         child.material = cadMat;
         child.castShadow = false;
         child.receiveShadow = false;
@@ -680,6 +680,9 @@ class CadDrawingsEngine {
       (gltf) => {
         try {
           const model = gltf.scene;
+
+          // Remove flyaway motors (e.g. 4x 3508 in firing system, GM6020, unconstrained parts)
+          this.filterFloatingHeroParts(model);
           this.applyCadMaterial(model);
 
           const bbox = new THREE.Box3().setFromObject(model);
@@ -721,16 +724,10 @@ class CadDrawingsEngine {
       (gltf) => {
         try {
           const model = gltf.scene;
-          this.applyCadMaterial(model);
 
-          // Hide the 3 floating motor bits that were circled in image 1
-          model.traverse((child) => {
-            if (!child.isMesh) return;
-            const n = child.name;
-            if (n.includes('1^RoboMaster') || n.includes('3^RoboMaster') || n.includes('4^RoboMaster')) {
-              child.visible = false;
-            }
-          });
+          // Remove flyaway 3508 motor and detached components from TurretBase
+          this.filterFloatingTurretParts(model);
+          this.applyCadMaterial(model);
 
           const bbox = new THREE.Box3().setFromObject(model);
           const center = bbox.getCenter(new THREE.Vector3());
@@ -760,6 +757,42 @@ class CadDrawingsEngine {
       undefined,
       () => {}
     );
+  }
+
+  // Removes floating/flyaway motors (4x 3508 in firing system, GM6020, etc.) and unconstrained parts
+  filterFloatingHeroParts(model) {
+    const floatingKeywords = [
+      '3508', 'robomaster', 'gm6020', '6020', 'unreverser', 'feedtube', 'slipringcover', 'configurablehtdbelt'
+    ];
+
+    model.traverse((child) => {
+      const n = normName(child.name);
+      for (const kw of floatingKeywords) {
+        if (n.includes(kw)) {
+          child.visible = false;
+          child.traverse((c) => { c.visible = false; });
+          break;
+        }
+      }
+    });
+  }
+
+  // Removes floating/flyaway motors and detached components from TurretBase model
+  filterFloatingTurretParts(model) {
+    const floatingKeywords = [
+      '3508', 'robomaster', 'configurablehtdbelt'
+    ];
+
+    model.traverse((child) => {
+      const n = normName(child.name);
+      for (const kw of floatingKeywords) {
+        if (n.includes(kw)) {
+          child.visible = false;
+          child.traverse((c) => { c.visible = false; });
+          break;
+        }
+      }
+    });
   }
 
   // Identifies the 5 distinct subsystem nodes inside HeroRender (1).glb
