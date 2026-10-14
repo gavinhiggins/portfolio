@@ -43,8 +43,8 @@ const CAD_CONFIG = {
 
 // Viewport layout inside each canvas (fractions of canvas, origin bottom-left)
 const VIEWS = {
-  main:     { x: 0.02, y: 0.03, w: 0.48, h: 0.94 }, // left half, full height
-  topRight: { x: 0.48, y: 0.16, w: 0.50, h: 0.78 }  // right side, moved downwards and centered
+  main:     { x: 0.02, y: 0.02, w: 0.48, h: 0.96 }, // left half, full height
+  topRight: { x: 0.50, y: 0.18, w: 0.48, h: 0.80 }  // right half, cleanly centered above bottom CAD block
 };
 
 // Camera directions
@@ -89,6 +89,7 @@ class CadDrawingsEngine {
   // ------------------------------------------------------------------------
   createRenderer(canvas) {
     const r = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    r.autoClear = false;
     r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     return r;
   }
@@ -132,7 +133,8 @@ class CadDrawingsEngine {
 
   useRect(renderer, rect) {
     renderer.setViewport(rect.x, rect.y, rect.w, rect.h);
-    renderer.setScissor(rect.x, rect.y, rect.w, rect.h);
+    // Disable scissor test so rotating geometry is never sliced or hidden behind arbitrary frame lines
+    renderer.setScissorTest(false);
   }
 
   clearCanvas(s) {
@@ -140,7 +142,6 @@ class CadDrawingsEngine {
     r.setScissorTest(false);
     r.setViewport(0, 0, s.w, s.h);
     r.clear();
-    r.setScissorTest(true);
   }
 
   rand(a, b) {
@@ -176,7 +177,7 @@ class CadDrawingsEngine {
       color: 0xf6f6f4,
       roughness: 0.35,
       metalness: 0.08,
-      flatShading: true,
+      flatShading: false, // Smooth shading so curved faces/tubes don't look like extruded polygons
       polygonOffset: true,
       polygonOffsetFactor: 1,
       polygonOffsetUnits: 1
@@ -193,10 +194,18 @@ class CadDrawingsEngine {
         child.castShadow = false;
         child.receiveShadow = false;
 
+        const name = normName(child.name);
+        const isTube = name.includes('tube') || name.includes('supporttube');
+        const isSpring = name.includes('spring') || name.includes('shock') || name.includes('coil');
+        const isDenseMesh = child.geometry && child.geometry.attributes && child.geometry.attributes.position && child.geometry.attributes.position.count > 3500;
+
+        // Skip adding line segments to tubes, springs, and ultra-dense meshes to prevent fuzzy spring and solid-black tubes
+        if (isTube || isSpring || isDenseMesh) {
+          return;
+        }
+
         try {
-          // Threshold of 11 degrees captures 24 and 32 facet cylinders (11.25 deg, 15 deg)
-          // while leaving flat planar coplanar polygons clean
-          const edges = new THREE.EdgesGeometry(child.geometry, 11);
+          const edges = new THREE.EdgesGeometry(child.geometry, 30);
           const line = new THREE.LineSegments(edges, edgeMat);
           child.add(line);
         } catch (e) {}
@@ -208,12 +217,12 @@ class CadDrawingsEngine {
   // PROCEDURAL CAD BASELINES
   // ------------------------------------------------------------------------
   makeBaselineMesh(geom, pos, rot) {
-    const cadMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f3, roughness: 0.35, flatShading: true });
+    const cadMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f3, roughness: 0.35, flatShading: false });
     const edgeMat = new THREE.LineBasicMaterial({ color: 0x111111 });
     const mesh = new THREE.Mesh(geom, cadMat);
     mesh.position.copy(pos);
     if (rot) mesh.rotation.set(rot[0], rot[1], rot[2]);
-    mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geom, 11), edgeMat));
+    mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geom, 30), edgeMat));
     return mesh;
   }
 
@@ -508,12 +517,16 @@ class CadDrawingsEngine {
 
     root.updateMatrixWorld(true);
     const fullBox = new THREE.Box3().setFromObject(root);
+    const fullSphere = fullBox.getBoundingSphere(new THREE.Sphere());
 
     s.modelGroup = root;
     s.carriageGroup = carriageGroup;
     s.wheelSpinGroup = wheelSpinGroup;
     s.unitsPerMm = 0.001; // 1mm = 0.001m in native CAD coordinates
     s.fullFrame = this.boxToFrame(fullBox);
+    s.fullSphere = fullSphere;
+    s.baseYaw = 0;
+    s.yaw = 0;
     s.dirty = true;
   }
 
@@ -529,13 +542,22 @@ class CadDrawingsEngine {
     s.wheelAngle = (s.wheelAngle + s.spin * dt) % (Math.PI * 2);
 
     // Rotate about vertical axis (Y-axis) while hovered (1 rad/s)
-    // When unhovered, coast forward to nearest quadrant in same direction (never unrotate back)
+    // When unhovered, continue spinning forward in same direction for <360 deg until theta + 360*n is reached
+    const TWO_PI = Math.PI * 2;
     if (s.hovered) {
       s.yaw += cfg.yawRateRadPerSec * dt;
-      s.targetYaw = Math.ceil(s.yaw / (Math.PI * 0.5)) * (Math.PI * 0.5);
+      const turns = Math.ceil((s.yaw - (s.baseYaw || 0)) / TWO_PI);
+      s.targetYaw = (s.baseYaw || 0) + Math.max(1, turns) * TWO_PI;
     } else if (s.targetYaw !== undefined) {
-      s.yaw = THREE.MathUtils.lerp(s.yaw, s.targetYaw, 0.06);
-      if (Math.abs(s.targetYaw - s.yaw) < 0.002) s.yaw = s.targetYaw;
+      const remaining = s.targetYaw - s.yaw;
+      if (remaining > 0.002) {
+        const speed = Math.max(0.35, remaining * 2.2);
+        s.yaw += Math.min(remaining, speed * dt);
+      } else {
+        s.yaw = s.targetYaw;
+        s.baseYaw = s.targetYaw;
+        s.targetYaw = undefined;
+      }
     }
 
     // Bumps: periodic upward displacement of carriage along linear rails
@@ -578,7 +600,7 @@ class CadDrawingsEngine {
 
     this.stepSuspension(s, dt);
 
-    const yawMoving = s.hovered || (s.targetYaw !== undefined && Math.abs(s.yaw - s.targetYaw) > 0.001);
+    const yawMoving = s.hovered || s.targetYaw !== undefined;
     const animating = s.hovered || s.spin !== 0 || yawMoving || s.bumpY !== 0 || s.bumpV !== 0 || s.bumpTarget !== 0;
     if (!animating && !s.dirty) return;
     s.dirty = animating;
@@ -587,25 +609,26 @@ class CadDrawingsEngine {
     this.clearCanvas(s);
 
     // LEFT HALF: Full animated assembly (wheel spins, carriage bumps)
-    // Left view stays at resting Y angle (0), framed tighter to fill the page
     if (s.modelGroup) s.modelGroup.rotation.y = 0;
     if (s.carriageGroup) s.carriageGroup.position.y = s.bumpY * s.unitsPerMm;
     if (s.wheelSpinGroup) s.wheelSpinGroup.rotation.z = s.wheelAngle;
 
     const rm = this.pxRect(VIEWS.main, s.w, s.h);
     this.useRect(r, rm);
-    this.frameCamera(s.camMain, s.fullFrame.center, SUSP_MAIN_DIR, s.fullFrame.size, rm.w / rm.h, 0.86);
+    this.frameCamera(s.camMain, s.fullFrame.center, SUSP_MAIN_DIR, s.fullFrame.size, rm.w / rm.h, 0.95);
     r.render(s.scene, s.camMain);
 
     // TOP RIGHT: Static carriage at rest, rotates about vertical (Y) axis at 1 rad/s while hovered
-    // Centered downwards and framed larger (0.86 margin)
+    // Bounded using bounding sphere diameter so rotating model NEVER clips or gets cut off
     if (s.carriageGroup) s.carriageGroup.position.y = 0;
     if (s.wheelSpinGroup) s.wheelSpinGroup.rotation.z = 0;
     if (s.modelGroup) s.modelGroup.rotation.y = s.yaw;
 
     const rb = this.pxRect(VIEWS.topRight, s.w, s.h);
     this.useRect(r, rb);
-    this.frameCamera(s.camBeauty, s.fullFrame.center, SUSP_BEAUTY_DIR, s.fullFrame.size, rb.w / rb.h, 0.86);
+    const diam = s.fullSphere ? s.fullSphere.radius * 2 : Math.max(s.fullFrame.size.x, s.fullFrame.size.z);
+    const rotSize = new THREE.Vector3(diam, s.fullFrame.size.y, diam);
+    this.frameCamera(s.camBeauty, s.fullFrame.center, SUSP_BEAUTY_DIR, rotSize, rb.w / rb.h, 1.05);
     r.render(s.scene, s.camBeauty);
 
     // Reset modelGroup rotation to 0 for next frame
@@ -638,7 +661,7 @@ class CadDrawingsEngine {
       heroGroup: null, subsystems: [],
       heroFrameRest: null, heroFrameExploded: null,
       turretGroup: null, turretFrame: null,
-      turretYaw: 0, last: performance.now()
+      turretBaseYaw: 0, turretYaw: 0, last: performance.now()
     };
     this.sheets.hero = s;
 
@@ -852,19 +875,28 @@ class CadDrawingsEngine {
     if (Math.abs(s.explode - s.target) < 0.0005) s.explode = s.target;
 
     // TurretBase rotates about vertical axis at 1 rad/s while hovered
-    // When unhovered, coast forward to nearest quadrant in same direction (never unrotate back)
+    // When unhovered, continue spinning forward in same direction for <360 deg until theta + 360*n is reached
+    const TWO_PI = Math.PI * 2;
     if (s.hovered) {
       s.turretYaw += 1.0 * dt;
-      s.turretTargetYaw = Math.ceil(s.turretYaw / (Math.PI * 0.5)) * (Math.PI * 0.5);
+      const turns = Math.ceil((s.turretYaw - (s.turretBaseYaw || 0)) / TWO_PI);
+      s.turretTargetYaw = (s.turretBaseYaw || 0) + Math.max(1, turns) * TWO_PI;
     } else if (s.turretTargetYaw !== undefined) {
-      s.turretYaw = THREE.MathUtils.lerp(s.turretYaw, s.turretTargetYaw, 0.06);
-      if (Math.abs(s.turretTargetYaw - s.turretYaw) < 0.002) s.turretYaw = s.turretTargetYaw;
+      const remaining = s.turretTargetYaw - s.turretYaw;
+      if (remaining > 0.002) {
+        const speed = Math.max(0.35, remaining * 2.2);
+        s.turretYaw += Math.min(remaining, speed * dt);
+      } else {
+        s.turretYaw = s.turretTargetYaw;
+        s.turretBaseYaw = s.turretTargetYaw;
+        s.turretTargetYaw = undefined;
+      }
     }
     if (s.turretGroup) {
       s.turretGroup.rotation.y = s.turretYaw;
     }
 
-    const turretMoving = s.hovered || (s.turretTargetYaw !== undefined && Math.abs(s.turretYaw - s.turretTargetYaw) > 0.001);
+    const turretMoving = s.hovered || s.turretTargetYaw !== undefined;
     const animating = s.hovered || turretMoving || s.explode !== s.target;
     if (!animating && s.explode === prev && !s.dirty) return;
     s.dirty = false;
@@ -889,13 +921,15 @@ class CadDrawingsEngine {
     this.frameCamera(s.camMain, center, HERO_MAIN_DIR, size, rm.w / rm.h, heroMargin);
     r.render(s.scene, s.camMain);
 
-    // TOP RIGHT: TurretBase beauty shot (spins at 1 rad/s while hovered, enlarged above title block)
+    // TOP RIGHT: TurretBase beauty shot (spins at 1 rad/s while hovered, framed safely with rotSize)
     const rb = this.pxRect(VIEWS.topRight, s.w, s.h);
     this.useRect(r, rb);
-    this.frameCamera(s.camTurret, s.turretFrame.center, TURRET_BASE_DIR, s.turretFrame.size, rb.w / rb.h, 0.86);
+    const turretBox = new THREE.Box3().setFromObject(s.turretGroup);
+    const turretSphere = turretBox.getBoundingSphere(new THREE.Sphere());
+    const turretDiam = turretSphere.radius * 2;
+    const turretRotSize = new THREE.Vector3(turretDiam, s.turretFrame.size.y, turretDiam);
+    this.frameCamera(s.camTurret, s.turretFrame.center, TURRET_BASE_DIR, turretRotSize, rb.w / rb.h, 1.05);
     r.render(s.scene, s.camTurret);
-
-    r.setScissorTest(false);
   }
 
   // ------------------------------------------------------------------------

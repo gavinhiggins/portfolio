@@ -118,54 +118,56 @@
         <canvas class="cad-webgl-canvas" id="canvasSuspension3D"></canvas>
 
         <!-- ====================================================================
-             CUSTOMIZABLE NOTES & LOGO BLOCK (BOTTOM RIGHT)
-             - Drop your logo/image in .notes-logo-cell: e.g. <img src="your-logo.png" alt="Logo">
-             - Customize your notes, tolerances, and text lines in .notes-content-cell
+             UNIFIED SOLIDWORKS TITLE & NOTES BLOCK (BOTTOM RIGHT, MATCHING PICTURE 1)
+             - Flush with drawing inner border
+             - Left half: Logo / Stamp placeholder + Engineering Notes & Specifications
+             - Right half: Title block (Univ, Part Name, Drawn, Config, Mat, Scale)
              ==================================================================== -->
-        <div class="drawing-notes-block">
-          <div class="notes-logo-cell">
-            <!-- REPLACE THIS PLACEHOLDER WITH YOUR LOGO/IMAGE: <img src="your-logo.png" alt="Logo"> -->
-            <div class="notes-logo-placeholder">LOGO / STAMP<br><small>[+ IMAGE]</small></div>
-          </div>
-          <div class="notes-content-cell">
-            <div class="notes-header">DRAWING NOTES &amp; SPECIFICATIONS:</div>
-            <div class="notes-row"><span class="notes-num">1.</span> <span class="notes-text">ALL DIMENSIONS IN MM. REMOVE ALL BURRS.</span></div>
-            <div class="notes-row"><span class="notes-num">2.</span> <span class="notes-text">MATERIAL: AL 6061-T6 / CF. MATTE CLEAR ANODIZE.</span></div>
-            <div class="notes-row"><span class="notes-num">3.</span> <span class="notes-text">HOVER TO INTERACT &amp; ROTATE 3D ASSEMBLY.</span></div>
-          </div>
-        </div>
-
-        <!-- SolidWorks Style Title Block in Bottom Right -->
-        <div class="drawing-title-block">
-          <div class="title-cell cell-info-box">
-            <span class="info-box-org">UNIV OF WASH</span>
-            <span class="info-box-sub">ADVANCED ROBOTICS</span>
-            <span class="info-box-lead">ARUW &bull; 2027</span>
+        <div class="drawing-title-block unified-cad-block">
+          <div class="cad-block-left">
+            <div class="notes-logo-cell">
+              <!-- REPLACE THIS PLACEHOLDER WITH YOUR LOGO/IMAGE: <img src="your-logo.png" alt="Logo"> -->
+              <div class="notes-logo-placeholder">LOGO / STAMP<br><small>[+ IMAGE]</small></div>
+            </div>
+            <div class="notes-content-cell">
+              <div class="notes-header">DRAWING NOTES &amp; SPECIFICATIONS:</div>
+              <div class="notes-row"><span class="notes-num">1.</span> <span class="notes-text">ALL DIMENSIONS IN MM. REMOVE ALL BURRS.</span></div>
+              <div class="notes-row"><span class="notes-num">2.</span> <span class="notes-text">MATERIAL: AL 6061-T6 / CF. MATTE CLEAR ANODIZE.</span></div>
+              <div class="notes-row"><span class="notes-num">3.</span> <span class="notes-text">HOVER TO INTERACT &amp; ROTATE 3D ASSEMBLY.</span></div>
+            </div>
           </div>
 
-          <div class="title-cell cell-units">
-            UNITS IN MILLIMETERS<br>UNLESS SPECIFIED.<br>REMOVE ALL BURRS.
-          </div>
+          <div class="cad-block-right">
+            <div class="title-cell cell-info-box">
+              <span class="info-box-org">UNIV OF WASH</span>
+              <span class="info-box-sub">ADVANCED ROBOTICS</span>
+              <span class="info-box-lead">ARUW &bull; 2027</span>
+            </div>
 
-          <div class="title-cell cell-part-name">
-            <span class="part-name-label">PART NAME</span>
-            <span class="part-name-text">2027, Linear Suspension V3, Assembly</span>
-          </div>
+            <div class="title-cell cell-units">
+              UNITS IN MM<br>UNLESS SPECIFIED.<br>REMOVE ALL BURRS.
+            </div>
 
-          <div class="title-cell cell-drawn">
-            DRAWN: G.H. ☑
-          </div>
+            <div class="title-cell cell-part-name">
+              <span class="part-name-label">PART NAME</span>
+              <span class="part-name-text">2027, Linear Suspension V3, Assembly</span>
+            </div>
 
-          <div class="title-cell cell-config">
-            CONFIG: Default &nbsp; QTY: 1 &nbsp; SIZE: A
-          </div>
+            <div class="title-cell cell-drawn">
+              DRAWN: G.H. ☑
+            </div>
 
-          <div class="title-cell cell-checked">
-            CHECKED: G.H. ☑
-          </div>
+            <div class="title-cell cell-config">
+              CONFIG: Default &nbsp; QTY: 1 &nbsp; SIZE: A
+            </div>
 
-          <div class="title-cell cell-mat">
-            MAT: Al 6061-T6 / CF &nbsp; SCALE: 1:1
+            <div class="title-cell cell-checked">
+              CHECKED: G.H. ☑
+            </div>
+
+            <div class="title-cell cell-mat">
+              MAT: Al 6061-T6 / CF &nbsp; SCALE: 1:1
+            </div>
           </div>
         </div>
       </div>
@@ -223,53 +225,56 @@
         <canvas class="cad-webgl-canvas" id="canvasHero3D"></canvas>
 
         <!-- ====================================================================
-             CUSTOMIZABLE NOTES & LOGO BLOCK (BOTTOM RIGHT)
-             - Drop your logo/image in .notes-logo-cell: e.g. <img src="your-logo.png" alt="Logo">
-             - Customize your notes, tolerances, and text lines in .notes-content-cell
+             UNIFIED SOLIDWORKS TITLE & NOTES BLOCK (BOTTOM RIGHT, MATCHING PICTURE 1)
+             - Flush with drawing inner border
+             - Left half: Logo / Stamp placeholder + Engineering Notes & Specifications
+             - Right half: Title block (Univ, Part Name, Drawn, Config, Mat, Scale)
              ==================================================================== -->
-        <div class="drawing-notes-block">
-          <div class="notes-logo-cell">
-            <!-- REPLACE THIS PLACEHOLDER WITH YOUR LOGO/IMAGE: <img src="your-logo.png" alt="Logo"> -->
-            <div class="notes-logo-placeholder">LOGO / STAMP<br><small>[+ IMAGE]</small></div>
-          </div>
-          <div class="notes-content-cell">
-            <div class="notes-header">DRAWING NOTES &amp; SPECIFICATIONS:</div>
-            <div class="notes-row"><span class="notes-num">1.</span> <span class="notes-text">ALL DIMENSIONS IN MM. REMOVE ALL BURRS.</span></div>
-            <div class="notes-row"><span class="notes-num">2.</span> <span class="notes-text">MATERIAL: AL 7075-T6 / nTop TOPOLOGY OPT.</span></div>
-            <div class="notes-row"><span class="notes-num">3.</span> <span class="notes-text">HOVER TO EXPLODE 5 SUBSYSTEMS &amp; ROTATE TURRET.</span></div>
-          </div>
-        </div>
-
-        <div class="drawing-title-block">
-          <div class="title-cell cell-info-box">
-            <span class="info-box-org">UNIV OF WASH</span>
-            <span class="info-box-sub">HERO ROBOT LEAD</span>
-            <span class="info-box-lead">ARUW &bull; 2026</span>
+        <div class="drawing-title-block unified-cad-block">
+          <div class="cad-block-left">
+            <div class="notes-logo-cell">
+              <!-- REPLACE THIS PLACEHOLDER WITH YOUR LOGO/IMAGE: <img src="your-logo.png" alt="Logo"> -->
+              <div class="notes-logo-placeholder">LOGO / STAMP<br><small>[+ IMAGE]</small></div>
+            </div>
+            <div class="notes-content-cell">
+              <div class="notes-header">DRAWING NOTES &amp; SPECIFICATIONS:</div>
+              <div class="notes-row"><span class="notes-num">1.</span> <span class="notes-text">ALL DIMENSIONS IN MM. REMOVE ALL BURRS.</span></div>
+              <div class="notes-row"><span class="notes-num">2.</span> <span class="notes-text">MATERIAL: AL 7075-T6 / nTop TOPOLOGY OPT.</span></div>
+              <div class="notes-row"><span class="notes-num">3.</span> <span class="notes-text">HOVER TO EXPLODE 5 SUBSYSTEMS &amp; ROTATE TURRET.</span></div>
+            </div>
           </div>
 
-          <div class="title-cell cell-units">
-            UNITS IN MILLIMETERS<br>UNLESS SPECIFIED.<br>REMOVE ALL BURRS.
-          </div>
+          <div class="cad-block-right">
+            <div class="title-cell cell-info-box">
+              <span class="info-box-org">UNIV OF WASH</span>
+              <span class="info-box-sub">HERO ROBOT LEAD</span>
+              <span class="info-box-lead">ARUW &bull; 2026</span>
+            </div>
 
-          <div class="title-cell cell-part-name">
-            <span class="part-name-label">PART NAME</span>
-            <span class="part-name-text">2026 Hero Mk1 &amp; EI Tensioner Assembly</span>
-          </div>
+            <div class="title-cell cell-units">
+              UNITS IN MM<br>UNLESS SPECIFIED.<br>REMOVE ALL BURRS.
+            </div>
 
-          <div class="title-cell cell-drawn">
-            DRAWN: G.H. ☑
-          </div>
+            <div class="title-cell cell-part-name">
+              <span class="part-name-label">PART NAME</span>
+              <span class="part-name-text">2026 Hero Mk1 &amp; EI Tensioner Assembly</span>
+            </div>
 
-          <div class="title-cell cell-config">
-            CONFIG: Default &nbsp; QTY: 1 &nbsp; SIZE: A
-          </div>
+            <div class="title-cell cell-drawn">
+              DRAWN: G.H. ☑
+            </div>
 
-          <div class="title-cell cell-checked">
-            CHECKED: G.H. ☑
-          </div>
+            <div class="title-cell cell-config">
+              CONFIG: Default &nbsp; QTY: 1 &nbsp; SIZE: A
+            </div>
 
-          <div class="title-cell cell-mat">
-            MAT: 7075-T6 / nTop &nbsp; SCALE: 1:2
+            <div class="title-cell cell-checked">
+              CHECKED: G.H. ☑
+            </div>
+
+            <div class="title-cell cell-mat">
+              MAT: 7075-T6 / nTop &nbsp; SCALE: 1:2
+            </div>
           </div>
         </div>
       </div>
@@ -360,7 +365,7 @@
     <button class="modal-close-btn" id="modalClose">✕ Return to Desk</button>
   </div>
 
-  <script src="drawings.js?v=5"></script>
-  <script src="app.js?v=5"></script>
+  <script src="drawings.js?v=6"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
