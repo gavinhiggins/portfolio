@@ -172,6 +172,114 @@ class CadDrawingsEngine {
     return { center: box.getCenter(new THREE.Vector3()), size: box.getSize(new THREE.Vector3()) };
   }
 
+  createCadEdges(geometry, isTubeOrCylinder, isSpacerOrBushing) {
+    if (isSpacerOrBushing) {
+      // 22 degrees eliminates the 24 longitudinal facet lines on small bushings/spacers
+      // while keeping circular end rims (90 deg) and hex flats (60 deg)
+      return new THREE.EdgesGeometry(geometry, 22);
+    }
+
+    if (!isTubeOrCylinder) {
+      // Threshold of 16 degrees captures machined plates, rollers, rim contours, and brackets
+      return new THREE.EdgesGeometry(geometry, 16);
+    }
+
+    // For tubes and cylinders:
+    // Extract edges with 10 deg threshold to get both rims and longitudinal generators
+    const fullEdges = new THREE.EdgesGeometry(geometry, 10);
+    const pos = fullEdges.attributes.position;
+    if (!pos || pos.count === 0) return fullEdges;
+
+    const arr = pos.array;
+    const numEdges = pos.count / 2;
+
+    // Separate edges into longitudinal lines and rim/detail edges
+    // Longitudinal lines on a cylinder are parallel to each other and share the cylinder axis
+    const segments = [];
+    for (let i = 0; i < numEdges; i++) {
+      const idx = i * 6;
+      const x1 = arr[idx], y1 = arr[idx + 1], z1 = arr[idx + 2];
+      const x2 = arr[idx + 3], y2 = arr[idx + 4], z2 = arr[idx + 5];
+      const dx = x2 - x1, dy = y2 - y1, dz = z2 - z1;
+      const len = Math.hypot(dx, dy, dz);
+      if (len < 1e-5) continue;
+
+      let ux = dx / len, uy = dy / len, uz = dz / len;
+      // Canonicalize direction
+      if (ux < -1e-4 || (Math.abs(ux) <= 1e-4 && (uy < -1e-4 || (Math.abs(uy) <= 1e-4 && uz < 0)))) {
+        ux = -ux; uy = -uy; uz = -uz;
+      }
+
+      const mx = (x1 + x2) * 0.5, my = (y1 + y2) * 0.5, mz = (z1 + z2) * 0.5;
+      segments.push({ x1, y1, z1, x2, y2, z2, dx, dy, dz, len, ux, uy, uz, mx, my, mz });
+    }
+
+    // Group parallel segments
+    const groups = [];
+    for (const seg of segments) {
+      let matched = false;
+      for (const g of groups) {
+        const dot = seg.ux * g.ux + seg.uy * g.uy + seg.uz * g.uz;
+        if (dot > 0.96 && Math.abs(seg.len - g.avgLen) < g.avgLen * 0.35) {
+          g.items.push(seg);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        groups.push({
+          ux: seg.ux, uy: seg.uy, uz: seg.uz,
+          avgLen: seg.len,
+          items: [seg]
+        });
+      }
+    }
+
+    // For groups with > 4 parallel segments of similar length (a faceted tube/cylinder wall):
+    // Decimate to keep only 2 to 4 clean generator lines spaced around the tube
+    const outFloats = [];
+    for (const g of groups) {
+      if (g.items.length <= 4) {
+        // Normal non-cylindrical edges: keep all
+        for (const seg of g.items) {
+          outFloats.push(seg.x1, seg.y1, seg.z1, seg.x2, seg.y2, seg.z2);
+        }
+      } else {
+        // Cylindrical surface with many parallel lines:
+        // Project midpoints onto a plane perpendicular to u to find cross-section angle
+        let px = 1, py = 0, pz = 0;
+        if (Math.abs(g.ux) > 0.9) { px = 0; py = 1; pz = 0; }
+        const dotP = px * g.ux + py * g.uy + pz * g.uz;
+        px -= dotP * g.ux; py -= dotP * g.uy; pz -= dotP * g.uz;
+        const pLen = Math.hypot(px, py, pz) || 1;
+        px /= pLen; py /= pLen; pz /= pLen;
+        const qx = g.uy * pz - g.uz * py;
+        const qy = g.uz * px - g.ux * pz;
+        const qz = g.ux * py - g.uy * px;
+
+        const withAngle = g.items.map((seg) => {
+          const uCoord = seg.mx * px + seg.my * py + seg.mz * pz;
+          const vCoord = seg.mx * qx + seg.my * qy + seg.mz * qz;
+          return { seg, ang: Math.atan2(vCoord, uCoord) };
+        });
+        withAngle.sort((a, b) => a.ang - b.ang);
+
+        // Keep 2 clean generator lines on opposite sides (or 4 for larger tubes)
+        // This gives lines along their length without turning black or showing 30 facets!
+        const nKept = Math.min(4, Math.max(2, Math.floor(withAngle.length / 8)));
+        const step = Math.floor(withAngle.length / nKept);
+        for (let k = 0; k < nKept; k++) {
+          const s = withAngle[(k * step) % withAngle.length].seg;
+          outFloats.push(s.x1, s.y1, s.z1, s.x2, s.y2, s.z2);
+        }
+      }
+    }
+
+    const filteredGeom = new THREE.BufferGeometry();
+    filteredGeom.setAttribute('position', new THREE.Float32BufferAttribute(outFloats, 3));
+    return filteredGeom;
+  }
+
   applyCadMaterial(object) {
     const cadMat = new THREE.MeshStandardMaterial({
       color: 0xf6f6f4,
@@ -194,21 +302,25 @@ class CadDrawingsEngine {
         child.castShadow = false;
         child.receiveShadow = false;
 
-        const name = normName(child.name);
-        const isTube = name.includes('tube') || name.includes('supporttube');
-        const isSpring = name.includes('spring') || name.includes('shock') || name.includes('coil');
+        const rawName = (child.name || '') + ' ' + (child.parent ? child.parent.name : '');
+        const name = normName(rawName);
 
-        // Only skip tubes and spring to prevent solid-black tubes and fuzzy spring
-        // Keep all edges on omniwheel, rollers, plates, hardware, etc.!
-        if (isTube || isSpring) {
+        // Helical spring coil: skip to avoid fuzzy black mass ("spring looks good")
+        const isSpringCoil = name.includes('9657k498') ||
+          (name.includes('spring') && !name.includes('body') && !name.includes('cap') && !name.includes('mount') && !name.includes('tank') && !name.includes('spacer') && !name.includes('shaft') && !name.includes('hole'));
+        if (isSpringCoil) {
           return;
         }
 
+        const isTubeOrCylinder = (name.includes('tube') || name.includes('cylinder') || name.includes('body') || name.includes('tank') || name.includes('shaft') || name.includes('strut')) && !name.includes('attachment');
+        const isSpacerOrBushing = name.includes('spacer') || name.includes('bushing') || name.includes('locknut');
+
         try {
-          // Threshold of 11 degrees captures the wheel rollers, rim contours, and machined plates
-          const edges = new THREE.EdgesGeometry(child.geometry, 11);
-          const line = new THREE.LineSegments(edges, edgeMat);
-          child.add(line);
+          const edges = this.createCadEdges(child.geometry, isTubeOrCylinder, isSpacerOrBushing);
+          if (edges) {
+            const line = new THREE.LineSegments(edges, edgeMat);
+            child.add(line);
+          }
         } catch (e) {}
       }
     });
@@ -325,8 +437,12 @@ class CadDrawingsEngine {
     const renderer = this.createRenderer(canvas);
     const scene = this.createLitScene();
 
+    const pivotGroup = new THREE.Group();
+    pivotGroup.name = 'beautyPivotGroup';
+    scene.add(pivotGroup);
+
     const s = {
-      canvas, renderer, scene,
+      canvas, renderer, scene, pivotGroup,
       camMain: new THREE.PerspectiveCamera(30, 1, 0.1, 1000),
       camBeauty: new THREE.PerspectiveCamera(30, 1, 0.1, 1000),
       w: 0, h: 0, dirty: true,
@@ -334,7 +450,7 @@ class CadDrawingsEngine {
       time: 0, last: performance.now(),
       modelGroup: null, carriageGroup: null, wheelSpinGroup: null,
       unitsPerMm: 0.012,
-      fullFrame: null,
+      fullFrame: null, bridgePivot: null,
       spin: 0, wheelAngle: 0, yaw: 0,
       bumpY: 0, bumpV: 0, bumpTarget: 0, bumpReleaseAt: 0, nextBumpAt: 0
     };
@@ -430,6 +546,7 @@ class CadDrawingsEngine {
     s.wheelSpinGroup = wheelSpinGroup;
     s.unitsPerMm = 0.012;
     s.fullFrame = this.boxToFrame(new THREE.Box3().setFromObject(root));
+    s.bridgePivot = new THREE.Vector3(0, 0, 0);
     s.dirty = true;
   }
 
@@ -530,11 +647,28 @@ class CadDrawingsEngine {
     root.updateMatrixWorld(true);
     const fullBox = new THREE.Box3().setFromObject(root);
 
+    // Locate the Bridge Plate to center vertical rotation axis right on the general shape
+    let bridgePlateObj = null;
+    model.traverse((child) => {
+      const n = normName(child.name);
+      if (n.includes('bridgeplate') && !bridgePlateObj) {
+        bridgePlateObj = child;
+      }
+    });
+
+    let bridgePivot = fullBox.getCenter(new THREE.Vector3());
+    if (bridgePlateObj) {
+      const bBox = new THREE.Box3().setFromObject(bridgePlateObj);
+      const bCenter = bBox.getCenter(new THREE.Vector3());
+      bridgePivot = new THREE.Vector3(bCenter.x, fullBox.getCenter(new THREE.Vector3()).y, bCenter.z);
+    }
+
     s.modelGroup = root;
     s.carriageGroup = carriageGroup;
     s.wheelSpinGroup = wheelSpinGroup;
     s.unitsPerMm = 0.001; // 1mm = 0.001m in native CAD coordinates
     s.fullFrame = this.boxToFrame(fullBox);
+    s.bridgePivot = bridgePivot;
     s.theta0 = 0;
     s.yaw = 0;
     s.rotState = 'idle';
@@ -555,14 +689,16 @@ class CadDrawingsEngine {
     // State machine for vertical axis rotation:
     // when hover - rotate at .65 rad/s until further notice
     // when stop hover - keep rotating in same direction until a 360 degree multiple of theta is reached
+    // Rotate at 3x speed (1.95 rad/s) after unhovering!
     const RATE = 0.65;
     if (s.rotState === 'hovering') {
       s.yaw += RATE * dt;
     } else if (s.rotState === 'finishing') {
       const remaining = s.targetYaw - s.yaw;
       if (remaining > 0.003) {
-        const speed = remaining < 0.35 ? Math.max(0.12, remaining * 1.8) : RATE;
-        s.yaw += Math.min(remaining, speed * dt);
+        const speed = RATE * 3.0; // 3x speed = 1.95 rad/s
+        const currentSpeed = remaining < 0.25 ? Math.max(0.35, remaining * 5.0) : speed;
+        s.yaw += Math.min(remaining, currentSpeed * dt);
       } else {
         s.yaw = s.targetYaw;
         s.rotState = 'idle';
@@ -618,28 +754,46 @@ class CadDrawingsEngine {
     this.clearCanvas(s);
 
     // LEFT HALF: Full animated assembly (wheel spins, carriage bumps)
-    if (s.modelGroup) s.modelGroup.rotation.y = 0;
     if (s.carriageGroup) s.carriageGroup.position.y = s.bumpY * s.unitsPerMm;
     if (s.wheelSpinGroup) s.wheelSpinGroup.rotation.z = s.wheelAngle;
+    if (s.modelGroup) {
+      if (s.modelGroup.parent !== s.scene) s.scene.add(s.modelGroup);
+      s.modelGroup.position.set(0, 0, 0);
+      s.modelGroup.rotation.y = 0;
+    }
 
     const rm = this.pxRect(VIEWS.main, s.w, s.h);
     this.useRect(r, rm);
     this.frameCamera(s.camMain, s.fullFrame.center, SUSP_MAIN_DIR, s.fullFrame.size, rm.w / rm.h, 0.86);
     r.render(s.scene, s.camMain);
 
-    // TOP RIGHT: Static carriage at rest, rotates about vertical (Y) axis at .65 rad/s while hovered
-    // Framed at 0.86 margin (restored from previous revision) so it is big and prominent
+    // TOP RIGHT: Static carriage at rest, rotates about vertical axis passing through Bridge Plate
+    // Framed at 0.86 margin so it is large, prominent, and cleanly centered
     if (s.carriageGroup) s.carriageGroup.position.y = 0;
     if (s.wheelSpinGroup) s.wheelSpinGroup.rotation.z = 0;
-    if (s.modelGroup) s.modelGroup.rotation.y = s.yaw;
+
+    const pivot = s.bridgePivot || s.fullFrame.center;
+    if (s.modelGroup && s.pivotGroup) {
+      s.pivotGroup.position.copy(pivot);
+      s.pivotGroup.rotation.y = s.yaw;
+      s.pivotGroup.add(s.modelGroup);
+      s.modelGroup.position.copy(pivot).negate();
+    }
 
     const rb = this.pxRect(VIEWS.topRight, s.w, s.h);
     this.useRect(r, rb);
-    this.frameCamera(s.camBeauty, s.fullFrame.center, SUSP_BEAUTY_DIR, s.fullFrame.size, rb.w / rb.h, 0.86);
+    this.frameCamera(s.camBeauty, pivot, SUSP_BEAUTY_DIR, s.fullFrame.size, rb.w / rb.h, 0.86);
     r.render(s.scene, s.camBeauty);
 
-    // Reset modelGroup rotation to 0 for next frame
-    if (s.modelGroup) s.modelGroup.rotation.y = 0;
+    // Reset modelGroup back to scene origin for next frame / left view
+    if (s.modelGroup) {
+      s.scene.add(s.modelGroup);
+      s.modelGroup.position.set(0, 0, 0);
+      s.modelGroup.rotation.y = 0;
+    }
+    if (s.pivotGroup) {
+      s.pivotGroup.rotation.y = 0;
+    }
 
     r.setScissorTest(false);
   }
@@ -895,14 +1049,16 @@ class CadDrawingsEngine {
     // TurretBase rotation state machine:
     // when hover - rotate at .65 rad/s until further notice
     // when stop hover - keep rotating in same direction until a 360 degree multiple of theta is reached
+    // Rotate at 3x speed (1.95 rad/s) after unhovering!
     const RATE = 0.65;
     if (s.turretState === 'hovering') {
       s.turretYaw += RATE * dt;
     } else if (s.turretState === 'finishing') {
       const remaining = s.turretTargetYaw - s.turretYaw;
       if (remaining > 0.003) {
-        const speed = remaining < 0.35 ? Math.max(0.12, remaining * 1.8) : RATE;
-        s.turretYaw += Math.min(remaining, speed * dt);
+        const speed = RATE * 3.0; // 3x speed = 1.95 rad/s
+        const currentSpeed = remaining < 0.25 ? Math.max(0.35, remaining * 5.0) : speed;
+        s.turretYaw += Math.min(remaining, currentSpeed * dt);
       } else {
         s.turretYaw = s.turretTargetYaw;
         s.turretState = 'idle';
