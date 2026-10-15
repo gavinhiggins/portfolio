@@ -185,8 +185,8 @@ class CadDrawingsEngine {
     }
 
     // For tubes and cylinders:
-    // Extract edges with 10 deg threshold to get both rims and longitudinal generators
-    const fullEdges = new THREE.EdgesGeometry(geometry, 10);
+    // Extract edges with 1.5 deg threshold to capture facets of smooth cylinders
+    const fullEdges = new THREE.EdgesGeometry(geometry, 1.5);
     const pos = fullEdges.attributes.position;
     if (!pos || pos.count === 0) return fullEdges;
 
@@ -220,7 +220,7 @@ class CadDrawingsEngine {
       let matched = false;
       for (const g of groups) {
         const dot = seg.ux * g.ux + seg.uy * g.uy + seg.uz * g.uz;
-        if (dot > 0.96 && Math.abs(seg.len - g.avgLen) < g.avgLen * 0.35) {
+        if (dot > 0.95) {
           g.items.push(seg);
           matched = true;
           break;
@@ -229,7 +229,6 @@ class CadDrawingsEngine {
       if (!matched) {
         groups.push({
           ux: seg.ux, uy: seg.uy, uz: seg.uz,
-          avgLen: seg.len,
           items: [seg]
         });
       }
@@ -259,25 +258,26 @@ class CadDrawingsEngine {
 
         // Project midpoints along W to find the extreme outer edges on the 2D sheet projection
         let minW = Infinity, maxW = -Infinity;
-        let minSeg = null, maxSeg = null;
-
         for (const seg of g.items) {
           const proj = seg.mx * wx + seg.my * wy + seg.mz * wz;
-          if (proj < minW) {
-            minW = proj;
-            minSeg = seg;
-          }
-          if (proj > maxW) {
-            maxW = proj;
-            maxSeg = seg;
-          }
+          seg.projW = proj;
+          if (proj < minW) minW = proj;
+          if (proj > maxW) maxW = proj;
         }
 
-        if (minSeg) {
-          outFloats.push(minSeg.x1, minSeg.y1, minSeg.z1, minSeg.x2, minSeg.y2, minSeg.z2);
-        }
-        if (maxSeg && maxSeg !== minSeg) {
-          outFloats.push(maxSeg.x1, maxSeg.y1, maxSeg.z1, maxSeg.x2, maxSeg.y2, maxSeg.z2);
+        const diam = maxW - minW;
+        if (diam < 1e-4) {
+          for (const seg of g.items) {
+            outFloats.push(seg.x1, seg.y1, seg.z1, seg.x2, seg.y2, seg.z2);
+          }
+        } else {
+          const tol = Math.max(1e-4, diam * 0.14);
+          for (const seg of g.items) {
+            // Keep all segments along the full length that lie on the leftmost or rightmost 2D outer edges
+            if (Math.abs(seg.projW - minW) <= tol || Math.abs(seg.projW - maxW) <= tol) {
+              outFloats.push(seg.x1, seg.y1, seg.z1, seg.x2, seg.y2, seg.z2);
+            }
+          }
         }
       }
     }
@@ -319,7 +319,16 @@ class CadDrawingsEngine {
           return;
         }
 
-        const isTubeOrCylinder = (name.includes('tube') || name.includes('cylinder') || name.includes('body') || name.includes('tank') || name.includes('shaft') || name.includes('strut')) && !name.includes('attachment');
+        const isTubeOrCylinder = (
+          name.includes('tube') ||
+          name.includes('cylinder') ||
+          name.includes('body') ||
+          name.includes('tank') ||
+          name.includes('shaft') ||
+          name.includes('strut') ||
+          name.includes('rod') ||
+          name.includes('support')
+        ) && !name.includes('attachment') && !name.includes('plate') && !name.includes('holder');
         const isSpacerOrBushing = name.includes('spacer') || name.includes('bushing') || name.includes('locknut');
 
         try {

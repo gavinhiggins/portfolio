@@ -413,15 +413,18 @@ html, body {
   box-sizing: border-box;
 }
 
-.cad-block-left {
-  flex: 1.05;
+/* SECTION 1: LEFT VERTICAL HALF (50% X, 100% Y) */
+.cad-section-left {
+  width: 50%;
+  height: 100%;
   display: flex;
   border-right: 1.5px solid var(--cad-border);
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .notes-logo-cell {
-  width: 68px;
+  width: 56px;
   border-right: 1px solid var(--cad-border);
   background: #f8f8f6;
   display: flex;
@@ -431,6 +434,7 @@ html, body {
   overflow: hidden;
   text-align: center;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .notes-logo-cell img {
@@ -440,7 +444,7 @@ html, body {
 }
 
 .notes-logo-placeholder {
-  font-size: 0.44rem;
+  font-size: 0.40rem;
   font-weight: 700;
   color: #888;
   line-height: 1.25;
@@ -453,27 +457,29 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
 }
 
 .notes-logo-placeholder small {
-  font-size: 0.38rem;
+  font-size: 0.35rem;
   color: #aaa;
   margin-top: 2px;
 }
 
 .notes-content-cell {
   flex: 1;
-  padding: 6px 6px;
+  padding: 5px 6px;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
   overflow: hidden;
-  line-height: 1.25;
+  line-height: 1.22;
+  box-sizing: border-box;
 }
 
 .notes-header {
   font-weight: 800;
-  font-size: 0.46rem;
+  font-size: 0.44rem;
   color: #111;
   border-bottom: 1px solid #ddd;
   padding-bottom: 2px;
@@ -483,9 +489,9 @@ html, body {
 .notes-row {
   display: flex;
   gap: 3px;
-  font-size: 0.40rem;
+  font-size: 0.38rem;
   color: #333;
-  line-height: 1.25;
+  line-height: 1.22;
   overflow: hidden;
 }
 
@@ -500,56 +506,97 @@ html, body {
   word-break: break-word;
 }
 
-.cad-block-right {
-  flex: 1.15;
-  display: grid;
-  grid-template-columns: 66px 64px 1fr;
-  grid-template-rows: 65px 35px 35px; /* sum = 135px */
-  font-size: 0.50rem;
+/* RIGHT HALF (50% X, 100% Y): SPLIT HAMBURGER STYLE WITH HORIZONTAL LINE */
+.cad-section-right {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-.title-cell {
+/* SECTION 2: TOP RIGHT (50% Y, 50% X) */
+.cad-sec-top-right {
+  height: 50%;
+  display: flex;
+  border-bottom: 1.5px solid var(--cad-border); /* HORIZONTAL SPLIT LINE */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.cad-sec-top-right .cell-info-box {
+  width: 72px;
+  flex-shrink: 0;
   border-right: 1px solid var(--cad-border);
-  border-bottom: 1px solid var(--cad-border);
-  padding: 2px 4px;
+  background: #f1f1ee;
+  padding: 4px 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.info-box-org { font-weight: 800; font-size: 0.52rem; color: #111; }
+.info-box-sub { font-size: 0.40rem; color: #555; margin-top: 1px; }
+.info-box-lead { font-size: 0.44rem; font-weight: 700; color: #222; margin-top: 2px; }
+
+.cad-sec-top-right .cell-part-name {
+  flex: 1;
+  padding: 3px 6px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
-  line-height: 1.2;
+  box-sizing: border-box;
 }
 
-.cad-block-right .title-cell:nth-child(3),
-.cad-block-right .title-cell:nth-child(5),
-.cad-block-right .title-cell:nth-child(7) {
+.part-name-label { font-size: 0.38rem; color: #666; font-weight: 600; text-transform: uppercase; }
+.part-name-text { font-size: 0.50rem; font-weight: 800; color: #111; line-height: 1.2; word-break: break-word; }
+
+/* SECTION 3: BOTTOM RIGHT (50% Y, 50% X) */
+.cad-sec-bottom-right {
+  height: 50%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.cad-sub-row {
+  flex: 1;
+  display: flex;
+  box-sizing: border-box;
+}
+
+.cad-sub-row-1 {
+  border-bottom: 1px solid var(--cad-border);
+}
+
+.cad-sec-bottom-right .title-cell {
+  border-right: 1px solid var(--cad-border);
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 0.40rem;
+  line-height: 1.15;
+  box-sizing: border-box;
+}
+
+.cad-sec-bottom-right .title-cell:last-child {
   border-right: none;
 }
 
-.cad-block-right .cell-checked,
-.cad-block-right .cell-mat {
-  border-bottom: none;
-}
-
-.cell-info-box {
-  grid-row: span 3;
-  border-bottom: none;
-  background: #f1f1ee;
-  padding: 4px 2px;
-  text-align: center;
-  justify-content: center;
-}
-
-.info-box-org { font-weight: 800; font-size: 0.56rem; color: #111; }
-.info-box-sub { font-size: 0.44rem; color: #555; margin-top: 2px; }
-.info-box-lead { font-size: 0.46rem; font-weight: 700; color: #222; margin-top: 4px; }
-.cell-units { font-size: 0.38rem; color: #444; line-height: 1.15; }
-.cell-part-name { grid-column: span 1; padding: 2px 4px; }
-.part-name-label { font-size: 0.38rem; color: #666; }
-.part-name-text { font-size: 0.50rem; font-weight: 800; color: #111; line-height: 1.2; word-break: break-word; }
-.cell-config { font-size: 0.42rem; }
-.cell-mat { font-size: 0.42rem; }
-.cell-drawn { font-size: 0.42rem; }
-.cell-checked { font-size: 0.42rem; }
+.cell-units { flex: 1.3; font-size: 0.36rem; color: #444; }
+.cell-drawn { flex: 1; font-weight: 700; }
+.cell-checked { flex: 1; font-weight: 700; }
+.cell-config { flex: 1.2; }
+.cell-size { flex: 0.7; }
+.cell-scale { flex: 0.8; }
+.cell-mat { flex: 1.5; font-size: 0.36rem; }
 
 /* --------------------------------------------------------------------------
    FULLSCREEN MODAL (Inspection Mode)
