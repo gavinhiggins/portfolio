@@ -472,11 +472,9 @@ class CadDrawingsEngine {
         s.rotState = 'finishing';
         const TWO_PI = Math.PI * 2;
         const diff = s.yaw - (s.theta0 || 0);
-        const k = Math.ceil(diff / TWO_PI);
-        s.targetYaw = (s.theta0 || 0) + Math.max(1, k) * TWO_PI;
-        if (s.targetYaw - s.yaw < 0.005) {
-          s.targetYaw += TWO_PI;
-        }
+        // Shortest path to theta (nearest 360 multiple: can go backward up to 180 deg)
+        const k = Math.round(diff / TWO_PI);
+        s.targetYaw = (s.theta0 || 0) + k * TWO_PI;
       }
     });
 
@@ -688,17 +686,19 @@ class CadDrawingsEngine {
 
     // State machine for vertical axis rotation:
     // when hover - rotate at .65 rad/s until further notice
-    // when stop hover - keep rotating in same direction until a 360 degree multiple of theta is reached
-    // Rotate at 3x speed (1.95 rad/s) after unhovering!
+    // when stop hover - shortest path to theta at up to 5x speed (can go backward up to 180 deg)
     const RATE = 0.65;
     if (s.rotState === 'hovering') {
       s.yaw += RATE * dt;
     } else if (s.rotState === 'finishing') {
       const remaining = s.targetYaw - s.yaw;
-      if (remaining > 0.003) {
-        const speed = RATE * 3.0; // 3x speed = 1.95 rad/s
-        const currentSpeed = remaining < 0.25 ? Math.max(0.35, remaining * 5.0) : speed;
-        s.yaw += Math.min(remaining, currentSpeed * dt);
+      const dist = Math.abs(remaining);
+      if (dist > 0.003) {
+        // Ramp return speed up to 5x (3.25 rad/s), smoothly easing out when approaching target
+        const MAX_SPEED = RATE * 5.0; // 3.25 rad/s
+        const speed = dist < 0.35 ? Math.max(0.4, dist * 8.0) : MAX_SPEED;
+        const step = Math.sign(remaining) * Math.min(dist, speed * dt);
+        s.yaw += step;
       } else {
         s.yaw = s.targetYaw;
         s.rotState = 'idle';
@@ -851,11 +851,9 @@ class CadDrawingsEngine {
         s.turretState = 'finishing';
         const TWO_PI = Math.PI * 2;
         const diff = s.turretYaw - (s.turretTheta0 || 0);
-        const k = Math.ceil(diff / TWO_PI);
-        s.turretTargetYaw = (s.turretTheta0 || 0) + Math.max(1, k) * TWO_PI;
-        if (s.turretTargetYaw - s.turretYaw < 0.005) {
-          s.turretTargetYaw += TWO_PI;
-        }
+        // Shortest path to theta (nearest 360 multiple: can go backward up to 180 deg)
+        const k = Math.round(diff / TWO_PI);
+        s.turretTargetYaw = (s.turretTheta0 || 0) + k * TWO_PI;
       }
     });
 
@@ -1048,17 +1046,19 @@ class CadDrawingsEngine {
 
     // TurretBase rotation state machine:
     // when hover - rotate at .65 rad/s until further notice
-    // when stop hover - keep rotating in same direction until a 360 degree multiple of theta is reached
-    // Rotate at 3x speed (1.95 rad/s) after unhovering!
+    // when stop hover - shortest path to theta at up to 5x speed (can go backward up to 180 deg)
     const RATE = 0.65;
     if (s.turretState === 'hovering') {
       s.turretYaw += RATE * dt;
     } else if (s.turretState === 'finishing') {
       const remaining = s.turretTargetYaw - s.turretYaw;
-      if (remaining > 0.003) {
-        const speed = RATE * 3.0; // 3x speed = 1.95 rad/s
-        const currentSpeed = remaining < 0.25 ? Math.max(0.35, remaining * 5.0) : speed;
-        s.turretYaw += Math.min(remaining, currentSpeed * dt);
+      const dist = Math.abs(remaining);
+      if (dist > 0.003) {
+        // Ramp return speed up to 5x (3.25 rad/s), smoothly easing out when approaching target
+        const MAX_SPEED = RATE * 5.0; // 3.25 rad/s
+        const speed = dist < 0.35 ? Math.max(0.4, dist * 8.0) : MAX_SPEED;
+        const step = Math.sign(remaining) * Math.min(dist, speed * dt);
+        s.turretYaw += step;
       } else {
         s.turretYaw = s.turretTargetYaw;
         s.turretState = 'idle';
