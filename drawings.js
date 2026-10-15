@@ -30,7 +30,7 @@ const CAD_CONFIG = {
   suspension: {
     travelAxis: 'y',            // rails run along Y axis
     nativeUnitMm: null,         // null = auto-detect
-    wheelSpinRadPerSec: 4.5,    // wheel spin speed while hovered (decreased for clean mechanical spin)
+    wheelSpinRadPerSec: 8.0,    // wheel spin speed while hovered (increased per request)
     yawRateRadPerSec: 0.65,     // rotate at .65 rad/s
     bump: {
       minMm: 10, maxMm: 20,     // bump travel range
