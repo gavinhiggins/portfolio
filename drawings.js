@@ -235,8 +235,7 @@ class CadDrawingsEngine {
       }
     }
 
-    // For groups with > 4 parallel segments of similar length (a faceted tube/cylinder wall):
-    // Decimate to keep only 2 to 4 clean generator lines spaced around the tube
+    const camDir = viewDir || TURRET_BASE_DIR;
     const outFloats = [];
     for (const g of groups) {
       if (g.items.length <= 4) {
@@ -246,31 +245,39 @@ class CadDrawingsEngine {
         }
       } else {
         // Cylindrical surface with many parallel lines:
-        // Project midpoints onto a plane perpendicular to u to find cross-section angle
-        let px = 1, py = 0, pz = 0;
-        if (Math.abs(g.ux) > 0.9) { px = 0; py = 1; pz = 0; }
-        const dotP = px * g.ux + py * g.uy + pz * g.uz;
-        px -= dotP * g.ux; py -= dotP * g.uy; pz -= dotP * g.uz;
-        const pLen = Math.hypot(px, py, pz) || 1;
-        px /= pLen; py /= pLen; pz /= pLen;
-        const qx = g.uy * pz - g.uz * py;
-        const qy = g.uz * px - g.ux * pz;
-        const qz = g.ux * py - g.uy * px;
+        // Find 2D projection perpendicular vector W = u x camDir
+        let wx = g.uy * camDir.z - g.uz * camDir.y;
+        let wy = g.uz * camDir.x - g.ux * camDir.z;
+        let wz = g.ux * camDir.y - g.uy * camDir.x;
+        let wLen = Math.hypot(wx, wy, wz);
 
-        const withAngle = g.items.map((seg) => {
-          const uCoord = seg.mx * px + seg.my * py + seg.mz * pz;
-          const vCoord = seg.mx * qx + seg.my * qy + seg.mz * qz;
-          return { seg, ang: Math.atan2(vCoord, uCoord) };
-        });
-        withAngle.sort((a, b) => a.ang - b.ang);
+        if (wLen < 1e-3) {
+          // Axis is pointing almost directly along view direction; end rim defines outer edge
+          continue;
+        }
+        wx /= wLen; wy /= wLen; wz /= wLen;
 
-        // Keep 2 clean generator lines on opposite sides (or 4 for larger tubes)
-        // This gives lines along their length without turning black or showing 30 facets!
-        const nKept = Math.min(4, Math.max(2, Math.floor(withAngle.length / 8)));
-        const step = Math.floor(withAngle.length / nKept);
-        for (let k = 0; k < nKept; k++) {
-          const s = withAngle[(k * step) % withAngle.length].seg;
-          outFloats.push(s.x1, s.y1, s.z1, s.x2, s.y2, s.z2);
+        // Project midpoints along W to find the extreme outer edges on the 2D sheet projection
+        let minW = Infinity, maxW = -Infinity;
+        let minSeg = null, maxSeg = null;
+
+        for (const seg of g.items) {
+          const proj = seg.mx * wx + seg.my * wy + seg.mz * wz;
+          if (proj < minW) {
+            minW = proj;
+            minSeg = seg;
+          }
+          if (proj > maxW) {
+            maxW = proj;
+            maxSeg = seg;
+          }
+        }
+
+        if (minSeg) {
+          outFloats.push(minSeg.x1, minSeg.y1, minSeg.z1, minSeg.x2, minSeg.y2, minSeg.z2);
+        }
+        if (maxSeg && maxSeg !== minSeg) {
+          outFloats.push(maxSeg.x1, maxSeg.y1, maxSeg.z1, maxSeg.x2, maxSeg.y2, maxSeg.z2);
         }
       }
     }
@@ -280,7 +287,7 @@ class CadDrawingsEngine {
     return filteredGeom;
   }
 
-  applyCadMaterial(object) {
+  applyCadMaterial(object, viewDir) {
     const cadMat = new THREE.MeshStandardMaterial({
       color: 0xf6f6f4,
       roughness: 0.35,
@@ -316,7 +323,7 @@ class CadDrawingsEngine {
         const isSpacerOrBushing = name.includes('spacer') || name.includes('bushing') || name.includes('locknut');
 
         try {
-          const edges = this.createCadEdges(child.geometry, isTubeOrCylinder, isSpacerOrBushing);
+          const edges = this.createCadEdges(child.geometry, isTubeOrCylinder, isSpacerOrBushing, viewDir);
           if (edges) {
             const line = new THREE.LineSegments(edges, edgeMat);
             child.add(line);
@@ -486,7 +493,7 @@ class CadDrawingsEngine {
         try {
           const cfg = CAD_CONFIG.suspension;
           const model = gltf.scene;
-          this.applyCadMaterial(model);
+          this.applyCadMaterial(model, SUSP_BEAUTY_DIR);
 
           const bbox = new THREE.Box3().setFromObject(model);
           const center = bbox.getCenter(new THREE.Vector3());
@@ -687,6 +694,7 @@ class CadDrawingsEngine {
     // State machine for vertical axis rotation:
     // when hover - rotate at .65 rad/s until further notice
     // when stop hover - shortest path to theta at up to 5x speed (can go backward up to 180 deg)
+    // Smoothly ramps down/damps speed when returning to theta
     const RATE = 0.65;
     if (s.rotState === 'hovering') {
       s.yaw += RATE * dt;
@@ -694,11 +702,19 @@ class CadDrawingsEngine {
       const remaining = s.targetYaw - s.yaw;
       const dist = Math.abs(remaining);
       if (dist > 0.003) {
-        // Ramp return speed up to 5x (3.25 rad/s), smoothly easing out when approaching target
-        const MAX_SPEED = RATE * 5.0; // 3.25 rad/s
-        const speed = dist < 0.35 ? Math.max(0.4, dist * 8.0) : MAX_SPEED;
-        const step = Math.sign(remaining) * Math.min(dist, speed * dt);
-        s.yaw += step;
+        // Smoothly ramp down and damp speed as it approaches theta
+        const MAX_SPEED = RATE * 5.0; // 3.25 rad/s (5x)
+        const decelDist = 1.1; // ~63 deg smooth damping deceleration window
+        const t = Math.min(1.0, dist / decelDist);
+        // Smooth quadratic ease-out deceleration curve
+        const speed = MAX_SPEED * (t * (2.0 - t));
+        const step = Math.sign(remaining) * Math.min(dist, Math.max(0.08, speed) * dt);
+        if (dist <= 0.003 || Math.abs(step) >= dist) {
+          s.yaw = s.targetYaw;
+          s.rotState = 'idle';
+        } else {
+          s.yaw += step;
+        }
       } else {
         s.yaw = s.targetYaw;
         s.rotState = 'idle';
@@ -867,7 +883,7 @@ class CadDrawingsEngine {
 
           // Remove flyaway motors (e.g. 4x 3508 in firing system, GM6020, unconstrained parts)
           this.filterFloatingHeroParts(model);
-          this.applyCadMaterial(model);
+          this.applyCadMaterial(model, HERO_MAIN_DIR);
 
           const bbox = new THREE.Box3().setFromObject(model);
           const center = bbox.getCenter(new THREE.Vector3());
@@ -911,7 +927,7 @@ class CadDrawingsEngine {
 
           // Remove flyaway 3508 motor and detached components from TurretBase
           this.filterFloatingTurretParts(model);
-          this.applyCadMaterial(model);
+          this.applyCadMaterial(model, TURRET_BASE_DIR);
 
           const bbox = new THREE.Box3().setFromObject(model);
           const center = bbox.getCenter(new THREE.Vector3());
@@ -1047,6 +1063,7 @@ class CadDrawingsEngine {
     // TurretBase rotation state machine:
     // when hover - rotate at .65 rad/s until further notice
     // when stop hover - shortest path to theta at up to 5x speed (can go backward up to 180 deg)
+    // Smoothly ramps down/damps speed when returning to theta
     const RATE = 0.65;
     if (s.turretState === 'hovering') {
       s.turretYaw += RATE * dt;
@@ -1054,11 +1071,19 @@ class CadDrawingsEngine {
       const remaining = s.turretTargetYaw - s.turretYaw;
       const dist = Math.abs(remaining);
       if (dist > 0.003) {
-        // Ramp return speed up to 5x (3.25 rad/s), smoothly easing out when approaching target
-        const MAX_SPEED = RATE * 5.0; // 3.25 rad/s
-        const speed = dist < 0.35 ? Math.max(0.4, dist * 8.0) : MAX_SPEED;
-        const step = Math.sign(remaining) * Math.min(dist, speed * dt);
-        s.turretYaw += step;
+        // Smoothly ramp down and damp speed as it approaches theta
+        const MAX_SPEED = RATE * 5.0; // 3.25 rad/s (5x)
+        const decelDist = 1.1; // ~63 deg smooth damping deceleration window
+        const t = Math.min(1.0, dist / decelDist);
+        // Smooth quadratic ease-out deceleration curve
+        const speed = MAX_SPEED * (t * (2.0 - t));
+        const step = Math.sign(remaining) * Math.min(dist, Math.max(0.08, speed) * dt);
+        if (dist <= 0.003 || Math.abs(step) >= dist) {
+          s.turretYaw = s.turretTargetYaw;
+          s.turretState = 'idle';
+        } else {
+          s.turretYaw += step;
+        }
       } else {
         s.turretYaw = s.turretTargetYaw;
         s.turretState = 'idle';
