@@ -118,53 +118,60 @@
         <canvas class="cad-webgl-canvas" id="canvasSuspension3D"></canvas>
 
         <!-- ====================================================================
-             UNIFIED SOLIDWORKS TITLE & NOTES BLOCK (BOTTOM RIGHT, MATCHING PICTURE 1)
-             - Flush with drawing inner border
-             - Left half: Logo / Stamp placeholder + Engineering Notes & Specifications
-             - Right half: Title block (Univ, Part Name, Drawn, Config, Mat, Scale)
+             SOLIDWORKS CAD TITLE & NOTES BLOCK (3 BLANK TEMPLATE SECTIONS)
+             - Section 1 (Left 50% X, Full Height): Vertical section
+             - Section 2 (Top Right 50% X, 50% Y): Split hamburger style
+             - Section 3 (Bottom Right 50% X, 50% Y): Split hamburger style
              ==================================================================== -->
         <div class="drawing-title-block unified-cad-block">
-          <!-- SECTION 1 (LEFT 50% X, FULL HEIGHT): VERTICAL SECTION -->
-          <div class="cad-section-left">
-            <div class="notes-logo-cell">
-              <!-- REPLACE THIS PLACEHOLDER WITH YOUR LOGO/IMAGE: <img src="your-logo.png" alt="Logo"> -->
-              <div class="notes-logo-placeholder">LOGO / STAMP<br><small>[+ IMAGE]</small></div>
-            </div>
-            <div class="notes-content-cell">
-              <div class="notes-header">DRAWING NOTES &amp; SPECIFICATIONS:</div>
-              <div class="notes-row"><span class="notes-num">1.</span> <span class="notes-text">ALL DIMENSIONS IN MM. REMOVE ALL BURRS.</span></div>
-              <div class="notes-row"><span class="notes-num">2.</span> <span class="notes-text">MATERIAL: AL 6061-T6 / CF. MATTE CLEAR ANODIZE.</span></div>
-              <div class="notes-row"><span class="notes-num">3.</span> <span class="notes-text">HOVER TO INTERACT &amp; ROTATE 3D ASSEMBLY.</span></div>
+          <!-- ================================================================
+               SECTION 1 (LEFT 50% X, FULL HEIGHT): VERTICAL SECTION
+               - TO EDIT TEXT: Type inside .cad-sec-text below
+               - TO CHANGE FONT SIZE: Adjust in styles.css (.cad-sec-text) or inline style="font-size: 0.44rem;"
+               - TO ADD PICTURE / LOGO: Insert <img src="your-logo.png" class="cad-sec-img">
+               ================================================================ -->
+          <div class="cad-sec cad-sec-1">
+            <div class="cad-sec-header">SECTION 1 &bull; SPECIFICATIONS &amp; LOGO</div>
+            <div class="cad-sec-body">
+              <!-- Optional Image/Logo: Uncomment and specify image src: -->
+              <!-- <img src="logo.png" alt="Logo" class="cad-sec-img"> -->
+              <div class="cad-sec-text">
+                1. ALL DIMENSIONS IN MM. REMOVE ALL BURRS.<br>
+                2. MATERIAL: AL 6061-T6 / CF. MATTE CLEAR ANODIZE.<br>
+                3. HOVER TO INTERACT &amp; ROTATE 3D ASSEMBLY.
+              </div>
             </div>
           </div>
 
-          <!-- RIGHT 50% X: SPLIT HAMBURGER STYLE WITH HORIZONTAL LINE -->
+          <!-- RIGHT 50% X CONTAINER: SPLIT HAMBURGER STYLE WITH HORIZONTAL LINE -->
           <div class="cad-section-right">
-            <!-- SECTION 2: TOP RIGHT (50% Y, 50% X) -->
-            <div class="cad-sec-top-right">
-              <div class="title-cell cell-info-box">
-                <span class="info-box-org">UNIV OF WASH</span>
-                <span class="info-box-sub">ADVANCED ROBOTICS</span>
-                <span class="info-box-lead">ARUW &bull; 2027</span>
-              </div>
-              <div class="title-cell cell-part-name">
-                <span class="part-name-label">PART NAME</span>
-                <span class="part-name-text">2027, Linear Suspension V3, Assembly</span>
+            <!-- ================================================================
+                 SECTION 2: TOP RIGHT (50% Y, 50% X)
+                 - TO EDIT TEXT: Type inside .cad-sec-title / .cad-sec-subtitle below
+                 - TO CHANGE FONT SIZE: Adjust in styles.css (.cad-sec-title) or inline style
+                 - TO ADD PICTURE / LOGO: Insert <img src="your-image.png" class="cad-sec-img">
+                 ================================================================ -->
+            <div class="cad-sec cad-sec-2">
+              <div class="cad-sec-header">SECTION 2 &bull; PART TITLE &amp; ORG</div>
+              <div class="cad-sec-body">
+                <div class="cad-sec-title">2027, Linear Suspension V3, Assembly</div>
+                <div class="cad-sec-subtitle">UNIV OF WASH &bull; ADVANCED ROBOTICS &bull; ARUW 2027</div>
               </div>
             </div>
 
-            <!-- SECTION 3: BOTTOM RIGHT (50% Y, 50% X) -->
-            <div class="cad-sec-bottom-right">
-              <div class="cad-sub-row cad-sub-row-1">
-                <div class="title-cell cell-units">UNITS: MM &bull; TOL: &plusmn;0.1</div>
-                <div class="title-cell cell-drawn">DWN: G.H. ☑</div>
-                <div class="title-cell cell-checked">CHK: G.H. ☑</div>
-              </div>
-              <div class="cad-sub-row cad-sub-row-2">
-                <div class="title-cell cell-config">CONFIG: Default</div>
-                <div class="title-cell cell-size">SIZE: A</div>
-                <div class="title-cell cell-scale">SCALE: 1:1</div>
-                <div class="title-cell cell-mat">MAT: AL 6061 / CF</div>
+            <!-- ================================================================
+                 SECTION 3: BOTTOM RIGHT (50% Y, 50% X)
+                 - TO EDIT TEXT: Type inside .cad-sec-text below
+                 - TO CHANGE FONT SIZE: Adjust in styles.css (.cad-sec-text) or inline style
+                 - TO ADD PICTURE / LOGO: Insert <img src="your-image.png" class="cad-sec-img">
+                 ================================================================ -->
+            <div class="cad-sec cad-sec-3">
+              <div class="cad-sec-header">SECTION 3 &bull; CAD METRICS &amp; NOTES</div>
+              <div class="cad-sec-body">
+                <div class="cad-sec-text">
+                  DWN: G.H. &bull; CHK: G.H. &bull; REV: 03<br>
+                  CONFIG: Default &bull; SIZE: A &bull; SCALE: 1:1 &bull; TOL: &plusmn;0.1
+                </div>
               </div>
             </div>
           </div>
@@ -224,53 +231,60 @@
         <canvas class="cad-webgl-canvas" id="canvasHero3D"></canvas>
 
         <!-- ====================================================================
-             UNIFIED SOLIDWORKS TITLE & NOTES BLOCK (BOTTOM RIGHT, MATCHING PICTURE 1)
-             - Flush with drawing inner border
-             - Left half: Logo / Stamp placeholder + Engineering Notes & Specifications
-             - Right half: Title block (Univ, Part Name, Drawn, Config, Mat, Scale)
+             SOLIDWORKS CAD TITLE & NOTES BLOCK (3 BLANK TEMPLATE SECTIONS)
+             - Section 1 (Left 50% X, Full Height): Vertical section
+             - Section 2 (Top Right 50% X, 50% Y): Split hamburger style
+             - Section 3 (Bottom Right 50% X, 50% Y): Split hamburger style
              ==================================================================== -->
         <div class="drawing-title-block unified-cad-block">
-          <!-- SECTION 1 (LEFT 50% X, FULL HEIGHT): VERTICAL SECTION -->
-          <div class="cad-section-left">
-            <div class="notes-logo-cell">
-              <!-- REPLACE THIS PLACEHOLDER WITH YOUR LOGO/IMAGE: <img src="your-logo.png" alt="Logo"> -->
-              <div class="notes-logo-placeholder">LOGO / STAMP<br><small>[+ IMAGE]</small></div>
-            </div>
-            <div class="notes-content-cell">
-              <div class="notes-header">DRAWING NOTES &amp; SPECIFICATIONS:</div>
-              <div class="notes-row"><span class="notes-num">1.</span> <span class="notes-text">ALL DIMENSIONS IN MM. REMOVE ALL BURRS.</span></div>
-              <div class="notes-row"><span class="notes-num">2.</span> <span class="notes-text">MATERIAL: AL 7075-T6 / nTop TOPOLOGY OPT.</span></div>
-              <div class="notes-row"><span class="notes-num">3.</span> <span class="notes-text">HOVER TO EXPLODE 5 SUBSYSTEMS &amp; ROTATE TURRET.</span></div>
+          <!-- ================================================================
+               SECTION 1 (LEFT 50% X, FULL HEIGHT): VERTICAL SECTION
+               - TO EDIT TEXT: Type inside .cad-sec-text below
+               - TO CHANGE FONT SIZE: Adjust in styles.css (.cad-sec-text) or inline style="font-size: 0.44rem;"
+               - TO ADD PICTURE / LOGO: Insert <img src="your-logo.png" class="cad-sec-img">
+               ================================================================ -->
+          <div class="cad-sec cad-sec-1">
+            <div class="cad-sec-header">SECTION 1 &bull; SPECIFICATIONS &amp; LOGO</div>
+            <div class="cad-sec-body">
+              <!-- Optional Image/Logo: Uncomment and specify image src: -->
+              <!-- <img src="logo.png" alt="Logo" class="cad-sec-img"> -->
+              <div class="cad-sec-text">
+                1. ALL DIMENSIONS IN MM. REMOVE ALL BURRS.<br>
+                2. MATERIAL: AL 7075-T6 / nTop TOPOLOGY OPT.<br>
+                3. HOVER TO EXPLODE 5 SUBSYSTEMS &amp; ROTATE TURRET.
+              </div>
             </div>
           </div>
 
-          <!-- RIGHT 50% X: SPLIT HAMBURGER STYLE WITH HORIZONTAL LINE -->
+          <!-- RIGHT 50% X CONTAINER: SPLIT HAMBURGER STYLE WITH HORIZONTAL LINE -->
           <div class="cad-section-right">
-            <!-- SECTION 2: TOP RIGHT (50% Y, 50% X) -->
-            <div class="cad-sec-top-right">
-              <div class="title-cell cell-info-box">
-                <span class="info-box-org">UNIV OF WASH</span>
-                <span class="info-box-sub">HERO ROBOT LEAD</span>
-                <span class="info-box-lead">ARUW &bull; 2026</span>
-              </div>
-              <div class="title-cell cell-part-name">
-                <span class="part-name-label">PART NAME</span>
-                <span class="part-name-text">2026 Hero Mk1 &amp; EI Tensioner Assembly</span>
+            <!-- ================================================================
+                 SECTION 2: TOP RIGHT (50% Y, 50% X)
+                 - TO EDIT TEXT: Type inside .cad-sec-title / .cad-sec-subtitle below
+                 - TO CHANGE FONT SIZE: Adjust in styles.css (.cad-sec-title) or inline style
+                 - TO ADD PICTURE / LOGO: Insert <img src="your-image.png" class="cad-sec-img">
+                 ================================================================ -->
+            <div class="cad-sec cad-sec-2">
+              <div class="cad-sec-header">SECTION 2 &bull; PART TITLE &amp; ORG</div>
+              <div class="cad-sec-body">
+                <div class="cad-sec-title">2026 Hero Mk1 &amp; EI Tensioner Assembly</div>
+                <div class="cad-sec-subtitle">UNIV OF WASH &bull; HERO ROBOT LEAD &bull; ARUW 2026</div>
               </div>
             </div>
 
-            <!-- SECTION 3: BOTTOM RIGHT (50% Y, 50% X) -->
-            <div class="cad-sec-bottom-right">
-              <div class="cad-sub-row cad-sub-row-1">
-                <div class="title-cell cell-units">UNITS: MM &bull; TOL: &plusmn;0.1</div>
-                <div class="title-cell cell-drawn">DWN: G.H. ☑</div>
-                <div class="title-cell cell-checked">CHK: G.H. ☑</div>
-              </div>
-              <div class="cad-sub-row cad-sub-row-2">
-                <div class="title-cell cell-config">CONFIG: Default</div>
-                <div class="title-cell cell-size">SIZE: A</div>
-                <div class="title-cell cell-scale">SCALE: 1:2</div>
-                <div class="title-cell cell-mat">MAT: 7075-T6 / nTop</div>
+            <!-- ================================================================
+                 SECTION 3: BOTTOM RIGHT (50% Y, 50% X)
+                 - TO EDIT TEXT: Type inside .cad-sec-text below
+                 - TO CHANGE FONT SIZE: Adjust in styles.css (.cad-sec-text) or inline style
+                 - TO ADD PICTURE / LOGO: Insert <img src="your-image.png" class="cad-sec-img">
+                 ================================================================ -->
+            <div class="cad-sec cad-sec-3">
+              <div class="cad-sec-header">SECTION 3 &bull; CAD METRICS &amp; NOTES</div>
+              <div class="cad-sec-body">
+                <div class="cad-sec-text">
+                  DWN: G.H. &bull; CHK: G.H. &bull; REV: 01<br>
+                  CONFIG: Default &bull; SIZE: A &bull; SCALE: 1:2 &bull; TOL: &plusmn;0.1
+                </div>
               </div>
             </div>
           </div>
@@ -300,7 +314,7 @@
               <div class="mini-dwg-body">
                 <div class="mini-cad-title">Turret Pitch Gimbal Assembly</div>
                 <div class="mini-cad-sub">Subsystem A &bull; 2-DoF Precision Drive</div>
-                <div class="mini-cad-meta">Harmonic Reduction &bull; Zero Backlash</div>
+                <div class="mini-cad-meta">Harmonic Reduction &bull; Zero Backlash &bull; 7075-T6</div>
               </div>
               <div class="mini-dwg-footer">CLICK TO OPEN &bull; QTY: 1 &bull; 7075-T6</div>
             </div>
@@ -316,7 +330,7 @@
               <div class="mini-dwg-body">
                 <div class="mini-cad-title">Chassis 4-Bar Suspension</div>
                 <div class="mini-cad-sub">Subsystem B &bull; Obstacle Dampening</div>
-                <div class="mini-cad-meta">Progressive Geometry &bull; FEA Validated</div>
+                <div class="mini-cad-meta">Progressive Geometry &bull; 42mm Stroke &bull; FEA Validated</div>
               </div>
               <div class="mini-dwg-footer">CLICK TO OPEN &bull; QTY: 4 &bull; CF + 6061</div>
             </div>
@@ -332,9 +346,86 @@
               <div class="mini-dwg-body">
                 <div class="mini-cad-title">High-Throughput Dart Feeder</div>
                 <div class="mini-cad-sub">Subsystem C &bull; Cycloidal Indexer</div>
-                <div class="mini-cad-meta">30 Rounds/Sec &bull; Anti-Jam Feed</div>
+                <div class="mini-cad-meta">30 Rounds/Sec &bull; Anti-Jam Feed &bull; CNC Delrin</div>
               </div>
               <div class="mini-dwg-footer">CLICK TO OPEN &bull; QTY: 1 &bull; Delrin / Alu</div>
+            </div>
+          </div>
+
+          <!-- Extra Drawing Sheet 4: EI Tensioner & Belt Drive -->
+          <div class="folder-paper-item" data-id="tensioner">
+            <div class="folder-paper-frame">
+              <div class="mini-dwg-header">
+                <span class="mini-dwg-tag">ARUW-2026-TENS-03</span>
+                <span class="mini-dwg-rev">REV B</span>
+              </div>
+              <div class="mini-dwg-body">
+                <div class="mini-cad-title">EI Tensioner &amp; Belt Drive</div>
+                <div class="mini-cad-sub">Subsystem D &bull; Precision Belt Preload</div>
+                <div class="mini-cad-meta">Dual Eccentric Cam &bull; HTD-3M Timing Belt</div>
+              </div>
+              <div class="mini-dwg-footer">CLICK TO OPEN &bull; QTY: 2 &bull; 7075-T6</div>
+            </div>
+          </div>
+
+          <!-- Extra Drawing Sheet 5: Linear Suspension V3 (Static Thumbnail + Words) -->
+          <div class="folder-paper-item" data-id="suspension">
+            <div class="folder-paper-frame">
+              <div class="mini-dwg-header">
+                <span class="mini-dwg-tag">ARUW-2027-SUSP-01</span>
+                <span class="mini-dwg-rev">REV B</span>
+              </div>
+              <div class="mini-dwg-body">
+                <div class="mini-cad-title">2027 Linear Suspension V3</div>
+                <!-- Static thumbnail shot of Linear Suspension -->
+                <div class="mini-dwg-thumbnail">
+                  <svg viewBox="0 0 160 90" class="mini-cad-svg" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="20,52 80,24 140,52 80,78" fill="#f8fafc" stroke="#334155" stroke-width="1.3" />
+                    <line x1="48" y1="42" x2="114" y2="60" stroke="#0284c7" stroke-width="2" />
+                    <line x1="56" y1="36" x2="122" y2="54" stroke="#0284c7" stroke-width="2" />
+                    <polygon points="68,44 94,33 112,41 86,52" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.4" />
+                    <polygon points="68,44 86,52 86,63 68,55" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.4" />
+                    <polygon points="86,52 112,41 112,52 86,63" fill="#94a3b8" stroke="#0f172a" stroke-width="1.4" />
+                    <path d="M 88,32 Q 93,27 98,32 T 108,32 T 118,32" fill="none" stroke="#dc2626" stroke-width="1.8" />
+                    <ellipse cx="42" cy="56" rx="14" ry="22" fill="#f1f5f9" stroke="#0f172a" stroke-width="1.5" transform="rotate(-15 42 56)" />
+                    <ellipse cx="42" cy="56" rx="7" ry="11" fill="none" stroke="#475569" stroke-width="1.2" transform="rotate(-15 42 56)" />
+                    <circle cx="42" cy="56" r="2.5" fill="#0f172a" />
+                  </svg>
+                </div>
+                <div class="mini-cad-meta">Dual MGN9H Rails &bull; 560 N Lateral Impact &bull; +200% Drop Height</div>
+              </div>
+              <div class="mini-dwg-footer">CLICK TO INSPECT &bull; FULL ASSEMBLY</div>
+            </div>
+          </div>
+
+          <!-- Extra Drawing Sheet 6: Hero Mk1 Assembly (Static Thumbnail + Words) -->
+          <div class="folder-paper-item" data-id="hero">
+            <div class="folder-paper-frame">
+              <div class="mini-dwg-header">
+                <span class="mini-dwg-tag">ARUW-2026-HERO-01</span>
+                <span class="mini-dwg-rev">REV A</span>
+              </div>
+              <div class="mini-dwg-body">
+                <div class="mini-cad-title">2026 Hero Mk1 Robot Assembly</div>
+                <!-- Static thumbnail shot of Hero Assembly -->
+                <div class="mini-dwg-thumbnail">
+                  <svg viewBox="0 0 160 90" class="mini-cad-svg" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="80" y1="13" x2="132" y2="10" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
+                    <rect x="66" y="9" width="22" height="9" rx="1.5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2" />
+                    <line x1="77" y1="19" x2="77" y2="26" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2 2" />
+                    <polygon points="60,28 94,28 102,38 52,38" fill="#fef3c7" stroke="#d97706" stroke-width="1.3" />
+                    <line x1="77" y1="39" x2="77" y2="46" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2 2" />
+                    <ellipse cx="77" cy="49" rx="27" ry="9" fill="#f1f5f9" stroke="#1e293b" stroke-width="1.4" />
+                    <ellipse cx="77" cy="49" rx="15" ry="5" fill="#e2e8f0" stroke="#475569" stroke-width="1" />
+                    <line x1="77" y1="59" x2="77" y2="66" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2 2" />
+                    <polygon points="38,70 77,62 116,70 124,79 77,85 30,79" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.4" />
+                    <line x1="38" y1="70" x2="38" y2="76" stroke="#0f172a" stroke-width="1.2" />
+                    <line x1="116" y1="70" x2="116" y2="76" stroke="#0f172a" stroke-width="1.2" />
+                  </svg>
+                </div>
+                <div class="mini-cad-meta">5 Subsystems &bull; nTop Generative Lattice &bull; 3rd Place Finish</div>
+              </div>
+              <div class="mini-dwg-footer">CLICK TO INSPECT &bull; FULL ROBOT</div>
             </div>
           </div>
 
@@ -363,7 +454,7 @@
     <button class="modal-close-btn" id="modalClose">✕ Return to Desk</button>
   </div>
 
-  <script src="drawings.js?v=11"></script>
-  <script src="app.js?v=11"></script>
+  <script src="drawings.js?v=12"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>

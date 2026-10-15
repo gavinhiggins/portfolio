@@ -306,6 +306,49 @@ class AppController {
           </div>
         `;
 
+      case 'tensioner':
+        return `
+          <div style="font-family: var(--font-sans); color: #1a1a1a;">
+            <div style="border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span style="font-family: var(--font-mono); font-size: 0.75rem; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 3px; font-weight: 700;">DWG: ARUW-2026-TENS-03 &bull; REV B</span>
+                <h1 style="font-size: 1.7rem; font-weight: 800; margin-top: 6px;">EI Tensioner &amp; Belt Drive Assembly</h1>
+                <p style="font-size: 0.95rem; color: #555;">Subsystem D &bull; Precision Belt Preload &bull; Advanced Robotics at UW</p>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; background: #f4f4f0; padding: 16px; border-radius: 6px; margin-bottom: 24px; border: 1px solid #d4d4ce;">
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">DRIVE RATIO</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">4.2:1 Compound</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">PRELOAD ADJUST</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">Dual Eccentric Cam</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">BELT SPEC</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">HTD-3M Pitch</div>
+              </div>
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #666; text-transform: uppercase;">MATERIAL</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: #111;">7075-T6 + Carbon Fiber</div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; line-height: 1.6; font-size: 0.92rem; color: #333;">
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">CONTINUOUS BELT TENSIONING</h3>
+                <p>Designed an eccentric idler tensioner that maintains consistent tooth engagement during rapid reversals without skipping or backlash.</p>
+              </div>
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; border-left: 3px solid #222; padding-left: 10px;">FEA &amp; MASS REDUCTION</h3>
+                <p>Pocketed 7075-T6 aluminum mounting plates with FEA stress concentration relief, reducing weight while supporting high shock loads.</p>
+              </div>
+            </div>
+          </div>
+        `;
+
       case 'resume':
         return `
           <div style="font-family: var(--font-sans); color: #1a1a1a;">

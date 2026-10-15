@@ -413,100 +413,26 @@ html, body {
   box-sizing: border-box;
 }
 
+/* ==========================================================================
+   SOLIDWORKS CAD TITLE & NOTES BLOCK (3 BLANK TEMPLATE SECTIONS)
+   - Section 1: Left Vertical Half (50% X, 100% Y)
+   - Section 2: Top-Right Half (50% X, 50% Y) [Split hamburger style]
+   - Section 3: Bottom-Right Half (50% X, 50% Y) [Split hamburger style]
+   ========================================================================== */
+
 /* SECTION 1: LEFT VERTICAL HALF (50% X, 100% Y) */
-.cad-section-left {
+.cad-sec-1 {
   width: 50%;
   height: 100%;
-  display: flex;
   border-right: 1.5px solid var(--cad-border);
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.notes-logo-cell {
-  width: 56px;
-  border-right: 1px solid var(--cad-border);
-  background: #f8f8f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  overflow: hidden;
-  text-align: center;
-  flex-shrink: 0;
-  box-sizing: border-box;
-}
-
-.notes-logo-cell img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-.notes-logo-placeholder {
-  font-size: 0.40rem;
-  font-weight: 700;
-  color: #888;
-  line-height: 1.25;
-  text-transform: uppercase;
-  border: 1px dashed #bbb;
-  padding: 4px 2px;
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  padding: 6px 8px;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
-.notes-logo-placeholder small {
-  font-size: 0.35rem;
-  color: #aaa;
-  margin-top: 2px;
-}
-
-.notes-content-cell {
-  flex: 1;
-  padding: 5px 6px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  overflow: hidden;
-  line-height: 1.22;
-  box-sizing: border-box;
-}
-
-.notes-header {
-  font-weight: 800;
-  font-size: 0.44rem;
-  color: #111;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 2px;
-  letter-spacing: 0.02em;
-}
-
-.notes-row {
-  display: flex;
-  gap: 3px;
-  font-size: 0.38rem;
-  color: #333;
-  line-height: 1.22;
-  overflow: hidden;
-}
-
-.notes-num {
-  font-weight: 700;
-  color: #555;
-  flex-shrink: 0;
-}
-
-.notes-text {
-  overflow: hidden;
-  word-break: break-word;
-}
-
-/* RIGHT HALF (50% X, 100% Y): SPLIT HAMBURGER STYLE WITH HORIZONTAL LINE */
+/* RIGHT HALF CONTAINER (Contains Sec 2 and Sec 3 stacked) */
 .cad-section-right {
   width: 50%;
   height: 100%;
@@ -517,86 +443,85 @@ html, body {
 }
 
 /* SECTION 2: TOP RIGHT (50% Y, 50% X) */
-.cad-sec-top-right {
+.cad-sec-2 {
   height: 50%;
+  border-bottom: 1.5px solid var(--cad-border); /* HORIZONTAL HAMBURGER SPLIT LINE */
   display: flex;
-  border-bottom: 1.5px solid var(--cad-border); /* HORIZONTAL SPLIT LINE */
+  flex-direction: column;
+  padding: 5px 8px;
   overflow: hidden;
   box-sizing: border-box;
 }
-
-.cad-sec-top-right .cell-info-box {
-  width: 72px;
-  flex-shrink: 0;
-  border-right: 1px solid var(--cad-border);
-  background: #f1f1ee;
-  padding: 4px 2px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  box-sizing: border-box;
-}
-
-.info-box-org { font-weight: 800; font-size: 0.52rem; color: #111; }
-.info-box-sub { font-size: 0.40rem; color: #555; margin-top: 1px; }
-.info-box-lead { font-size: 0.44rem; font-weight: 700; color: #222; margin-top: 2px; }
-
-.cad-sec-top-right .cell-part-name {
-  flex: 1;
-  padding: 3px 6px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.part-name-label { font-size: 0.38rem; color: #666; font-weight: 600; text-transform: uppercase; }
-.part-name-text { font-size: 0.50rem; font-weight: 800; color: #111; line-height: 1.2; word-break: break-word; }
 
 /* SECTION 3: BOTTOM RIGHT (50% Y, 50% X) */
-.cad-sec-bottom-right {
+.cad-sec-3 {
   height: 50%;
   display: flex;
   flex-direction: column;
+  padding: 5px 8px;
   overflow: hidden;
   box-sizing: border-box;
 }
 
-.cad-sub-row {
+/* ==========================================================================
+   USER-EDITABLE STYLING & FONT SIZES FOR TITLE BLOCK SECTIONS
+   You can easily edit font-size, line-height, or colors below:
+   ========================================================================== */
+
+/* Section headers (small label at top of each box) */
+.cad-sec-header {
+  font-size: 0.38rem;         /* EDIT FONT SIZE HERE */
+  font-weight: 800;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e0e0dc;
+  padding-bottom: 2px;
+  margin-bottom: 3px;
+  flex-shrink: 0;
+}
+
+/* Section inner content area */
+.cad-sec-body {
   flex: 1;
   display: flex;
-  box-sizing: border-box;
-}
-
-.cad-sub-row-1 {
-  border-bottom: 1px solid var(--cad-border);
-}
-
-.cad-sec-bottom-right .title-cell {
-  border-right: 1px solid var(--cad-border);
-  padding: 2px 4px;
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
   overflow: hidden;
-  font-size: 0.40rem;
-  line-height: 1.15;
-  box-sizing: border-box;
 }
 
-.cad-sec-bottom-right .title-cell:last-child {
-  border-right: none;
+/* Title font size (Section 2) */
+.cad-sec-title {
+  font-size: 0.52rem;         /* EDIT FONT SIZE HERE FOR MAIN TITLE */
+  font-weight: 800;
+  color: #111;
+  line-height: 1.25;
 }
 
-.cell-units { flex: 1.3; font-size: 0.36rem; color: #444; }
-.cell-drawn { flex: 1; font-weight: 700; }
-.cell-checked { flex: 1; font-weight: 700; }
-.cell-config { flex: 1.2; }
-.cell-size { flex: 0.7; }
-.cell-scale { flex: 0.8; }
-.cell-mat { flex: 1.5; font-size: 0.36rem; }
+/* Subtitle font size (Section 2) */
+.cad-sec-subtitle {
+  font-size: 0.40rem;         /* EDIT FONT SIZE HERE FOR SUBTITLE */
+  font-weight: 700;
+  color: #555;
+  margin-top: 2px;
+}
+
+/* General notes and metrics text (Sections 1 & 3) */
+.cad-sec-text {
+  font-size: 0.42rem;         /* EDIT FONT SIZE HERE FOR BODY / NOTES */
+  line-height: 1.35;
+  color: #222;
+  word-break: break-word;
+}
+
+/* Images & Logos inserted in any section */
+.cad-sec-img {
+  max-width: 100%;
+  max-height: 42px;           /* EDIT MAX HEIGHT HERE FOR LOGOS / IMAGES */
+  object-fit: contain;
+  margin-bottom: 4px;
+  display: block;
+}
 
 /* --------------------------------------------------------------------------
    FULLSCREEN MODAL (Inspection Mode)
@@ -660,15 +585,17 @@ html, body {
 .modal-close-btn:hover { background: #b91c1c; }
 
 /* --------------------------------------------------------------------------
-   MANILA PROJECT FOLDER (Peeking from bottom of screen)
-   Slides up on hover to reveal extra CAD project sheets
+   MANILA PROJECT FOLDER (Enlarged 1.75x, Peeking from bottom of screen)
+   In default state: top edge and drawing papers poke out from bottom of screen
+   Hover to pull up fully and reveal 6 CAD project drawing sheets
    -------------------------------------------------------------------------- */
 .project-folder {
   position: fixed;
   bottom: 0;
   left: 50%;
-  transform: translateX(-50%) translateY(calc(100% - 40px));
-  width: min(860px, 92vw);
+  /* Default resting state: tab (44px) + top 86px of folder & drawings poke out */
+  transform: translateX(-50%) translateY(calc(100% - 130px));
+  width: min(1500px, 96vw); /* 1.75x enlargement */
   z-index: 60;
   transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.42s ease;
   will-change: transform;
@@ -676,28 +603,29 @@ html, body {
 
 .project-folder:hover,
 .project-folder:focus-within {
-  transform: translateX(-50%) translateY(0);
+  /* Pull up more when hovered over, elevated proud on desk */
+  transform: translateX(-50%) translateY(-8px);
 }
 
 .folder-tab {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  height: 40px;
-  padding: 0 22px;
+  gap: 12px;
+  height: 44px;
+  padding: 0 32px;
   background: linear-gradient(180deg, #ecd5a4 0%, #dac088 100%);
-  border-top-left-radius: 8px;
-  border-top-right-radius: 12px;
-  box-shadow: 0 -4px 14px rgba(15, 8, 3, 0.25);
+  border-top-left-radius: 10px;
+  border-top-right-radius: 14px;
+  box-shadow: 0 -5px 16px rgba(15, 8, 3, 0.28);
   border: 1px solid #c4a76c;
   border-bottom: none;
   font-family: var(--font-mono);
-  font-size: 0.74rem;
-  font-weight: 700;
+  font-size: 0.80rem;
+  font-weight: 800;
   color: #3d280b;
   cursor: pointer;
   user-select: none;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   transition: background 0.2s ease, padding 0.2s ease;
 }
 
@@ -706,45 +634,55 @@ html, body {
 }
 
 .folder-tab-icon {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
 }
 
 .folder-body {
   background: linear-gradient(180deg, #dac088 0%, #caa96e 100%);
   border: 1px solid #b8985c;
   border-bottom: none;
-  border-top-right-radius: 10px;
-  box-shadow: 0 -8px 30px rgba(10, 5, 2, 0.38);
-  padding: 22px 20px 22px;
+  border-top-right-radius: 12px;
+  box-shadow: 0 -12px 40px rgba(10, 5, 2, 0.45);
+  padding: 20px 18px 24px;
+  min-height: 270px;
 }
 
 .folder-papers-container {
   display: flex;
   justify-content: center;
   align-items: stretch;
-  gap: 18px;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 6px 4px 10px;
 }
 
 .folder-paper-item {
-  flex: 1;
-  max-width: 260px;
+  flex: 1 1 0;
+  min-width: 190px;
+  max-width: 240px;
+  min-height: 245px;
   background: var(--paper-white);
   border: 1px solid var(--paper-border);
   border-radius: 2px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
   padding: 8px;
   cursor: pointer;
   transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 0.35s ease;
   will-change: transform, box-shadow;
+  display: flex;
+  flex-direction: column;
 }
 
 .folder-paper-item:nth-child(1) { transform: rotate(-1.5deg); }
 .folder-paper-item:nth-child(2) { transform: rotate(0.8deg); }
-.folder-paper-item:nth-child(3) { transform: rotate(-0.5deg); }
+.folder-paper-item:nth-child(3) { transform: rotate(-0.6deg); }
+.folder-paper-item:nth-child(4) { transform: rotate(1.0deg); }
+.folder-paper-item:nth-child(5) { transform: rotate(-1.0deg); }
+.folder-paper-item:nth-child(6) { transform: rotate(0.6deg); }
 
 .folder-paper-item:hover {
-  transform: translateY(-16px) scale(1.03) rotate(0deg) !important;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35) !important;
+  transform: translateY(-18px) scale(1.04) rotate(0deg) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38) !important;
   z-index: 10;
 }
 
@@ -764,7 +702,7 @@ html, body {
   align-items: center;
   border-bottom: 1px solid #777;
   padding-bottom: 4px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-family: var(--font-mono);
   font-size: 0.58rem;
   font-weight: 700;
@@ -783,7 +721,11 @@ html, body {
 }
 
 .mini-dwg-body {
-  margin: 8px 0;
+  margin: 6px 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .mini-cad-title {
@@ -804,14 +746,35 @@ html, body {
 
 .mini-cad-meta {
   font-family: var(--font-sans);
-  font-size: 0.65rem;
-  color: #777;
+  font-size: 0.63rem;
+  color: #666;
+  line-height: 1.25;
+}
+
+/* Static thumbnail shot for drawings 5 & 6 */
+.mini-dwg-thumbnail {
+  width: 100%;
+  height: 75px;
+  background: #fdfdfc;
+  border: 1px solid #dcdcd6;
+  border-radius: 2px;
+  margin: 5px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.mini-cad-svg {
+  width: 100%;
+  height: 100%;
+  max-height: 72px;
 }
 
 .mini-dwg-footer {
   border-top: 1px solid #777;
   padding-top: 4px;
-  margin-top: 8px;
+  margin-top: 6px;
   font-family: var(--font-mono);
   font-size: 0.52rem;
   font-weight: 700;
