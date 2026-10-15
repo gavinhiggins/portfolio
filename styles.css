@@ -159,16 +159,14 @@ html, body {
     0 2px 4px rgba(0,0,0,0.18),
     0 14px 32px rgba(20, 10, 2, 0.5),
     inset 0 -8px 20px rgba(210, 175, 40, 0.2);
-  cursor: pointer;
+  cursor: default; /* Static note, not clickable */
   z-index: 30;
   transform: rotate(var(--postit-angle));
-  transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 0.4s ease;
 }
 
+/* Post-It note remains completely static when hovered */
 .post-it-note:hover {
-  z-index: 90 !important;
-  transform: rotate(0deg) translateY(-10px) scale(1.03);
-  box-shadow: 0 24px 50px rgba(20, 10, 2, 0.6);
+  /* Remains static in place */
 }
 
 .post-it-tape {
@@ -191,6 +189,21 @@ html, body {
   height: 32px;
   background: linear-gradient(135deg, transparent 50%, rgba(180, 140, 20, 0.45) 50%);
   border-bottom-right-radius: 14px;
+}
+
+/* Name Placeholder PNG styling */
+.post-it-name-wrap {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.post-it-name-img {
+  max-width: 100%;
+  height: auto;
+  max-height: 65px;
+  display: block;
+  object-fit: contain;
 }
 
 .post-it-name {

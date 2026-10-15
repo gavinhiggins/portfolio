@@ -24,13 +24,7 @@ class AppController {
       });
     });
 
-    // Click on Post-It note
-    const postIt = document.getElementById('postIt');
-    if (postIt) {
-      postIt.addEventListener('click', () => {
-        this.openModal('postit');
-      });
-    }
+    // Post-It note is static (no modal on click)
 
     // Modal close controls
     if (this.modalClose) {
