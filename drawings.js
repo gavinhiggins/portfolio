@@ -1149,6 +1149,364 @@ class CadDrawingsEngine {
     };
     requestAnimationFrame(loop);
   }
+
+  // ========================================================================
+  // 3. FULLSCREEN SPLIT-INSPECTION 3D CAD VIEWER
+  // Displays the right side of the drawing (TurretBase for Hero, Beauty Assembly for Suspension)
+  // Interactive Orbit / Rotation Drag + Subsystem / Part Highlighting
+  // ========================================================================
+  initInspectionViewer(canvas, projectId) {
+    this.destroyInspectionViewer();
+
+    if (!canvas) return;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+    const scene = this.createLitScene();
+    const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 1000);
+
+    const orbitGroup = new THREE.Group();
+    scene.add(orbitGroup);
+
+    const insp = {
+      canvas,
+      renderer,
+      scene,
+      camera,
+      orbitGroup,
+      model: null,
+      projectId,
+      animId: null,
+      w: 0,
+      h: 0,
+      dirty: true,
+      userInteracting: false,
+      rotY: 0,
+      rotX: 0,
+      targetRotY: 0,
+      targetRotX: 0,
+      zoom: 1.0,
+      targetZoom: 1.0,
+      frameCenter: new THREE.Vector3(),
+      frameSize: new THREE.Vector3(2, 2, 2),
+      baseCamDir: projectId === 'hero' ? TURRET_BASE_DIR.clone() : SUSP_BEAUTY_DIR.clone()
+    };
+    this.inspection = insp;
+
+    // Highlighting Materials
+    insp.defaultMat = new THREE.MeshStandardMaterial({
+      color: 0xf6f6f4,
+      roughness: 0.35,
+      metalness: 0.08,
+      flatShading: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1
+    });
+
+    insp.highlightMat = new THREE.MeshStandardMaterial({
+      color: 0x38bdf8,
+      emissive: 0x0284c7,
+      emissiveIntensity: 0.85,
+      roughness: 0.25,
+      metalness: 0.12,
+      flatShading: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1
+    });
+
+    insp.edgeMat = new THREE.LineBasicMaterial({
+      color: 0x111111,
+      linewidth: 1.2
+    });
+
+    // Setup Pointer Drag & Zoom
+    let isDown = false;
+    let startX = 0, startY = 0;
+
+    const onPointerDown = (e) => {
+      isDown = true;
+      startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+    };
+
+    const onPointerMove = (e) => {
+      if (!isDown) return;
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      const dx = clientX - startX;
+      const dy = clientY - startY;
+      startX = clientX;
+      startY = clientY;
+
+      insp.targetRotY += dx * 0.008;
+      insp.targetRotX += dy * 0.008;
+      insp.targetRotX = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, insp.targetRotX));
+      insp.dirty = true;
+    };
+
+    const onPointerUp = () => {
+      isDown = false;
+    };
+
+    const onWheel = (e) => {
+      e.preventDefault();
+      insp.targetZoom = Math.max(0.4, Math.min(2.5, insp.targetZoom + e.deltaY * 0.0015));
+      insp.dirty = true;
+    };
+
+    canvas.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+    canvas.addEventListener('touchstart', onPointerDown, { passive: true });
+    window.addEventListener('touchmove', onPointerMove, { passive: true });
+    window.addEventListener('touchend', onPointerUp);
+    canvas.addEventListener('wheel', onWheel, { passive: false });
+
+    insp.removeListeners = () => {
+      canvas.removeEventListener('mousedown', onPointerDown);
+      window.removeEventListener('mousemove', onPointerMove);
+      window.removeEventListener('mouseup', onPointerUp);
+      canvas.removeEventListener('touchstart', onPointerDown);
+      window.removeEventListener('touchmove', onPointerMove);
+      window.removeEventListener('touchend', onPointerUp);
+      canvas.removeEventListener('wheel', onWheel);
+    };
+
+    // Load Appropriate Model
+    if (projectId === 'hero') {
+      this.loadInspectionHero(insp);
+    } else if (projectId === 'suspension') {
+      this.loadInspectionSuspension(insp);
+    }
+
+    // Animation & Render Loop
+    let lastTime = performance.now();
+    const renderLoop = (time) => {
+      if (!this.inspection || this.inspection !== insp) return;
+      const dt = Math.min(0.1, (time - lastTime) / 1000);
+      lastTime = time;
+
+      // Smooth damping rotation & zoom
+      insp.rotY += (insp.targetRotY - insp.rotY) * 0.12;
+      insp.rotX += (insp.targetRotX - insp.rotX) * 0.12;
+      insp.zoom += (insp.targetZoom - insp.zoom) * 0.12;
+
+      insp.orbitGroup.rotation.y = insp.rotY;
+      insp.orbitGroup.rotation.x = insp.rotX;
+
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      if (w && h && (w !== insp.w || h !== insp.h)) {
+        insp.w = w;
+        insp.h = h;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        insp.dirty = true;
+      }
+
+      if (insp.frameCenter && insp.frameSize) {
+        this.frameCamera(
+          camera,
+          insp.frameCenter,
+          insp.baseCamDir,
+          insp.frameSize,
+          camera.aspect,
+          0.88 * insp.zoom
+        );
+      }
+
+      renderer.render(scene, camera);
+      insp.animId = requestAnimationFrame(renderLoop);
+    };
+
+    insp.animId = requestAnimationFrame(renderLoop);
+  }
+
+  loadInspectionHero(insp) {
+    // Immediate procedural baseline so display is never blank
+    const baseline = this.createProceduralTurretBase();
+    insp.orbitGroup.add(baseline);
+    insp.model = baseline;
+    const baseFrame = this.boxToFrame(new THREE.Box3().setFromObject(baseline));
+    insp.frameCenter.copy(baseFrame.center);
+    insp.frameSize.copy(baseFrame.size);
+
+    const turretGlbUrl = encodeURI('TurretBaseRender.glb');
+    this.loader.load(
+      turretGlbUrl,
+      (gltf) => {
+        if (!this.inspection || this.inspection !== insp) return;
+        try {
+          const model = gltf.scene;
+          this.filterFloatingTurretParts(model);
+
+          // Apply individual material clones with edge lines for component highlighting
+          this.applyInspectionCadMaterials(model, insp);
+
+          const bbox = new THREE.Box3().setFromObject(model);
+          const center = bbox.getCenter(new THREE.Vector3());
+          const size = bbox.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z) || 1;
+
+          const scale = 3.2 / maxDim;
+          model.scale.setScalar(scale);
+          model.position.copy(center).multiplyScalar(-scale);
+
+          const root = new THREE.Group();
+          root.add(model);
+          insp.orbitGroup.remove(baseline);
+          insp.orbitGroup.add(root);
+          root.updateMatrixWorld(true);
+
+          insp.model = root;
+          const frame = this.boxToFrame(new THREE.Box3().setFromObject(root));
+          insp.frameCenter.copy(frame.center);
+          insp.frameSize.copy(frame.size);
+          insp.dirty = true;
+        } catch (e) {
+          console.warn('Inspection Hero setup fallback:', e);
+        }
+      },
+      undefined,
+      (err) => console.warn('Inspection Hero load err:', err)
+    );
+  }
+
+  loadInspectionSuspension(insp) {
+    // Immediate procedural baseline
+    const baseline = this.createSuspensionProceduralCad().root;
+    insp.orbitGroup.add(baseline);
+    insp.model = baseline;
+    const baseFrame = this.boxToFrame(new THREE.Box3().setFromObject(baseline));
+    insp.frameCenter.copy(baseFrame.center);
+    insp.frameSize.copy(baseFrame.size);
+
+    const suspGlbUrl = encodeURI('2027,_Linear_Suspension_V3,_Assembly (1).glb');
+    this.loader.load(
+      suspGlbUrl,
+      (gltf) => {
+        if (!this.inspection || this.inspection !== insp) return;
+        try {
+          const model = gltf.scene;
+          this.applyInspectionCadMaterials(model, insp);
+
+          const bbox = new THREE.Box3().setFromObject(model);
+          const center = bbox.getCenter(new THREE.Vector3());
+          const size = bbox.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z) || 1;
+
+          const scale = 3.2 / maxDim;
+          model.scale.setScalar(scale);
+          model.position.copy(center).multiplyScalar(-scale);
+
+          const root = new THREE.Group();
+          root.add(model);
+          insp.orbitGroup.remove(baseline);
+          insp.orbitGroup.add(root);
+          root.updateMatrixWorld(true);
+
+          insp.model = root;
+          const frame = this.boxToFrame(new THREE.Box3().setFromObject(root));
+          insp.frameCenter.copy(frame.center);
+          insp.frameSize.copy(frame.size);
+          insp.dirty = true;
+        } catch (e) {
+          console.warn('Inspection Suspension setup fallback:', e);
+        }
+      },
+      undefined,
+      (err) => console.warn('Inspection Suspension load err:', err)
+    );
+  }
+
+  applyInspectionCadMaterials(model, insp) {
+    const viewDir = insp.baseCamDir;
+    model.traverse((child) => {
+      if (child.isMesh && child.visible) {
+        // Individual material clone per mesh so only hovered parts illuminate
+        const defMat = insp.defaultMat.clone();
+        child.userData.defaultMat = defMat;
+        child.material = defMat;
+        child.castShadow = false;
+        child.receiveShadow = false;
+
+        const rawName = (child.name || '') + ' ' + (child.parent ? child.parent.name : '');
+        const name = normName(rawName);
+
+        // Helical spring coil: skip edge lines to avoid fuzzy black mass
+        const isSpringCoil = name.includes('9657k498') ||
+          (name.includes('spring') && !name.includes('body') && !name.includes('cap') && !name.includes('mount') && !name.includes('tank') && !name.includes('spacer') && !name.includes('shaft') && !name.includes('hole'));
+        if (isSpringCoil) {
+          return;
+        }
+
+        const isTubeOrCylinder = (
+          name.includes('shaft') || name.includes('pin') || name.includes('tube') ||
+          name.includes('cylinder') || name.includes('roller') || name.includes('barrel') ||
+          name.includes('support')
+        ) && !name.includes('attachment') && !name.includes('plate') && !name.includes('holder');
+        const isSpacerOrBushing = name.includes('spacer') || name.includes('bushing') || name.includes('locknut');
+
+        try {
+          const edges = this.createCadEdges(child.geometry, isTubeOrCylinder, isSpacerOrBushing, viewDir);
+          if (edges) {
+            const line = new THREE.LineSegments(edges, insp.edgeMat);
+            child.add(line);
+          }
+        } catch (e) {}
+      }
+    });
+  }
+
+  highlightInspectionPart(partKeys) {
+    if (!this.inspection || !this.inspection.model) return;
+    const targetKeys = (Array.isArray(partKeys) ? partKeys : [partKeys])
+      .map(k => normName(k))
+      .filter(Boolean);
+
+    if (!targetKeys.length) return;
+
+    this.inspection.model.traverse((child) => {
+      if (child.isMesh && child.userData.defaultMat) {
+        const name = normName((child.name || '') + ' ' + (child.parent ? child.parent.name : ''));
+        const isMatch = targetKeys.some(target => name.includes(target));
+        if (isMatch) {
+          child.material = this.inspection.highlightMat;
+        } else {
+          child.material = child.userData.defaultMat;
+        }
+      }
+    });
+    this.inspection.dirty = true;
+  }
+
+  clearInspectionHighlight() {
+    if (!this.inspection || !this.inspection.model) return;
+    this.inspection.model.traverse((child) => {
+      if (child.isMesh && child.userData.defaultMat) {
+        child.material = child.userData.defaultMat;
+      }
+    });
+    this.inspection.dirty = true;
+  }
+
+  destroyInspectionViewer() {
+    if (!this.inspection) return;
+    const insp = this.inspection;
+    if (insp.animId) cancelAnimationFrame(insp.animId);
+    if (insp.removeListeners) insp.removeListeners();
+    if (insp.renderer) {
+      try {
+        insp.renderer.dispose();
+        insp.renderer.forceContextLoss();
+      } catch (e) {}
+    }
+    this.inspection = null;
+  }
 }
 
 // ==========================================================================

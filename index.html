@@ -431,6 +431,15 @@
     <article class="paper-item resume-sheet-item" id="sheetResume" data-id="resume" style="--angle: 1.5deg;">
       <div class="resume-paper-frame">
         <canvas id="resumeCanvas"></canvas>
+        <!-- Dynamic Highlight Overlay (Hovering Hero or Suspension on homepage lights up respective section) -->
+        <div class="resume-highlights-overlay" id="resumeHighlightsOverlay">
+          <div class="resume-hl-block resume-hl-hero" id="resumeHlHero">
+            <span class="resume-hl-label">HERO ROBOT LEAD</span>
+          </div>
+          <div class="resume-hl-block resume-hl-suspension" id="resumeHlSuspension">
+            <span class="resume-hl-label">OMNI WHEEL SUSPENSION &bull; 2027</span>
+          </div>
+        </div>
         <div class="resume-hint-tag">GAVIN HIGGINS RESUME &bull; CLICK TO ENLARGE</div>
       </div>
     </article>
@@ -445,7 +454,7 @@
     <button class="modal-close-btn" id="modalClose">✕ Return to Desk</button>
   </div>
 
-  <script src="drawings.js?v=14"></script>
-  <script src="app.js?v=14"></script>
+  <script src="drawings.js?v=16"></script>
+  <script src="app.js?v=16"></script>
 </body>
 </html>
