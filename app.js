@@ -140,26 +140,20 @@ class AppController {
 
   wireInteractivePartCards() {
     const partCards = this.modalContainer.querySelectorAll('.doc-part-card');
-    const highlightIndicator = this.modalContainer.querySelector('#inspectionHighlightIndicator');
 
     partCards.forEach(card => {
       const partKeyRaw = card.dataset.part || '';
       const partKeys = partKeyRaw.split(',').map(s => s.trim().toLowerCase());
-      const partName = card.querySelector('.doc-part-name')?.textContent || 'COMPONENT';
 
       card.addEventListener('mouseenter', () => {
-        // 1. Update Footer Indicator
-        if (highlightIndicator) {
-          highlightIndicator.textContent = `HIGHLIGHTING: ${partName.toUpperCase()}`;
-          highlightIndicator.classList.add('active');
-        }
+        card.classList.add('active');
 
-        // 2. Highlight 3D Meshes (Hero & Suspension)
+        // 1. Highlight 3D Meshes (Hero & Suspension)
         if (window.cadEngine && window.cadEngine.highlightInspectionPart) {
           window.cadEngine.highlightInspectionPart(partKeys);
         }
 
-        // 3. Highlight 2D Vector SVG Elements (Folder Projects)
+        // 2. Highlight 2D Vector SVG Elements (Folder Projects)
         const svgParts = this.modalContainer.querySelectorAll('.cad-svg-part');
         svgParts.forEach(svgEl => {
           const elKey = (svgEl.dataset.part || '').toLowerCase();
@@ -171,7 +165,7 @@ class AppController {
           }
         });
 
-        // 4. Highlight Callout Lines
+        // 3. Highlight Callout Lines
         const calloutLines = this.modalContainer.querySelectorAll('.cad-callout-line');
         calloutLines.forEach(line => {
           const lineKey = (line.dataset.part || '').toLowerCase();
@@ -185,11 +179,7 @@ class AppController {
       });
 
       card.addEventListener('mouseleave', () => {
-        // Reset Footer Indicator
-        if (highlightIndicator) {
-          highlightIndicator.textContent = 'HOVER A COMPONENT TO HIGHLIGHT';
-          highlightIndicator.classList.remove('active');
-        }
+        card.classList.remove('active');
 
         // Clear 3D Highlights
         if (window.cadEngine && window.cadEngine.clearInspectionHighlight) {
@@ -211,15 +201,15 @@ class AppController {
       <div style="font-family: var(--font-sans); color: #1a1a1a;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 18px;">
           <div>
-            <h1 style="font-size: 1.6rem; font-weight: 800;">Gavin Higgins — Resume</h1>
-            <p style="font-size: 0.88rem; color: #555;">University of Washington, Seattle &bull; B.S. Mechanical Engineering</p>
+            <h1 style="font-size: 1.6rem; font-weight: 800; margin: 0 0 4px 0;">Gavin Higgins — Resume</h1>
+            <p style="font-size: 0.88rem; color: #555; margin: 0;">University of Washington, Seattle &bull; B.S. Mechanical Engineering</p>
           </div>
           <div style="display: flex; gap: 10px;">
             <a href="Gavin_Higgins_Resume.pdf" download="Gavin_Higgins_Resume.pdf" style="background: #1e293b; color: #fff; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-              ⬇ Download PDF
+              &#11015; Download PDF
             </a>
             <a href="Gavin_Higgins_Resume.pdf" target="_blank" style="background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 0.82rem; text-decoration: none;">
-              ↗ Open in New Tab
+              &#8599; Open in New Tab
             </a>
           </div>
         </div>
@@ -231,278 +221,331 @@ class AppController {
     `;
   }
 
+  getZoneBorderSvg() {
+    return `
+      <svg class="zone-border-svg" viewBox="0 0 1000 700" preserveAspectRatio="none">
+        <rect x="2" y="2" width="996" height="696" fill="none" stroke="#777" stroke-width="1.5" />
+        <rect x="18" y="18" width="964" height="664" fill="none" stroke="#555" stroke-width="1.8" />
+        
+        <!-- Zone Ticks Top & Bottom -->
+        <line x1="265" y1="2" x2="265" y2="18" stroke="#777" stroke-width="1.2" />
+        <line x1="500" y1="2" x2="500" y2="18" stroke="#777" stroke-width="1.2" />
+        <line x1="735" y1="2" x2="735" y2="18" stroke="#777" stroke-width="1.2" />
+        <line x1="265" y1="682" x2="265" y2="698" stroke="#777" stroke-width="1.2" />
+        <line x1="500" y1="682" x2="500" y2="698" stroke="#777" stroke-width="1.2" />
+        <line x1="735" y1="682" x2="735" y2="698" stroke="#777" stroke-width="1.2" />
+
+        <!-- Zone Numbers Top -->
+        <text x="145" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">4</text>
+        <text x="382" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">3</text>
+        <text x="618" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">2</text>
+        <text x="855" y="14" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">1</text>
+
+        <!-- Zone Numbers Bottom -->
+        <text x="145" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">4</text>
+        <text x="382" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">3</text>
+        <text x="618" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">2</text>
+        <text x="855" y="694" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">1</text>
+
+        <!-- Zone Ticks Left & Right -->
+        <line x1="2" y1="185" x2="18" y2="185" stroke="#777" stroke-width="1.2" />
+        <line x1="2" y1="350" x2="18" y2="350" stroke="#777" stroke-width="1.2" />
+        <line x1="2" y1="515" x2="18" y2="515" stroke="#777" stroke-width="1.2" />
+        <line x1="982" y1="185" x2="998" y2="185" stroke="#777" stroke-width="1.2" />
+        <line x1="982" y1="350" x2="998" y2="350" stroke="#777" stroke-width="1.2" />
+        <line x1="982" y1="515" x2="998" y2="515" stroke="#777" stroke-width="1.2" />
+
+        <!-- Zone Letters Left -->
+        <text x="10" y="105" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">D</text>
+        <text x="10" y="272" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">C</text>
+        <text x="10" y="438" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">B</text>
+        <text x="10" y="605" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">A</text>
+
+        <!-- Zone Letters Right -->
+        <text x="990" y="105" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">D</text>
+        <text x="990" y="272" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">C</text>
+        <text x="990" y="438" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">B</text>
+        <text x="990" y="605" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#333" text-anchor="middle">A</text>
+      </svg>
+    `;
+  }
+
+  getCadTitleBlock(title, subtitle, rev, scale, notes) {
+    return `
+      <div class="drawing-title-block unified-cad-block">
+        <div class="cad-sec cad-sec-1">
+          <div class="cad-sec-header">SPECIFICATIONS &amp; NOTES</div>
+          <div class="cad-sec-body">
+            <div class="cad-sec-text">
+              ${notes || '1. ALL DIMENSIONS IN MM.<br>2. REMOVE ALL BURRS &amp; SHARP EDGES.<br>3. HOVER BOM ROWS TO HIGHLIGHT.'}
+            </div>
+          </div>
+        </div>
+        <div class="cad-section-right">
+          <div class="cad-sec-2">
+            <div class="cad-sec-header">PART TITLE &amp; ORG</div>
+            <div class="cad-sec-body">
+              <div class="cad-sec-title">${title}</div>
+              <div class="cad-sec-subtitle">${subtitle || 'UNIV OF WASH &bull; ADVANCED ROBOTICS &bull; ARUW'}</div>
+            </div>
+          </div>
+          <div class="cad-sec-3">
+            <div class="cad-sec-header">CAD METRICS</div>
+            <div class="cad-sec-body">
+              <div class="cad-sec-text">
+                DWN: G.H. &bull; CHK: G.H. &bull; REV: ${rev || 'A'}<br>
+                CONFIG: Default &bull; SIZE: D &bull; SCALE: ${scale || '1:1'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   getModalContent(id) {
+    const zoneSvg = this.getZoneBorderSvg();
+
     switch (id) {
       // ======================================================================
       // 1. 2027 LINEAR SUSPENSION V3 ASSEMBLY
-      // Left Display: Full 3D Beauty Assembly (Right Side of Homepage Drawing)
       // ======================================================================
       case 'suspension':
         return `
           <div class="inspection-split-layout">
             <div class="inspection-left-pane">
               <div class="inspection-drawing-board">
-                <div class="inspection-dwg-bar">
-                  <div class="inspection-dwg-title-tag">
-                    <span class="dwg-badge-id">ARUW-2027-SUSP-01</span>
-                    <span class="dwg-badge-rev">REV B</span>
-                    <span class="dwg-badge-name">2027 Linear Suspension V3 Assembly</span>
-                  </div>
-                  <div class="dwg-hint-text">DRAG TO ORBIT &bull; SCROLL TO ZOOM</div>
-                </div>
-
-                <div class="inspection-viewport-frame" id="inspectionViewport">
+                <div class="inspection-sheet-inner-frame">
+                  ${zoneSvg}
+                  <div class="sheet-corner-tag">ZONE D-2 &bull; 3D CAD BEAUTY ASSEMBLY</div>
+                  <div class="sheet-corner-hint">NOTE: DRAG TO ORBIT &bull; SCROLL TO ZOOM</div>
+                  
                   <canvas id="inspectionCanvas3D"></canvas>
-                </div>
-
-                <div class="inspection-dwg-footer">
-                  <div class="dwg-status-pill">
-                    <span class="pulse-dot"></span>
-                    <span>ONLINE &bull; SYNCHRONIZED</span>
-                  </div>
-                  <div class="dwg-model-tag">MODEL: 2027,_Linear_Suspension_V3,_Assembly.glb</div>
-                  <div class="dwg-highlight-indicator" id="inspectionHighlightIndicator">HOVER A COMPONENT TO HIGHLIGHT</div>
+                  
+                  ${this.getCadTitleBlock(
+                    '2027, Linear Suspension V3, Assembly',
+                    'UNIV OF WASH &bull; ADVANCED ROBOTICS &bull; ARUW 2027',
+                    'B',
+                    '1:1',
+                    '1. ALL DIMENSIONS IN MM. REMOVE ALL BURRS.<br>2. MATERIAL: AL 6061-T6 / CF. CLEAR ANODIZE.<br>3. HOVER BOM ROWS TO HIGHLIGHT PARTS.'
+                  )}
                 </div>
               </div>
             </div>
 
             <div class="inspection-right-pane">
               <article class="inspection-paper-sheet">
-                <header class="doc-paper-header">
-                  <div class="doc-badge-row">
-                    <span class="doc-tag doc-tag-blue">DWG: ARUW-2027-SUSP-01 &bull; REV B</span>
-                    <span class="doc-tag doc-tag-green">2027 SEASON</span>
-                    <span class="doc-tag doc-tag-amber">SUSPENSION LEAD</span>
+                <header class="eng-report-header">
+                  <div class="eng-header-org">UNIVERSITY OF WASHINGTON &bull; ADVANCED ROBOTICS (ARUW)</div>
+                  <div class="eng-header-sub">DEPARTMENT OF MECHANICAL ENGINEERING &bull; SUBSYSTEM DESIGN REPORT</div>
+                  <div class="eng-header-rule"></div>
+                  <div class="eng-doc-info-row">
+                    <span><strong>DOC ID:</strong> ARUW-2027-SUSP-01</span>
+                    <span><strong>REV:</strong> B</span>
+                    <span><strong>LEAD:</strong> Gavin Higgins (Suspension Lead)</span>
                   </div>
-                  <h1 class="doc-title">2027, Linear Suspension V3, Assembly</h1>
-                  <p class="doc-subtitle">Advanced Robotics at the University of Washington (ARUW) &bull; Modular Robot Drivetrain</p>
+                  <h1 class="eng-report-title">2027 Linear Suspension V3 Assembly</h1>
                 </header>
 
-                <div class="doc-specs-grid">
-                  <div>
-                    <div class="doc-spec-cell-label">LATERAL IMPACT</div>
-                    <div class="doc-spec-cell-val">560 N (4x 2026)</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">DROP RATING</div>
-                    <div class="doc-spec-cell-val">+200% Higher Drop</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">MOTION SYSTEM</div>
-                    <div class="doc-spec-cell-val">Dual MGN9H Rails</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">MATERIAL SPEC</div>
-                    <div class="doc-spec-cell-val">0.25" 6061-T6 + CF</div>
-                  </div>
-                </div>
+                <div class="eng-sec-heading">1.0 Subsystem Design &amp; Performance Specifications</div>
+                <table class="eng-param-table">
+                  <tr>
+                    <td class="param-lbl">Lateral Shock Rating</td>
+                    <td class="param-val">560 N (4x 2026 Module)</td>
+                    <td class="param-lbl">Vertical Travel</td>
+                    <td class="param-val">38 mm Full Deflection</td>
+                  </tr>
+                  <tr>
+                    <td class="param-lbl">Drop Survivability</td>
+                    <td class="param-val">+200% Kinetic Absorption</td>
+                    <td class="param-lbl">Linear Guidance</td>
+                    <td class="param-val">Dual MGN9H Ground Rails</td>
+                  </tr>
+                  <tr>
+                    <td class="param-lbl">Structural Materials</td>
+                    <td class="param-val">0.25" 6061-T6 + Carbon Fiber</td>
+                    <td class="param-lbl">Kinematic State</td>
+                    <td class="param-val">Dynamic MATLAB Constraint</td>
+                  </tr>
+                </table>
 
-                <h2 class="doc-section-heading">ENGINEERING RE-DESIGN &amp; MOTION KINEMATICS</h2>
-                <p class="doc-paragraph">
+                <div class="eng-sec-heading">2.0 Kinematic Synthesis &amp; Non-Linear FEA</div>
+                <p class="eng-doc-p">
                   Engineered an independent linear suspension and drive module for deployment across two ARUW 2027 competition robots. Constructed from precision CNC-machined 0.25" 6061-T6 aluminum structural members paired with 4mm continuous carbon fiber plates, guided by dual MGN9H linear rails to resolve severe carriage binding and structural yield issues observed during the 2026 season.
                 </p>
-
-                <h2 class="doc-section-heading">FEA IMPACT VALIDATION &amp; MATLAB OPTIMIZATION</h2>
-                <p class="doc-paragraph">
+                <p class="eng-doc-p">
                   Executed non-linear dynamic FEA in ANSYS Workbench to simulate field curb drops and obstacle strikes, verifying survival under 560 N lateral shock loads (a 4x increase over the previous module). Authored a custom MATLAB optimization routine to synthesize non-linear spring constants and viscous damping ratios, guaranteeing stable optical targeting lock for the robot's high-speed computer vision turret during aggressive field maneuvers.
                 </p>
 
-                <div class="doc-parts-container">
-                  <div class="doc-parts-intro">INTERACTIVE SUBSYSTEM &amp; PART BREAKDOWN (HOVER TO INSPECT)</div>
-
-                  <div class="doc-part-card" data-part="rail,mgn9h,linearrail,carriage">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Dual MGN9H Precision Linear Rails &amp; Carriages</span>
-                      <span class="doc-part-pill">MOTION SYSTEM</span>
-                    </div>
-                    <div class="doc-part-spec">Hardened Bearing Steel &bull; Dual Preloaded C-Carriages &bull; &plusmn;0.005mm</div>
-                    <div class="doc-part-desc">
-                      Replaces flexure pivots with rigid dual parallel linear guide rails, eliminating off-axis twisting moments and binding during high-speed obstacle collisions.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="spring,suspensionspring,shock,damper,9657k498,shockspacer">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">High-Deflection Suspension Spring &amp; Damper Unit</span>
-                      <span class="doc-part-pill">DAMPENING</span>
-                    </div>
-                    <div class="doc-part-spec">Spring Steel Coil &bull; 110mm Travel Stroke &bull; Polyurethane Bumpers</div>
-                    <div class="doc-part-desc">
-                      Tuned via MATLAB constraint algorithms to absorb high-impact ramp landings while damping high-frequency chassis vibrations that corrupt camera localization.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="omni,wheel,roller,hub,outerplate,rollerspacer">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Concentric Omni Wheel, Rollers &amp; Hub Structure</span>
-                      <span class="doc-part-pill">TRACTION UNIT</span>
-                    </div>
-                    <div class="doc-part-spec">7075-T6 Hub &bull; Dual-Row Polyurethane Rollers &bull; Stainless Pins</div>
-                    <div class="doc-part-desc">
-                      Precision omnidirectional wheel assembly engineered for seamless lateral translation. Rollers and hub spin concentrically with zero axle runout.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="bridgeplate,mountingplate,carriageplate,standoffplate">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Machined 6061-T6 Bridge Plate &amp; Mounting Base</span>
-                      <span class="doc-part-pill">STRUCTURE</span>
-                    </div>
-                    <div class="doc-part-spec">0.25" 6061-T6 Aluminum &bull; Integrated Fastener Countersinks &bull; Hard Anodized</div>
-                    <div class="doc-part-desc">
-                      Lightweight bridge plate tying the suspension module to the chassis perimeter while distributing shear loads evenly into carbon fiber mounting webs.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="gearbox,gearboxplate,bearing_3mm,m3508">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Planetary Gearbox Housing &amp; Drive Interface</span>
-                      <span class="doc-part-pill">POWERTRAIN</span>
-                    </div>
-                    <div class="doc-part-spec">Xroll Planetary Gearbox &bull; Dual Radial Bearings &bull; M3508 Drive</div>
-                    <div class="doc-part-desc">
-                      Direct-coupled planetary reduction transferring 3508 brushless motor torque directly into the omni wheel with low rotational backlash.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-                </div>
+                <div class="eng-sec-heading">3.0 Bill of Materials &amp; Subsystem Breakdown</div>
+                <div class="eng-bom-hint">HOVER ANY ROW TO HIGHLIGHT ON DRAWING &rarr;</div>
+                <table class="eng-bom-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 8%;">ITEM</th>
+                      <th style="width: 32%;">COMPONENT NAME</th>
+                      <th style="width: 28%;">MATERIAL / SPEC</th>
+                      <th style="width: 32%;">FUNCTION / SUBSYSTEM</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="doc-part-card" data-part="rail,carriage,mgn9h">
+                      <td class="bom-no">01</td>
+                      <td class="bom-name">Dual MGN9H Precision Linear Rails</td>
+                      <td>Bearing Steel &bull; &plusmn;0.005mm</td>
+                      <td>Rigid dual guide rails eliminating off-axis binding during obstacle collisions.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="spring,suspensionspring,shock,damper,9657k498">
+                      <td class="bom-no">02</td>
+                      <td class="bom-name">High-Deflection Suspension Spring Unit</td>
+                      <td>Coil Steel &bull; 110mm Travel</td>
+                      <td>Tuned via MATLAB constraint algorithms to absorb high-impact ramp landings.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="omni,wheel,roller,hub,outerplate,rollerspacer,dowel">
+                      <td class="bom-no">03</td>
+                      <td class="bom-name">Concentric Omni Wheel &amp; Hub Structure</td>
+                      <td>7075-T6 Hub &bull; Dual-Row Polyurethane</td>
+                      <td>Precision omnidirectional wheel engineered for zero runout lateral translation.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="bridgeplate,mountingplate,carriageplate,standoffplate">
+                      <td class="bom-no">04</td>
+                      <td class="bom-name">Machined 6061-T6 Bridge &amp; Base Plates</td>
+                      <td>0.25" 6061-T6 Aluminum</td>
+                      <td>Ties suspension module to chassis perimeter, distributing shear loads evenly.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="gearbox,gearboxplate,bearing,xroll,m3508">
+                      <td class="bom-no">05</td>
+                      <td class="bom-name">Planetary Gearbox Housing &amp; Interface</td>
+                      <td>Xroll Planetary &bull; Dual Radial Bearings</td>
+                      <td>Direct-coupled planetary reduction transferring M3508 motor torque into wheel.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </article>
             </div>
           </div>
         `;
 
       // ======================================================================
-      // 2. 2026 HERO MK1 & TURRET BASE
-      // Left Display: TurretBase 3D Assembly (Right Side of Homepage Drawing)
+      // 2. 2026 HERO MK1 ASSEMBLY & TURRET BASE EI TENSIONER
       // ======================================================================
       case 'hero':
         return `
           <div class="inspection-split-layout">
             <div class="inspection-left-pane">
               <div class="inspection-drawing-board">
-                <div class="inspection-dwg-bar">
-                  <div class="inspection-dwg-title-tag">
-                    <span class="dwg-badge-id">ARUW-2026-HERO-01</span>
-                    <span class="dwg-badge-rev">REV A</span>
-                    <span class="dwg-badge-name">Hero Mk1 Turret Base EI Tensioner Assembly</span>
-                  </div>
-                  <div class="dwg-hint-text">DRAG TO ORBIT &bull; SCROLL TO ZOOM</div>
-                </div>
-
-                <div class="inspection-viewport-frame" id="inspectionViewport">
+                <div class="inspection-sheet-inner-frame">
+                  ${zoneSvg}
+                  <div class="sheet-corner-tag">ZONE C-1 &bull; 3D TURRET BASE CAD ASSEMBLY</div>
+                  <div class="sheet-corner-hint">NOTE: DRAG TO ORBIT &bull; SCROLL TO ZOOM</div>
+                  
                   <canvas id="inspectionCanvas3D"></canvas>
-                </div>
-
-                <div class="inspection-dwg-footer">
-                  <div class="dwg-status-pill">
-                    <span class="pulse-dot"></span>
-                    <span>ONLINE &bull; SYNCHRONIZED</span>
-                  </div>
-                  <div class="dwg-model-tag">MODEL: TurretBaseRender.glb</div>
-                  <div class="dwg-highlight-indicator" id="inspectionHighlightIndicator">HOVER A COMPONENT TO HIGHLIGHT</div>
+                  
+                  ${this.getCadTitleBlock(
+                    'Hero Mk1 Turret Base EI Tensioner',
+                    'UNIV OF WASH &bull; ADVANCED ROBOTICS &bull; ARUW 2026',
+                    'A',
+                    '1:1',
+                    '1. CRITICAL YAW BEARING FIT TOLERANCES.<br>2. FINISH: MATTE BLACK ANODIZE &bull; 7075-T6.<br>3. HOVER BOM ROWS TO HIGHLIGHT PARTS.'
+                  )}
                 </div>
               </div>
             </div>
 
             <div class="inspection-right-pane">
               <article class="inspection-paper-sheet">
-                <header class="doc-paper-header">
-                  <div class="doc-badge-row">
-                    <span class="doc-tag doc-tag-amber">HERO ROBOT LEAD</span>
-                    <span class="doc-tag doc-tag-green">3RD PLACE INTERNATIONAL</span>
-                    <span class="doc-tag doc-tag-blue">ARUW 2026</span>
+                <header class="eng-report-header">
+                  <div class="eng-header-org">UNIVERSITY OF WASHINGTON &bull; ADVANCED ROBOTICS (ARUW)</div>
+                  <div class="eng-header-sub">DEPARTMENT OF MECHANICAL ENGINEERING &bull; SUBSYSTEM DESIGN REPORT</div>
+                  <div class="eng-header-rule"></div>
+                  <div class="eng-doc-info-row">
+                    <span><strong>DOC ID:</strong> ARUW-2026-HERO-01</span>
+                    <span><strong>REV:</strong> A</span>
+                    <span><strong>LEAD:</strong> Gavin Higgins (Hero Robot Lead)</span>
                   </div>
-                  <h1 class="doc-title">2026 Hero Mk1 Assembly &amp; Turret Base EI Tensioner</h1>
-                  <p class="doc-subtitle">Advanced Robotics at the University of Washington &bull; Seattle, WA</p>
+                  <h1 class="eng-report-title">2026 Hero Mk1 Assembly &amp; Turret Base EI Tensioner</h1>
                 </header>
 
-                <div class="doc-specs-grid">
-                  <div>
-                    <div class="doc-spec-cell-label">BACKLASH</div>
-                    <div class="doc-spec-cell-val">&plusmn;0.012&deg; (Zero Backlash)</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">WEIGHT SAVINGS</div>
-                    <div class="doc-spec-cell-val">-28% Total Weight</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">OPTIMIZATION</div>
-                    <div class="doc-spec-cell-val">nTop Generative</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">FINISH</div>
-                    <div class="doc-spec-cell-val">3rd International</div>
-                  </div>
-                </div>
+                <div class="eng-sec-heading">1.0 Subsystem Design &amp; Performance Specifications</div>
+                <table class="eng-param-table">
+                  <tr>
+                    <td class="param-lbl">Continuous Yaw Backlash</td>
+                    <td class="param-val">&plusmn;0.012&deg; (Zero Backlash)</td>
+                    <td class="param-lbl">Mass Reduction</td>
+                    <td class="param-val">-28% Total Assembly Weight</td>
+                  </tr>
+                  <tr>
+                    <td class="param-lbl">Bearing Architecture</td>
+                    <td class="param-val">Duplex Angular Contact (3.5" ID)</td>
+                    <td class="param-lbl">Belt Tensioning</td>
+                    <td class="param-val">Captive EI Sliding Nut Plate</td>
+                  </tr>
+                  <tr>
+                    <td class="param-lbl">Competition Result</td>
+                    <td class="param-val">3rd Place International</td>
+                    <td class="param-lbl">Optimization Tool</td>
+                    <td class="param-val">nTop Generative Design + FEA</td>
+                  </tr>
+                </table>
 
-                <h2 class="doc-section-heading">LOW-BACKLASH YAW MECHANISM &amp; EI TENSIONING</h2>
-                <p class="doc-paragraph">
-                  Engineered a zero-backlash continuous yaw mechanism for the competition 'Hero' robot. Utilized nTop generative design and FEA stress optimization in SolidWorks Simulation to drastically increase torsional impact resistance and overall stiffness, achieving a 3rd place finish in international competition.
+                <div class="eng-sec-heading">2.0 Low-Backlash Yaw Architecture &amp; EI Preload</div>
+                <p class="eng-doc-p">
+                  Engineered a zero-backlash continuous yaw mechanism for the ARUW competition Hero robot. Replaced failure-prone cantilevered pulley mountings with preloaded duplex angular-contact thin-section bearings, eliminating axis tilt and off-axis deflection during projectile recoil impulses.
                 </p>
-                <p class="doc-paragraph">
-                  Replaced failure-prone drive pulley mounting with zero-backlash duplex angular-contact bearings. Introduced a field-serviceable sliding belt tensioner (Turret Base EI Tensioner) ensuring precise belt engagement throughout the robot's lifetime and dropping overall assembly mass by 28%.
-                </p>
-
-                <h2 class="doc-section-heading">2027 REDEVELOPMENT TEAM LEADERSHIP</h2>
-                <p class="doc-paragraph">
-                  Currently leading a multidisciplinary team of 5 engineers to re-architect the robot for the 2027 season, focusing on modular electronics accessibility, lower rotational inertia, and sub-milliradian projectile targeting precision.
+                <p class="eng-doc-p">
+                  Introduced an innovative field-serviceable sliding belt tensioner (Turret Base EI Tensioner) that enables rapid timing belt tension calibration directly from the top plate without requiring turret disassembly in the pits. Designed sandwich structural plates utilizing nTop generative topology optimization, cutting overall assembly weight by 28% while improving torsional impact resistance.
                 </p>
 
-                <div class="doc-parts-container">
-                  <div class="doc-parts-intro">INTERACTIVE SUBSYSTEM &amp; PART BREAKDOWN (HOVER TO INSPECT)</div>
-
-                  <div class="doc-part-card" data-part="bearing,innerbearing">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Thin-Section Duplex Angular-Contact Bearing</span>
-                      <span class="doc-part-pill">PRECISION YAW AXIS</span>
-                    </div>
-                    <div class="doc-part-spec">3.5" ID x 4.0" OD &bull; Preloaded Duplex Ball Race &bull; Zero Axial Runout</div>
-                    <div class="doc-part-desc">
-                      Provides extreme radial and moment stiffness for the continuous turret yaw axis while maintaining an ultra-compact vertical envelope.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="nutplate,einutplate,spacerplate,eispacerplate">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">EI Sliding Belt Tensioner &amp; Nut Plate System</span>
-                      <span class="doc-part-pill">SERVICEABLE PRELOAD</span>
-                    </div>
-                    <div class="doc-part-spec">Slotted 7075-T6 Plate &bull; Captive EI Nut Hardware &bull; Rapid Calibration</div>
-                    <div class="doc-part-desc">
-                      Allows rapid tensioning and fine-tuning of the HTD-3M drive belt from above without requiring full disassembly of the turret yaw housing in competition pit conditions.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="sandwhichplate,sandwichplate,bottomplate,topplate,plate">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Sandwich Structural Plates &amp; Standoff Spacers</span>
-                      <span class="doc-part-pill">PRIMARY STRUCTURE</span>
-                    </div>
-                    <div class="doc-part-spec">CNC 6061-T6 Aluminum &bull; Lightweight Pocketing &bull; Rigid Spacer Posts</div>
-                    <div class="doc-part-desc">
-                      Stacked structural plates designed with stress-concentration relief radiuses that clamp the duplex bearing outer race and isolate pitch motor reaction torques.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="innerbearingplate,bearing">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Inner Bearing Clamp &amp; Alignment Retainer Flange</span>
-                      <span class="doc-part-pill">BEARING CLAMP</span>
-                    </div>
-                    <div class="doc-part-spec">7075-T6 Precision Ring &bull; 8x Radial Fasteners &bull; Concentric Bore</div>
-                    <div class="doc-part-desc">
-                      Precisely retains the inner bearing ring to lock yaw axis perpendicularity under high projectile launch recoil forces.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-                </div>
+                <div class="eng-sec-heading">3.0 Bill of Materials &amp; Subsystem Breakdown</div>
+                <div class="eng-bom-hint">HOVER ANY ROW TO HIGHLIGHT ON DRAWING &rarr;</div>
+                <table class="eng-bom-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 8%;">ITEM</th>
+                      <th style="width: 32%;">COMPONENT NAME</th>
+                      <th style="width: 28%;">MATERIAL / SPEC</th>
+                      <th style="width: 32%;">FUNCTION / SUBSYSTEM</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="doc-part-card" data-part="bearing,35inid40inodbearing,innerbearingplate0">
+                      <td class="bom-no">01</td>
+                      <td class="bom-name">Thin-Section Duplex Angular Bearing</td>
+                      <td>3.5" ID x 4.0" OD &bull; DB Preload</td>
+                      <td>Provides extreme radial &amp; moment stiffness for continuous zero-backlash yaw.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="nutplate,spacerplate,bottomplate,topplate,tensioner">
+                      <td class="bom-no">02</td>
+                      <td class="bom-name">EI Sliding Belt Tensioner &amp; Nut Plate</td>
+                      <td>Slotted 7075-T6 &bull; Captive EI Hardware</td>
+                      <td>Enables fast top-accessible belt tensioning without full turret teardown.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="pulley,belt,hub2,configurablehtdbelt">
+                      <td class="bom-no">03</td>
+                      <td class="bom-name">HTD-3M Timing Belt &amp; Precision Pulleys</td>
+                      <td>Curvilinear 3M Pitch &bull; 7075-T6 Hub</td>
+                      <td>Delivers zero-slip torque transmission between motor and continuous yaw ring.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="sandwhichplate,supporttube,verticalsupport,attachment">
+                      <td class="bom-no">04</td>
+                      <td class="bom-name">Sandwich Structural Plates &amp; Standoffs</td>
+                      <td>CNC 6061-T6 &bull; Pocketed Webbing</td>
+                      <td>Clamps bearing outer race and isolates pitch motor reaction torque.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="m3508,motor,rm3508">
+                      <td class="bom-no">05</td>
+                      <td class="bom-name">RoboMaster M3508 Yaw Drive Motor</td>
+                      <td>Brushless DC &bull; 19:1 Planetary</td>
+                      <td>High-torque yaw motor driving high-speed targeting slews.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="encoder,holder,cover,alignment">
+                      <td class="bom-no">06</td>
+                      <td class="bom-name">Absolute Optical Encoder &amp; Mount</td>
+                      <td>17-Bit Optical &bull; Precise Flange</td>
+                      <td>Direct closed-loop yaw feedback for automated computer vision lock.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </article>
             </div>
           </div>
@@ -510,34 +553,19 @@ class AppController {
 
       // ======================================================================
       // 3. TURRET PITCH GIMBAL & BEARING HOUSING (BLANK 1)
-      // Left Display: Interactive 2D Technical Vector CAD Schematic
       // ======================================================================
       case 'blank1':
         return `
           <div class="inspection-split-layout">
             <div class="inspection-left-pane">
               <div class="inspection-drawing-board">
-                <div class="inspection-dwg-bar">
-                  <div class="inspection-dwg-title-tag">
-                    <span class="dwg-badge-id">ARUW-2027-GIMB-01</span>
-                    <span class="dwg-badge-rev">REV B</span>
-                    <span class="dwg-badge-name">Turret Pitch Gimbal &amp; Bearing Housing</span>
-                  </div>
-                  <div class="dwg-hint-text">HOVER PARTS TO HIGHLIGHT ON SCHEMATIC</div>
-                </div>
+                <div class="inspection-sheet-inner-frame">
+                  ${zoneSvg}
+                  <div class="sheet-corner-tag">ZONE B-3 &bull; 2D ORTHOGRAPHIC SCHEMATIC</div>
+                  <div class="sheet-corner-hint">NOTE: HOVER BOM ROWS TO HIGHLIGHT VECTOR SCHEMATIC</div>
 
-                <div class="inspection-viewport-frame" id="inspectionViewport">
                   <svg class="inspection-svg-canvas" viewBox="0 0 760 540" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                      <pattern id="gimbalHatch" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-                        <line x1="0" y1="0" x2="0" y2="8" stroke="#cbd5e1" stroke-width="1.2" />
-                      </pattern>
-                    </defs>
-
-                    <!-- Background Drafting Grid Lines -->
                     <rect x="20" y="20" width="720" height="500" fill="#fcfcf9" stroke="#d4d4ce" stroke-width="1.5" />
-                    
-                    <!-- Centerlines & Axis -->
                     <line x1="60" y1="270" x2="700" y2="270" stroke="#94a3b8" stroke-width="1" stroke-dasharray="8 4 2 4" />
                     <line x1="380" y1="40" x2="380" y2="500" stroke="#94a3b8" stroke-width="1" stroke-dasharray="8 4 2 4" />
 
@@ -571,7 +599,7 @@ class AppController {
                       <circle cx="664" cy="270" r="14" fill="#ffffff" stroke="#1e293b" stroke-width="1.6" />
                     </g>
 
-                    <!-- Dimension Callout Lines & Text -->
+                    <!-- Callouts -->
                     <line class="cad-callout-line" data-part="pitch-yoke" x1="260" y1="140" x2="260" y2="70" />
                     <line class="cad-callout-line" data-part="pitch-yoke" x1="260" y1="70" x2="200" y2="70" />
                     <text x="190" y="65" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#0284c7" font-weight="700" text-anchor="end">7075-T6 CNC YOKE</text>
@@ -585,114 +613,100 @@ class AppController {
                     <line class="cad-callout-line" data-part="encoder-shaft" x1="664" y1="238" x2="664" y2="140" />
                     <text x="664" y="130" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#0284c7" font-weight="700" text-anchor="middle">OPTICAL ENCODER SHAFT</text>
                   </svg>
-                </div>
 
-                <div class="inspection-dwg-footer">
-                  <div class="dwg-status-pill">
-                    <span class="pulse-dot"></span>
-                    <span>ONLINE &bull; SYNCHRONIZED</span>
-                  </div>
-                  <div class="dwg-model-tag">SCHEMATIC: ARUW-2027-GIMB-01.DWG</div>
-                  <div class="dwg-highlight-indicator" id="inspectionHighlightIndicator">HOVER A COMPONENT TO HIGHLIGHT</div>
+                  ${this.getCadTitleBlock(
+                    'Turret Pitch Gimbal & Bearing Housing',
+                    'ARUW 2027 &bull; 2-DoF PRECISION POINTING',
+                    'B',
+                    '1:1',
+                    '1. PRECISION TRUNNION BORE TOLERANCE H7.<br>2. MATERIAL: 7075-T6 ALUMINUM + TITANIUM.<br>3. HOVER BOM ROWS TO HIGHLIGHT PARTS.'
+                  )}
                 </div>
               </div>
             </div>
 
             <div class="inspection-right-pane">
               <article class="inspection-paper-sheet">
-                <header class="doc-paper-header">
-                  <div class="doc-badge-row">
-                    <span class="doc-tag doc-tag-blue">DWG: ARUW-2027-GIMB-01 &bull; REV B</span>
-                    <span class="doc-tag doc-tag-green">2-DoF PRECISION</span>
-                    <span class="doc-tag doc-tag-amber">ARUW 2027</span>
+                <header class="eng-report-header">
+                  <div class="eng-header-org">UNIVERSITY OF WASHINGTON &bull; ADVANCED ROBOTICS (ARUW)</div>
+                  <div class="eng-header-sub">DEPARTMENT OF MECHANICAL ENGINEERING &bull; SUBSYSTEM DESIGN REPORT</div>
+                  <div class="eng-header-rule"></div>
+                  <div class="eng-doc-info-row">
+                    <span><strong>DOC ID:</strong> ARUW-2027-GIMB-01</span>
+                    <span><strong>REV:</strong> B</span>
+                    <span><strong>ENGINEER:</strong> Gavin Higgins</span>
                   </div>
-                  <h1 class="doc-title">Turret Pitch Gimbal &amp; Bearing Housing</h1>
-                  <p class="doc-subtitle">Subsystem A &bull; 2-DoF Precision Pointing Drive &bull; Advanced Robotics at UW</p>
+                  <h1 class="eng-report-title">Turret Pitch Gimbal &amp; Bearing Housing</h1>
                 </header>
 
-                <div class="doc-specs-grid">
-                  <div>
-                    <div class="doc-spec-cell-label">PITCH RANGE</div>
-                    <div class="doc-spec-cell-val">-25&deg; to +40&deg;</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">BACKLASH</div>
-                    <div class="doc-spec-cell-val">&lt; 0.008&deg; (Harmonic)</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">DRIVE TYPE</div>
-                    <div class="doc-spec-cell-val">Harmonic Drive</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">MATERIAL</div>
-                    <div class="doc-spec-cell-val">7075-T6 + Titanium</div>
-                  </div>
-                </div>
+                <div class="eng-sec-heading">1.0 Subsystem Design &amp; Performance Specifications</div>
+                <table class="eng-param-table">
+                  <tr>
+                    <td class="param-lbl">Pitch Travel Range</td>
+                    <td class="param-val">-25&deg; to +40&deg; Elevation</td>
+                    <td class="param-lbl">Drive Backlash</td>
+                    <td class="param-val">&lt; 0.008&deg; (Harmonic)</td>
+                  </tr>
+                  <tr>
+                    <td class="param-lbl">Targeting Precision</td>
+                    <td class="param-val">Sub-Milliradian Optical Lock</td>
+                    <td class="param-lbl">Drive Topology</td>
+                    <td class="param-val">50:1 Harmonic Reduction</td>
+                  </tr>
+                  <tr>
+                    <td class="param-lbl">Structural Materials</td>
+                    <td class="param-val">7075-T6 + Titanium Hardware</td>
+                    <td class="param-lbl">Sensor Feedback</td>
+                    <td class="param-val">17-Bit SSI Optical Encoder</td>
+                  </tr>
+                </table>
 
-                <h2 class="doc-section-heading">HIGH-PRECISION GIMBAL ARCHITECTURE</h2>
-                <p class="doc-paragraph">
+                <div class="eng-sec-heading">2.0 High-Precision Gimbal Architecture</div>
+                <p class="eng-doc-p">
                   Engineered the 2027 pitch axis mounting incorporating preloaded duplex angular-contact thin-section bearings, eliminating axis deflection under high projectile recoil loads during continuous fire sequences.
                 </p>
-                <p class="doc-paragraph">
-                  Integrated closed-loop absolute optical encoder feedback directly on the trunnion shaft to guarantee sub-milliradian pointing precision for automatic computer vision target tracking.
+                <p class="eng-doc-p">
+                  Integrated closed-loop absolute optical encoder feedback directly on the trunnion shaft to guarantee sub-milliradian pointing precision for automatic computer vision target tracking. Conducted topology optimization in nTop and SolidWorks Simulation to minimize inertia, cutting mass by 22%.
                 </p>
 
-                <h2 class="doc-section-heading">STRUCTURAL FEA &amp; MASS BUDGET</h2>
-                <p class="doc-paragraph">
-                  Conducted topology optimization in nTop and SolidWorks Simulation to minimize inertia while maintaining rigidity, reducing pitch assembly mass by 22% compared to previous iterations.
-                </p>
-
-                <div class="doc-parts-container">
-                  <div class="doc-parts-intro">INTERACTIVE SUBSYSTEM &amp; PART BREAKDOWN (HOVER TO INSPECT)</div>
-
-                  <div class="doc-part-card" data-part="harmonic-drive">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Direct Harmonic Drive Reduction</span>
-                      <span class="doc-part-pill">POWERTRAIN</span>
-                    </div>
-                    <div class="doc-part-spec">50:1 Reduction &bull; Zero Backlash &bull; Flexspline Cup</div>
-                    <div class="doc-part-desc">
-                      Delivers high holding torque and zero measurable backlash in a compact form factor directly on the pitch trunnion axis.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="bearing-duplex">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Preloaded Duplex Angular-Contact Bearings</span>
-                      <span class="doc-part-pill">BEARING RACE</span>
-                    </div>
-                    <div class="doc-part-spec">Matched Bearing Pair &bull; DB Preload &bull; Grade 5 Balls</div>
-                    <div class="doc-part-desc">
-                      Resists intense multi-axis projectile recoil impulses without shaft deflection or binding.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="pitch-yoke">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">7075-T6 CNC Machined Gimbal Yoke</span>
-                      <span class="doc-part-pill">STRUCTURE</span>
-                    </div>
-                    <div class="doc-part-spec">Monolithic 7075-T6 &bull; Stress Relief Pockets &bull; Hard Anodized</div>
-                    <div class="doc-part-desc">
-                      Lightweight, high-stiffness trunnion frame that holds the launcher barrel and high-speed flywheel module.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="encoder-shaft">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Absolute Optical Encoder &amp; Trunnion Shaft</span>
-                      <span class="doc-part-pill">SENSOR FEEDBACK</span>
-                    </div>
-                    <div class="doc-part-spec">17-Bit SSI Protocol &bull; Ground Stainless Shaft &bull; Flexible Coupling</div>
-                    <div class="doc-part-desc">
-                      Provides absolute closed-loop angular feedback with sub-milliradian accuracy for automated target locking.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-                </div>
+                <div class="eng-sec-heading">3.0 Bill of Materials &amp; Subsystem Breakdown</div>
+                <div class="eng-bom-hint">HOVER ANY ROW TO HIGHLIGHT ON DRAWING &rarr;</div>
+                <table class="eng-bom-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 8%;">ITEM</th>
+                      <th style="width: 32%;">COMPONENT NAME</th>
+                      <th style="width: 28%;">MATERIAL / SPEC</th>
+                      <th style="width: 32%;">FUNCTION / SUBSYSTEM</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="doc-part-card" data-part="pitch-yoke">
+                      <td class="bom-no">01</td>
+                      <td class="bom-name">7075-T6 CNC Machined Gimbal Yoke</td>
+                      <td>Monolithic 7075-T6 &bull; Hard Anodized</td>
+                      <td>Lightweight trunnion frame holding launcher barrel and flywheel module.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="harmonic-drive">
+                      <td class="bom-no">02</td>
+                      <td class="bom-name">Direct Harmonic Drive Reduction 50:1</td>
+                      <td>50:1 Reduction &bull; Zero Backlash</td>
+                      <td>Delivers zero-backlash holding torque directly on the pitch trunnion axis.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="bearing-duplex">
+                      <td class="bom-no">03</td>
+                      <td class="bom-name">Preloaded Duplex Angular Bearings</td>
+                      <td>Matched Bearing Pair &bull; DB Preload</td>
+                      <td>Resists high multi-axis recoil impulses without trunnion shaft deflection.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="encoder-shaft">
+                      <td class="bom-no">04</td>
+                      <td class="bom-name">Absolute Optical Encoder &amp; Shaft</td>
+                      <td>17-Bit SSI Protocol &bull; Stainless Shaft</td>
+                      <td>Provides absolute closed-loop angular feedback with sub-milliradian accuracy.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </article>
             </div>
           </div>
@@ -700,27 +714,19 @@ class AppController {
 
       // ======================================================================
       // 4. CHASSIS 4-BAR INDEPENDENT SUSPENSION (BLANK 2)
-      // Left Display: Interactive 2D Technical Vector CAD Schematic
       // ======================================================================
       case 'blank2':
         return `
           <div class="inspection-split-layout">
             <div class="inspection-left-pane">
               <div class="inspection-drawing-board">
-                <div class="inspection-dwg-bar">
-                  <div class="inspection-dwg-title-tag">
-                    <span class="dwg-badge-id">ARUW-2026-SUSP-04</span>
-                    <span class="dwg-badge-rev">REV C</span>
-                    <span class="dwg-badge-name">Chassis 4-Bar Independent Suspension</span>
-                  </div>
-                  <div class="dwg-hint-text">HOVER PARTS TO HIGHLIGHT ON SCHEMATIC</div>
-                </div>
+                <div class="inspection-sheet-inner-frame">
+                  ${zoneSvg}
+                  <div class="sheet-corner-tag">ZONE A-4 &bull; 2D KINEMATIC SCHEMATIC</div>
+                  <div class="sheet-corner-hint">NOTE: HOVER BOM ROWS TO HIGHLIGHT VECTOR SCHEMATIC</div>
 
-                <div class="inspection-viewport-frame" id="inspectionViewport">
                   <svg class="inspection-svg-canvas" viewBox="0 0 760 540" xmlns="http://www.w3.org/2000/svg">
                     <rect x="20" y="20" width="720" height="500" fill="#fcfcf9" stroke="#d4d4ce" stroke-width="1.5" />
-                    
-                    <!-- Ground Reference & Travel Datum -->
                     <line x1="50" y1="460" x2="710" y2="460" stroke="#64748b" stroke-width="2" stroke-dasharray="6 3" />
                     <text x="80" y="480" font-family="'IBM Plex Mono', monospace" font-size="10" fill="#64748b">GROUND DATUM PLANE &bull; 0.0mm</text>
 
@@ -737,7 +743,6 @@ class AppController {
                     <!-- Part 3: Oil-Damped Monoshock Damper Coil -->
                     <g class="cad-svg-part" data-part="shock-absorber">
                       <rect x="310" y="210" width="45" height="110" rx="6" fill="#cbd5e1" stroke="#1e293b" stroke-width="2.2" transform="rotate(-20 332 265)" />
-                      <!-- Spring Coils -->
                       <line x1="315" y1="230" x2="355" y2="245" stroke="#0284c7" stroke-width="3.5" />
                       <line x1="315" y1="255" x2="355" y2="270" stroke="#0284c7" stroke-width="3.5" />
                       <line x1="315" y1="280" x2="355" y2="295" stroke="#0284c7" stroke-width="3.5" />
@@ -763,111 +768,100 @@ class AppController {
                     <line class="cad-callout-line" data-part="upright-knuckle" x1="530" y1="280" x2="620" y2="280" />
                     <text x="630" y="284" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#0284c7" font-weight="700" text-anchor="start">UPRIGHT KNUCKLE CARRIER</text>
                   </svg>
-                </div>
 
-                <div class="inspection-dwg-footer">
-                  <div class="dwg-status-pill">
-                    <span class="pulse-dot"></span>
-                    <span>ONLINE &bull; SYNCHRONIZED</span>
-                  </div>
-                  <div class="dwg-model-tag">SCHEMATIC: ARUW-2026-SUSP-04.DWG</div>
-                  <div class="dwg-highlight-indicator" id="inspectionHighlightIndicator">HOVER A COMPONENT TO HIGHLIGHT</div>
+                  ${this.getCadTitleBlock(
+                    'Chassis 4-Bar Independent Suspension',
+                    'ARUW 2026 &bull; FOUR-BAR LINKAGE',
+                    'C',
+                    '1:2',
+                    '1. SPHERICAL PIVOT BEARINGS SELF-LUBRICATING.<br>2. MATERIAL: 6061-T6 + CARBON FIBER.<br>3. HOVER BOM ROWS TO HIGHLIGHT PARTS.'
+                  )}
                 </div>
               </div>
             </div>
 
             <div class="inspection-right-pane">
               <article class="inspection-paper-sheet">
-                <header class="doc-paper-header">
-                  <div class="doc-badge-row">
-                    <span class="doc-tag doc-tag-green">DWG: ARUW-2026-SUSP-04 &bull; REV C</span>
-                    <span class="doc-tag doc-tag-blue">FOUR-BAR LINKAGE</span>
-                    <span class="doc-tag doc-tag-amber">ARUW 2026</span>
+                <header class="eng-report-header">
+                  <div class="eng-header-org">UNIVERSITY OF WASHINGTON &bull; ADVANCED ROBOTICS (ARUW)</div>
+                  <div class="eng-header-sub">DEPARTMENT OF MECHANICAL ENGINEERING &bull; SUBSYSTEM DESIGN REPORT</div>
+                  <div class="eng-header-rule"></div>
+                  <div class="eng-doc-info-row">
+                    <span><strong>DOC ID:</strong> ARUW-2026-SUSP-04</span>
+                    <span><strong>REV:</strong> C</span>
+                    <span><strong>ENGINEER:</strong> Gavin Higgins</span>
                   </div>
-                  <h1 class="doc-title">Chassis 4-Bar Independent Suspension</h1>
-                  <p class="doc-subtitle">Subsystem B &bull; High-Speed Obstacle Dampening &bull; Advanced Robotics at UW</p>
+                  <h1 class="eng-report-title">Chassis 4-Bar Independent Suspension</h1>
                 </header>
 
-                <div class="doc-specs-grid">
-                  <div>
-                    <div class="doc-spec-cell-label">WHEEL TRAVEL</div>
-                    <div class="doc-spec-cell-val">42 mm Stroke</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">DAMPENING</div>
-                    <div class="doc-spec-cell-val">Oil-Damped Monoshock</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">CAMBER SHIFT</div>
-                    <div class="doc-spec-cell-val">0.0&deg; Zero Camber</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">MATERIAL</div>
-                    <div class="doc-spec-cell-val">0.125" CF + 6061-T6</div>
-                  </div>
-                </div>
+                <div class="eng-sec-heading">1.0 Subsystem Design &amp; Performance Specifications</div>
+                <table class="eng-param-table">
+                  <tr>
+                    <td class="param-lbl">Wheel Travel</td>
+                    <td class="param-val">42 mm Stroke Deflection</td>
+                    <td class="param-lbl">Dampening Unit</td>
+                    <td class="param-val">Oil-Damped Monoshock</td>
+                  </tr>
+                  <tr>
+                    <td class="param-lbl">Camber Variation</td>
+                    <td class="param-val">0.00&deg; Constant Parallel</td>
+                    <td class="param-lbl">Impact Rating</td>
+                    <td class="param-val">4.5g Shock Survivability</td>
+                  </tr>
+                  <tr>
+                    <td class="param-lbl">Structural Materials</td>
+                    <td class="param-val">0.125" CF + 6061-T6</td>
+                    <td class="param-lbl">Bushing Type</td>
+                    <td class="param-val">Maintenance-Free PTFE</td>
+                  </tr>
+                </table>
 
-                <h2 class="doc-section-heading">FOUR-BAR KINEMATICS &amp; CONSTANT CAMBER</h2>
-                <p class="doc-paragraph">
+                <div class="eng-sec-heading">2.0 Four-Bar Kinematics &amp; Constant Camber</div>
+                <p class="eng-doc-p">
                   Synthesized a parallel four-bar linkage geometry that maintains upright wheel ground contact across the entire 42mm suspension stroke, eliminating tire scrub and steering scrub radius shifts during high-speed omnidirectional maneuvers.
                 </p>
-
-                <h2 class="doc-section-heading">IMPACT SURVIVABILITY &amp; BUSHING DURABILITY</h2>
-                <p class="doc-paragraph">
+                <p class="eng-doc-p">
                   FEA drop simulations validated under 4.5g shock loads on competition obstacle ramps. Hard-anodized standoffs and PTFE pivot bushings ensure lifetime serviceability without lubrication breakdown under abrasive field dust.
                 </p>
 
-                <div class="doc-parts-container">
-                  <div class="doc-parts-intro">INTERACTIVE SUBSYSTEM &amp; PART BREAKDOWN (HOVER TO INSPECT)</div>
-
-                  <div class="doc-part-card" data-part="upper-link">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">6061-T6 Upper Control A-Arm</span>
-                      <span class="doc-part-pill">UPPER LINK</span>
-                    </div>
-                    <div class="doc-part-spec">Machined 6061-T6 &bull; Dual Pivot Bores &bull; Weight Pocketing</div>
-                    <div class="doc-part-desc">
-                      Controls wheel assembly camber angle throughout the full vertical travel envelope.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="lower-link">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Lower Link Rod &amp; Spherical Bushings</span>
-                      <span class="doc-part-pill">LOWER LINK</span>
-                    </div>
-                    <div class="doc-part-spec">High-Tensile Aluminum &bull; Maintenance-Free PTFE Bushings</div>
-                    <div class="doc-part-desc">
-                      Absorbs horizontal drive braking forces and transmits vertical road irregularities into the damper.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="shock-absorber">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Oil-Damped Monoshock Coilover Unit</span>
-                      <span class="doc-part-pill">COILOVER</span>
-                    </div>
-                    <div class="doc-part-spec">Adjustable Preload Collar &bull; Viscous Damping &bull; Progressive Spring</div>
-                    <div class="doc-part-desc">
-                      Provides smooth, controlled energy dissipation over high field obstacles preventing chassis bottoming.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="upright-knuckle">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Wheel Hub Upright Knuckle Carrier</span>
-                      <span class="doc-part-pill">CARRIER</span>
-                    </div>
-                    <div class="doc-part-spec">7075-T6 Knuckle &bull; Dual Sealed Ball Bearings &bull; Drive Axle Boss</div>
-                    <div class="doc-part-desc">
-                      Rigidly couples the omni drive wheel to the suspension links with zero mechanical play.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-                </div>
+                <div class="eng-sec-heading">3.0 Bill of Materials &amp; Subsystem Breakdown</div>
+                <div class="eng-bom-hint">HOVER ANY ROW TO HIGHLIGHT ON DRAWING &rarr;</div>
+                <table class="eng-bom-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 8%;">ITEM</th>
+                      <th style="width: 32%;">COMPONENT NAME</th>
+                      <th style="width: 28%;">MATERIAL / SPEC</th>
+                      <th style="width: 32%;">FUNCTION / SUBSYSTEM</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="doc-part-card" data-part="upper-link">
+                      <td class="bom-no">01</td>
+                      <td class="bom-name">6061-T6 Upper Control A-Arm</td>
+                      <td>Machined 6061-T6 &bull; Dual Pivot Bores</td>
+                      <td>Controls wheel assembly camber angle throughout the full vertical travel envelope.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="lower-link">
+                      <td class="bom-no">02</td>
+                      <td class="bom-name">Lower Link Rod &amp; Spherical Bushings</td>
+                      <td>Tensile Aluminum &bull; PTFE Bushings</td>
+                      <td>Absorbs braking forces and transmits road irregularities into the damper.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="shock-absorber">
+                      <td class="bom-no">03</td>
+                      <td class="bom-name">Oil-Damped Monoshock Coilover</td>
+                      <td>Adjustable Preload &bull; Progressive Spring</td>
+                      <td>Provides smooth, controlled energy dissipation over high obstacles.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="upright-knuckle">
+                      <td class="bom-no">04</td>
+                      <td class="bom-name">Wheel Hub Upright Knuckle Carrier</td>
+                      <td>7075-T6 Knuckle &bull; Sealed Bearings</td>
+                      <td>Rigidly couples the omni drive wheel to the suspension links with zero play.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </article>
             </div>
           </div>
@@ -875,23 +869,17 @@ class AppController {
 
       // ======================================================================
       // 5. HIGH-THROUGHPUT DART FEEDER (DARTFEEDER)
-      // Left Display: Interactive 2D Technical Vector CAD Schematic
       // ======================================================================
       case 'dartfeeder':
         return `
           <div class="inspection-split-layout">
             <div class="inspection-left-pane">
               <div class="inspection-drawing-board">
-                <div class="inspection-dwg-bar">
-                  <div class="inspection-dwg-title-tag">
-                    <span class="dwg-badge-id">ARUW-2026-FEED-02</span>
-                    <span class="dwg-badge-rev">REV A</span>
-                    <span class="dwg-badge-name">High-Throughput Dart Feeder &amp; Agitator</span>
-                  </div>
-                  <div class="dwg-hint-text">HOVER PARTS TO HIGHLIGHT ON SCHEMATIC</div>
-                </div>
+                <div class="inspection-sheet-inner-frame">
+                  ${zoneSvg}
+                  <div class="sheet-corner-tag">ZONE C-2 &bull; 2D FEED SCHEMATIC</div>
+                  <div class="sheet-corner-hint">NOTE: HOVER BOM ROWS TO HIGHLIGHT VECTOR SCHEMATIC</div>
 
-                <div class="inspection-viewport-frame" id="inspectionViewport">
                   <svg class="inspection-svg-canvas" viewBox="0 0 760 540" xmlns="http://www.w3.org/2000/svg">
                     <rect x="20" y="20" width="720" height="500" fill="#fcfcf9" stroke="#d4d4ce" stroke-width="1.5" />
 
@@ -901,7 +889,6 @@ class AppController {
                     <!-- Part 2: Cycloidal Starwheel Agitator -->
                     <g class="cad-svg-part" data-part="cycloidal-star">
                       <circle cx="380" cy="310" r="75" fill="#f1f5f9" stroke="#1e293b" stroke-width="2.4" />
-                      <!-- Starwheel Pockets -->
                       <circle cx="380" cy="245" r="16" fill="#ffffff" stroke="#1e293b" stroke-width="1.8" />
                       <circle cx="445" cy="310" r="16" fill="#ffffff" stroke="#1e293b" stroke-width="1.8" />
                       <circle cx="380" cy="375" r="16" fill="#ffffff" stroke="#1e293b" stroke-width="1.8" />
@@ -919,7 +906,6 @@ class AppController {
                     <g class="cad-svg-part" data-part="barrel-gate">
                       <rect x="350" y="410" width="60" height="85" fill="#e2e8f0" stroke="#1e293b" stroke-width="2.2" />
                       <line x1="380" y1="410" x2="380" y2="495" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4 2" />
-                      <!-- Optical Gate Beam Sensor -->
                       <circle cx="340" cy="450" r="5" fill="#ef4444" />
                       <circle cx="420" cy="450" r="5" fill="#ef4444" />
                       <line x1="340" y1="450" x2="420" y2="450" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3 3" />
@@ -938,111 +924,100 @@ class AppController {
                     <line class="cad-callout-line" data-part="barrel-gate" x1="410" y1="450" x2="520" y2="450" />
                     <text x="530" y="454" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#0284c7" font-weight="700" text-anchor="start">BARREL FEED ESCAPEMENT</text>
                   </svg>
-                </div>
 
-                <div class="inspection-dwg-footer">
-                  <div class="dwg-status-pill">
-                    <span class="pulse-dot"></span>
-                    <span>ONLINE &bull; SYNCHRONIZED</span>
-                  </div>
-                  <div class="dwg-model-tag">SCHEMATIC: ARUW-2026-FEED-02.DWG</div>
-                  <div class="dwg-highlight-indicator" id="inspectionHighlightIndicator">HOVER A COMPONENT TO HIGHLIGHT</div>
+                  ${this.getCadTitleBlock(
+                    'High-Throughput Dart Feeder & Agitator',
+                    'ARUW 2026 &bull; ZERO-JAM INDEXER',
+                    'A',
+                    '1:1',
+                    '1. CRITICAL TOOTH CLEARANCE 0.25MM.<br>2. MATERIAL: CNC DELRIN 150 + POLYCARBONATE.<br>3. HOVER BOM ROWS TO HIGHLIGHT PARTS.'
+                  )}
                 </div>
               </div>
             </div>
 
             <div class="inspection-right-pane">
               <article class="inspection-paper-sheet">
-                <header class="doc-paper-header">
-                  <div class="doc-badge-row">
-                    <span class="doc-tag doc-tag-red">DWG: ARUW-2026-FEED-02 &bull; REV A</span>
-                    <span class="doc-tag doc-tag-amber">ZERO-JAM INDEXER</span>
-                    <span class="doc-tag doc-tag-blue">ARUW 2026</span>
+                <header class="eng-report-header">
+                  <div class="eng-header-org">UNIVERSITY OF WASHINGTON &bull; ADVANCED ROBOTICS (ARUW)</div>
+                  <div class="eng-header-sub">DEPARTMENT OF MECHANICAL ENGINEERING &bull; SUBSYSTEM DESIGN REPORT</div>
+                  <div class="eng-header-rule"></div>
+                  <div class="eng-doc-info-row">
+                    <span><strong>DOC ID:</strong> ARUW-2026-FEED-02</span>
+                    <span><strong>REV:</strong> A</span>
+                    <span><strong>ENGINEER:</strong> Gavin Higgins</span>
                   </div>
-                  <h1 class="doc-title">High-Throughput Dart Feeder &amp; Cycloidal Agitator</h1>
-                  <p class="doc-subtitle">Subsystem C &bull; Zero-Jam Indexing Mechanism &bull; Advanced Robotics at UW</p>
+                  <h1 class="eng-report-title">High-Throughput Dart Feeder &amp; Cycloidal Agitator</h1>
                 </header>
 
-                <div class="doc-specs-grid">
-                  <div>
-                    <div class="doc-spec-cell-label">FEED RATE</div>
-                    <div class="doc-spec-cell-val">30 rds / sec</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">JAM RATE</div>
-                    <div class="doc-spec-cell-val">0.00% Zero-Jam</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">INDEXING</div>
-                    <div class="doc-spec-cell-val">Continuous Cycloidal</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">MATERIAL</div>
-                    <div class="doc-spec-cell-val">Delrin 150 + 6061</div>
-                  </div>
-                </div>
+                <div class="eng-sec-heading">1.0 Subsystem Design &amp; Performance Specifications</div>
+                <table class="eng-param-table">
+                  <tr>
+                    <td class="param-lbl">Sustained Feed Rate</td>
+                    <td class="param-val">30 Rounds / Second</td>
+                    <td class="param-lbl">Jam Rate</td>
+                    <td class="param-val">0.00% Zero-Jam In Field</td>
+                  </tr>
+                  <tr>
+                    <td class="param-lbl">Agitator Profile</td>
+                    <td class="param-val">4-Pocket Continuous Cycloidal</td>
+                    <td class="param-lbl">Test Endurance</td>
+                    <td class="param-val">15,000+ Cycles Passed</td>
+                  </tr>
+                  <tr>
+                    <td class="param-lbl">Agitator Material</td>
+                    <td class="param-val">Delrin 150 (Low Friction)</td>
+                    <td class="param-lbl">Sensor Feedback</td>
+                    <td class="param-val">&lt;1ms IR Beam Break</td>
+                  </tr>
+                </table>
 
-                <h2 class="doc-section-heading">ANTI-JAM HOPPER INDEXING ARCHITECTURE</h2>
-                <p class="doc-paragraph">
+                <div class="eng-sec-heading">2.0 Anti-Jam Hopper Indexing Architecture</div>
+                <p class="eng-doc-p">
                   Designed a custom cycloidal starwheel agitator that actively separates compressed foam projectiles in the bulk hopper, channeling individual rounds into the launch barrel at 30 rounds/second without double-feeding or pinching.
                 </p>
-
-                <h2 class="doc-section-heading">CYCLE DURABILITY &amp; LOW-FRICTION DELRIN</h2>
-                <p class="doc-paragraph">
+                <p class="eng-doc-p">
                   CNC-machined Delrin 150 starwheels dramatically minimize frictional heat against polyurethane dart bodies, achieving 15,000+ continuous test cycles without mechanical wear or projectile jamming.
                 </p>
 
-                <div class="doc-parts-container">
-                  <div class="doc-parts-intro">INTERACTIVE SUBSYSTEM &amp; PART BREAKDOWN (HOVER TO INSPECT)</div>
-
-                  <div class="doc-part-card" data-part="cycloidal-star">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">CNC Delrin 150 Cycloidal Starwheel Agitator</span>
-                      <span class="doc-part-pill">AGITATOR</span>
-                    </div>
-                    <div class="doc-part-spec">Machined Delrin 150 &bull; 4-Pocket Cycloidal Profile &bull; Low Friction</div>
-                    <div class="doc-part-desc">
-                      Gently indexes soft polyurethane darts without crushing them, preventing hopper blockages during sustained firing.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="hopper-funnel">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Low-Friction Polycarbonate Feed Hopper</span>
-                      <span class="doc-part-pill">HOPPER</span>
-                    </div>
-                    <div class="doc-part-spec">Thermoformed Polycarbonate &bull; Polished Internal Slope &bull; 200 Rd Capacity</div>
-                    <div class="doc-part-desc">
-                      Directs projectiles smoothly into the agitator pockets using gravity and vibration assist.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="indexing-pinion">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Hardened Steel Indexing Pinion Gear</span>
-                      <span class="doc-part-pill">DRIVE PINION</span>
-                    </div>
-                    <div class="doc-part-spec">4140 Steel Pinion &bull; Mod 0.8 &bull; Keyed Shaft Interface</div>
-                    <div class="doc-part-desc">
-                      Transmits brushless motor torque into the cycloidal starwheel with zero tooth stripping under jam-clearing spikes.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="barrel-gate">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Escapement Barrel Gate &amp; Optical Feed Sensor</span>
-                      <span class="doc-part-pill">FEED SENSOR</span>
-                    </div>
-                    <div class="doc-part-spec">Infrared Beam Break &bull; CNC Aluminum Gate &bull; &lt;1ms Response</div>
-                    <div class="doc-part-desc">
-                      Detects dart position before flywheel insertion to ensure zero dry-firing and synchronize burst fire counts.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-                </div>
+                <div class="eng-sec-heading">3.0 Bill of Materials &amp; Subsystem Breakdown</div>
+                <div class="eng-bom-hint">HOVER ANY ROW TO HIGHLIGHT ON DRAWING &rarr;</div>
+                <table class="eng-bom-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 8%;">ITEM</th>
+                      <th style="width: 32%;">COMPONENT NAME</th>
+                      <th style="width: 28%;">MATERIAL / SPEC</th>
+                      <th style="width: 32%;">FUNCTION / SUBSYSTEM</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="doc-part-card" data-part="cycloidal-star">
+                      <td class="bom-no">01</td>
+                      <td class="bom-name">CNC Delrin 150 Cycloidal Starwheel</td>
+                      <td>Machined Delrin 150 &bull; 4-Pocket Cycloid</td>
+                      <td>Gently indexes soft polyurethane darts without crushing or jamming.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="hopper-funnel">
+                      <td class="bom-no">02</td>
+                      <td class="bom-name">Polycarbonate Feed Hopper Funnel</td>
+                      <td>Polycarbonate &bull; Polished Slope</td>
+                      <td>Directs projectiles smoothly into agitator pockets using gravity assist.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="indexing-pinion">
+                      <td class="bom-no">03</td>
+                      <td class="bom-name">Hardened Steel Indexing Pinion Gear</td>
+                      <td>4140 Steel &bull; Mod 0.8 Keyed Interface</td>
+                      <td>Transmits brushless motor torque into starwheel without tooth stripping.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="barrel-gate">
+                      <td class="bom-no">04</td>
+                      <td class="bom-name">Barrel Feed Escapement &amp; Sensor</td>
+                      <td>Infrared Beam Break &bull; CNC Aluminum Gate</td>
+                      <td>Detects dart position before flywheel insertion to ensure zero dry-firing.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </article>
             </div>
           </div>
@@ -1050,30 +1025,23 @@ class AppController {
 
       // ======================================================================
       // 6. EI TENSIONER & BELT DRIVE (TENSIONER)
-      // Left Display: Interactive 2D Technical Vector CAD Schematic
       // ======================================================================
       case 'tensioner':
         return `
           <div class="inspection-split-layout">
             <div class="inspection-left-pane">
               <div class="inspection-drawing-board">
-                <div class="inspection-dwg-bar">
-                  <div class="inspection-dwg-title-tag">
-                    <span class="dwg-badge-id">ARUW-2026-TENS-03</span>
-                    <span class="dwg-badge-rev">REV B</span>
-                    <span class="dwg-badge-name">EI Tensioner &amp; Belt Drive Assembly</span>
-                  </div>
-                  <div class="dwg-hint-text">HOVER PARTS TO HIGHLIGHT ON SCHEMATIC</div>
-                </div>
+                <div class="inspection-sheet-inner-frame">
+                  ${zoneSvg}
+                  <div class="sheet-corner-tag">ZONE B-1 &bull; 2D DRIVE SCHEMATIC</div>
+                  <div class="sheet-corner-hint">NOTE: HOVER BOM ROWS TO HIGHLIGHT VECTOR SCHEMATIC</div>
 
-                <div class="inspection-viewport-frame" id="inspectionViewport">
                   <svg class="inspection-svg-canvas" viewBox="0 0 760 540" xmlns="http://www.w3.org/2000/svg">
                     <rect x="20" y="20" width="720" height="500" fill="#fcfcf9" stroke="#d4d4ce" stroke-width="1.5" />
 
                     <!-- Part 1: Slotted Mounting Slide Plate -->
                     <g class="cad-svg-part" data-part="slide-plate">
                       <rect x="180" y="160" width="400" height="220" rx="8" fill="#f1f5f9" stroke="#1e293b" stroke-width="2.2" />
-                      <!-- Adjustment Slot -->
                       <rect x="230" y="240" width="160" height="40" rx="20" fill="#ffffff" stroke="#1e293b" stroke-width="2" />
                     </g>
 
@@ -1081,17 +1049,14 @@ class AppController {
                     <g class="cad-svg-part" data-part="eccentric-cam">
                       <circle cx="340" cy="260" r="45" fill="#e2e8f0" stroke="#1e293b" stroke-width="2.2" />
                       <circle cx="355" cy="260" r="22" fill="#ffffff" stroke="#1e293b" stroke-width="2" />
-                      <!-- Hex Key Slot -->
                       <polygon points="355,252 362,256 362,264 355,268 348,264 348,256" fill="#94a3b8" stroke="#1e293b" stroke-width="1.2" />
                     </g>
 
                     <!-- Part 3: Double-Flanged Idler Pulley -->
                     <g class="cad-svg-part" data-part="idler-pulley">
                       <rect x="440" y="210" width="55" height="100" rx="4" fill="#cbd5e1" stroke="#1e293b" stroke-width="2.2" />
-                      <!-- Pulley Flanges -->
                       <line x1="435" y1="210" x2="500" y2="210" stroke="#1e293b" stroke-width="3" />
                       <line x1="435" y1="310" x2="500" y2="310" stroke="#1e293b" stroke-width="3" />
-                      <!-- HTD-3M Belt Path -->
                       <path d="M 120 220 L 440 220 C 470 220 470 300 440 300 L 120 300" fill="none" stroke="#0284c7" stroke-width="4.5" stroke-dasharray="6 3" />
                     </g>
 
@@ -1116,111 +1081,100 @@ class AppController {
                     <line class="cad-callout-line" data-part="locking-hardware" x1="260" y1="276" x2="260" y2="420" />
                     <text x="260" y="435" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#0284c7" font-weight="700" text-anchor="middle">GRADE 10.9 LOCKING HARDWARE</text>
                   </svg>
-                </div>
 
-                <div class="inspection-dwg-footer">
-                  <div class="dwg-status-pill">
-                    <span class="pulse-dot"></span>
-                    <span>ONLINE &bull; SYNCHRONIZED</span>
-                  </div>
-                  <div class="dwg-model-tag">SCHEMATIC: ARUW-2026-TENS-03.DWG</div>
-                  <div class="dwg-highlight-indicator" id="inspectionHighlightIndicator">HOVER A COMPONENT TO HIGHLIGHT</div>
+                  ${this.getCadTitleBlock(
+                    'EI Tensioner & Belt Drive Assembly',
+                    'ARUW 2026 &bull; BELT PRELOAD MECHANISM',
+                    'B',
+                    '1:1',
+                    '1. PRELOAD ACCURACY &plusmn;0.05MM OFFSET.<br>2. MATERIAL: 7075-T6 + GRADE 10.9 HARDWARE.<br>3. HOVER BOM ROWS TO HIGHLIGHT PARTS.'
+                  )}
                 </div>
               </div>
             </div>
 
             <div class="inspection-right-pane">
               <article class="inspection-paper-sheet">
-                <header class="doc-paper-header">
-                  <div class="doc-badge-row">
-                    <span class="doc-tag doc-tag-blue">DWG: ARUW-2026-TENS-03 &bull; REV B</span>
-                    <span class="doc-tag doc-tag-amber">BELT PRELOAD</span>
-                    <span class="doc-tag doc-tag-green">ARUW 2026</span>
+                <header class="eng-report-header">
+                  <div class="eng-header-org">UNIVERSITY OF WASHINGTON &bull; ADVANCED ROBOTICS (ARUW)</div>
+                  <div class="eng-header-sub">DEPARTMENT OF MECHANICAL ENGINEERING &bull; SUBSYSTEM DESIGN REPORT</div>
+                  <div class="eng-header-rule"></div>
+                  <div class="eng-doc-info-row">
+                    <span><strong>DOC ID:</strong> ARUW-2026-TENS-03</span>
+                    <span><strong>REV:</strong> B</span>
+                    <span><strong>ENGINEER:</strong> Gavin Higgins</span>
                   </div>
-                  <h1 class="doc-title">EI Tensioner &amp; Belt Drive Assembly</h1>
-                  <p class="doc-subtitle">Subsystem D &bull; Precision Belt Preload &bull; Advanced Robotics at UW</p>
+                  <h1 class="eng-report-title">EI Tensioner &amp; Belt Drive Assembly</h1>
                 </header>
 
-                <div class="doc-specs-grid">
-                  <div>
-                    <div class="doc-spec-cell-label">DRIVE RATIO</div>
-                    <div class="doc-spec-cell-val">4.2:1 Compound</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">PRELOAD ADJUST</div>
-                    <div class="doc-spec-cell-val">Dual Eccentric Cam</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">BELT SPEC</div>
-                    <div class="doc-spec-cell-val">HTD-3M Pitch</div>
-                  </div>
-                  <div>
-                    <div class="doc-spec-cell-label">MATERIAL</div>
-                    <div class="doc-spec-cell-val">7075-T6 + CF Plate</div>
-                  </div>
-                </div>
+                <div class="eng-sec-heading">1.0 Subsystem Design &amp; Performance Specifications</div>
+                <table class="eng-param-table">
+                  <tr>
+                    <td class="param-lbl">Compound Drive Ratio</td>
+                    <td class="param-val">4.2:1 Reduction</td>
+                    <td class="param-lbl">Belt Standard</td>
+                    <td class="param-val">HTD-3M Curvilinear</td>
+                  </tr>
+                  <tr>
+                    <td class="param-lbl">Preload Mechanism</td>
+                    <td class="param-val">Dual Eccentric Cam (4mm Offset)</td>
+                    <td class="param-lbl">Hardware Grade</td>
+                    <td class="param-val">Grade 10.9 High-Tensile</td>
+                  </tr>
+                  <tr>
+                    <td class="param-lbl">Mass Optimization</td>
+                    <td class="param-val">-34% Pocketed FEA Structure</td>
+                    <td class="param-lbl">Dynamic Behavior</td>
+                    <td class="param-val">Zero Belt Tooth Skipping</td>
+                  </tr>
+                </table>
 
-                <h2 class="doc-section-heading">CONTINUOUS BELT TENSIONING &amp; ZERO SLIP</h2>
-                <p class="doc-paragraph">
+                <div class="eng-sec-heading">2.0 Continuous Belt Preload &amp; Zero Slip</div>
+                <p class="eng-doc-p">
                   Designed an eccentric idler tensioner that maintains consistent tooth engagement during rapid reversals without belt tooth jumping, skipping, or backlash under violent deceleration impulses.
                 </p>
-
-                <h2 class="doc-section-heading">FEA &amp; MASS REDUCTION OPTIMIZATION</h2>
-                <p class="doc-paragraph">
+                <p class="eng-doc-p">
                   Pocketed 7075-T6 aluminum mounting plates designed with FEA stress concentration relief, reducing weight by 34% while withstanding maximum belt pre-tensioning without plate deflection.
                 </p>
 
-                <div class="doc-parts-container">
-                  <div class="doc-parts-intro">INTERACTIVE SUBSYSTEM &amp; PART BREAKDOWN (HOVER TO INSPECT)</div>
-
-                  <div class="doc-part-card" data-part="eccentric-cam">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Dual Eccentric Cam Preload Adjuster</span>
-                      <span class="doc-part-pill">CAM ADJUST</span>
-                    </div>
-                    <div class="doc-part-spec">Stainless Steel &bull; Hex Key Actuation &bull; 4mm Continuous Offset</div>
-                    <div class="doc-part-desc">
-                      Rotates smoothly to take up belt slack without altering center-to-center pulley alignment.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="idler-pulley">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Double-Flanged HTD-3M Idler Pulley</span>
-                      <span class="doc-part-pill">IDLER PULLEY</span>
-                    </div>
-                    <div class="doc-part-spec">6061-T6 &bull; Dual Abec-7 Sealed Bearings &bull; HTD-3M Pitch</div>
-                    <div class="doc-part-desc">
-                      Guides the timing belt securely, preventing axial belt walking during rapid motor direction reversals.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="slide-plate">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">7075-T6 Pocketed Tensioner Slide Plate</span>
-                      <span class="doc-part-pill">SLIDE PLATE</span>
-                    </div>
-                    <div class="doc-part-spec">CNC 7075-T6 &bull; Precision Machined Slot &bull; Hard Coat Anodized</div>
-                    <div class="doc-part-desc">
-                      Serves as the structural mounting bracket, featuring rigid guide slots for quick track adjustment.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-
-                  <div class="doc-part-card" data-part="locking-hardware">
-                    <div class="doc-part-header">
-                      <span class="doc-part-name">Grade 10.9 Locking Hardware &amp; Washers</span>
-                      <span class="doc-part-pill">FASTENERS</span>
-                    </div>
-                    <div class="doc-part-spec">Grade 10.9 Alloy Steel &bull; Serrated Nord-Lock Washers &bull; Anti-Vibration</div>
-                    <div class="doc-part-desc">
-                      Locks the tensioner position permanently during fierce robot battle impacts and chassis vibration.
-                    </div>
-                    <div class="doc-part-prompt">🔍 Highlight on drawing &rarr;</div>
-                  </div>
-                </div>
+                <div class="eng-sec-heading">3.0 Bill of Materials &amp; Subsystem Breakdown</div>
+                <div class="eng-bom-hint">HOVER ANY ROW TO HIGHLIGHT ON DRAWING &rarr;</div>
+                <table class="eng-bom-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 8%;">ITEM</th>
+                      <th style="width: 32%;">COMPONENT NAME</th>
+                      <th style="width: 28%;">MATERIAL / SPEC</th>
+                      <th style="width: 32%;">FUNCTION / SUBSYSTEM</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="doc-part-card" data-part="eccentric-cam">
+                      <td class="bom-no">01</td>
+                      <td class="bom-name">Dual Eccentric Cam Preload Adjuster</td>
+                      <td>Stainless Steel &bull; 4mm Continuous Offset</td>
+                      <td>Rotates smoothly to take up belt slack without altering pulley alignment.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="idler-pulley">
+                      <td class="bom-no">02</td>
+                      <td class="bom-name">Double-Flanged HTD-3M Idler Pulley</td>
+                      <td>6061-T6 &bull; Sealed Bearings &bull; HTD-3M</td>
+                      <td>Guides the timing belt securely, preventing axial belt walking during reversals.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="slide-plate">
+                      <td class="bom-no">03</td>
+                      <td class="bom-name">7075-T6 Pocketed Tensioner Slide Plate</td>
+                      <td>CNC 7075-T6 &bull; Hard Anodized</td>
+                      <td>Structural mounting bracket featuring rigid guide slots for track adjustment.</td>
+                    </tr>
+                    <tr class="doc-part-card" data-part="locking-hardware">
+                      <td class="bom-no">04</td>
+                      <td class="bom-name">Grade 10.9 Locking Hardware &amp; Washers</td>
+                      <td>Grade 10.9 &bull; Nord-Lock Washers</td>
+                      <td>Locks tensioner position permanently during fierce battle shocks and vibration.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </article>
             </div>
           </div>

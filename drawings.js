@@ -224,118 +224,15 @@ class CadDrawingsEngine {
       return geometry.userData.cadEdges;
     }
 
-    if (isSpacerOrBushing) {
-      // 22 degrees eliminates the 24 longitudinal facet lines on small bushings/spacers
-      // while keeping circular end rims (90 deg) and hex flats (60 deg)
-      const e = new THREE.EdgesGeometry(geometry, 22); if (!geometry.userData) geometry.userData = {}; geometry.userData.cadEdges = e; return e;
-    }
+    // Threshold of 25-28 degrees cleanly captures all mechanical feature lines (90 deg corners,
+    // 60 deg hex flats, 45 deg chamfers, and cylinder end caps) while completely eliminating
+    // facet stripes on smooth cylinders, fillets, and planar triangulation artifacts.
+    const threshold = isSpacerOrBushing ? 28 : (isTubeOrCylinder ? 28 : 25);
+    const edges = new THREE.EdgesGeometry(geometry, threshold);
 
-    if (!isTubeOrCylinder) {
-      // Threshold of 16 degrees captures machined plates, rollers, rim contours, and brackets
-      const e = new THREE.EdgesGeometry(geometry, 16); if (!geometry.userData) geometry.userData = {}; geometry.userData.cadEdges = e; return e;
-    }
-
-    // For tubes and cylinders:
-    // Extract edges with 1.5 deg threshold to capture facets of smooth cylinders
-    const fullEdges = new THREE.EdgesGeometry(geometry, 1.5);
-    const pos = fullEdges.attributes.position;
-    if (!pos || pos.count === 0) return fullEdges;
-
-    const arr = pos.array;
-    const numEdges = pos.count / 2;
-
-    // Separate edges into longitudinal lines and rim/detail edges
-    // Longitudinal lines on a cylinder are parallel to each other and share the cylinder axis
-    const segments = [];
-    for (let i = 0; i < numEdges; i++) {
-      const idx = i * 6;
-      const x1 = arr[idx], y1 = arr[idx + 1], z1 = arr[idx + 2];
-      const x2 = arr[idx + 3], y2 = arr[idx + 4], z2 = arr[idx + 5];
-      const dx = x2 - x1, dy = y2 - y1, dz = z2 - z1;
-      const len = Math.hypot(dx, dy, dz);
-      if (len < 1e-5) continue;
-
-      let ux = dx / len, uy = dy / len, uz = dz / len;
-      // Canonicalize direction
-      if (ux < -1e-4 || (Math.abs(ux) <= 1e-4 && (uy < -1e-4 || (Math.abs(uy) <= 1e-4 && uz < 0)))) {
-        ux = -ux; uy = -uy; uz = -uz;
-      }
-
-      const mx = (x1 + x2) * 0.5, my = (y1 + y2) * 0.5, mz = (z1 + z2) * 0.5;
-      segments.push({ x1, y1, z1, x2, y2, z2, dx, dy, dz, len, ux, uy, uz, mx, my, mz });
-    }
-
-    // Group parallel segments
-    const groups = [];
-    for (const seg of segments) {
-      let matched = false;
-      for (const g of groups) {
-        const dot = seg.ux * g.ux + seg.uy * g.uy + seg.uz * g.uz;
-        if (dot > 0.95) {
-          g.items.push(seg);
-          matched = true;
-          break;
-        }
-      }
-      if (!matched) {
-        groups.push({
-          ux: seg.ux, uy: seg.uy, uz: seg.uz,
-          items: [seg]
-        });
-      }
-    }
-
-    const camDir = viewDir || TURRET_BASE_DIR;
-    const outFloats = [];
-    for (const g of groups) {
-      if (g.items.length <= 4) {
-        // Normal non-cylindrical edges: keep all
-        for (const seg of g.items) {
-          outFloats.push(seg.x1, seg.y1, seg.z1, seg.x2, seg.y2, seg.z2);
-        }
-      } else {
-        // Cylindrical surface with many parallel lines:
-        // Find 2D projection perpendicular vector W = u x camDir
-        let wx = g.uy * camDir.z - g.uz * camDir.y;
-        let wy = g.uz * camDir.x - g.ux * camDir.z;
-        let wz = g.ux * camDir.y - g.uy * camDir.x;
-        let wLen = Math.hypot(wx, wy, wz);
-
-        if (wLen < 1e-3) {
-          // Axis is pointing almost directly along view direction; end rim defines outer edge
-          continue;
-        }
-        wx /= wLen; wy /= wLen; wz /= wLen;
-
-        // Project midpoints along W to find the extreme outer edges on the 2D sheet projection
-        let minW = Infinity, maxW = -Infinity;
-        for (const seg of g.items) {
-          const proj = seg.mx * wx + seg.my * wy + seg.mz * wz;
-          seg.projW = proj;
-          if (proj < minW) minW = proj;
-          if (proj > maxW) maxW = proj;
-        }
-
-        const diam = maxW - minW;
-        if (diam < 1e-4) {
-          for (const seg of g.items) {
-            outFloats.push(seg.x1, seg.y1, seg.z1, seg.x2, seg.y2, seg.z2);
-          }
-        } else {
-          const tol = Math.max(1e-4, diam * 0.14);
-          for (const seg of g.items) {
-            // Keep all segments along the full length that lie on the leftmost or rightmost 2D outer edges
-            if (Math.abs(seg.projW - minW) <= tol || Math.abs(seg.projW - maxW) <= tol) {
-              outFloats.push(seg.x1, seg.y1, seg.z1, seg.x2, seg.y2, seg.z2);
-            }
-          }
-        }
-      }
-    }
-
-    const filteredGeom = new THREE.BufferGeometry();
-    filteredGeom.setAttribute('position', new THREE.Float32BufferAttribute(outFloats, 3));
-    if (!geometry.userData) geometry.userData = {}; geometry.userData.cadEdges = filteredGeom; return filteredGeom;
+    if (!geometry.userData) geometry.userData = {};
+    geometry.userData.cadEdges = edges;
+    return edges;
   }
 
   applyCadMaterial(object, viewDir) {
@@ -381,6 +278,14 @@ class CadDrawingsEngine {
           name.includes('support')
         ) && !name.includes('attachment') && !name.includes('plate') && !name.includes('holder');
         const isSpacerOrBushing = name.includes('spacer') || name.includes('bushing') || name.includes('locknut');
+
+        for (let i = child.children.length - 1; i >= 0; i--) {
+          const ch = child.children[i];
+          if (ch.isLineSegments) {
+            child.remove(ch);
+            if (ch.geometry) ch.geometry.dispose();
+          }
+        }
 
         try {
           const edges = this.createCadEdges(child.geometry, isTubeOrCylinder, isSpacerOrBushing, viewDir);
@@ -1501,6 +1406,14 @@ class CadDrawingsEngine {
           name.includes('support')
         ) && !name.includes('attachment') && !name.includes('plate') && !name.includes('holder');
         const isSpacerOrBushing = name.includes('spacer') || name.includes('bushing') || name.includes('locknut');
+
+        for (let i = child.children.length - 1; i >= 0; i--) {
+          const ch = child.children[i];
+          if (ch.isLineSegments) {
+            child.remove(ch);
+            if (ch.geometry) ch.geometry.dispose();
+          }
+        }
 
         try {
           const edges = this.createCadEdges(child.geometry, isTubeOrCylinder, isSpacerOrBushing, viewDir);
