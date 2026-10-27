@@ -79,9 +79,56 @@ class CadDrawingsEngine {
       this.loader = new THREE.GLTFLoader();
     }
 
+    this.gltfCache = {};
+    this.pendingLoads = {};
+
     this.initSuspensionSheet();
     this.initHeroSheet();
     this.startLoop();
+  }
+
+  // High-performance shared GLTF in-memory cache to guarantee instantaneous modal inspection
+  loadCachedGlb(url, onLoad, onError) {
+    if (this.gltfCache[url]) {
+      const gltfClone = {
+        ...this.gltfCache[url],
+        scene: this.gltfCache[url].scene.clone(true)
+      };
+      Promise.resolve().then(() => onLoad(gltfClone));
+      return;
+    }
+
+    if (this.pendingLoads[url]) {
+      this.pendingLoads[url].push({ onLoad, onError });
+      return;
+    }
+
+    this.pendingLoads[url] = [{ onLoad, onError }];
+
+    this.loader.load(
+      url,
+      (gltf) => {
+        this.gltfCache[url] = gltf;
+        const callbacks = this.pendingLoads[url] || [];
+        delete this.pendingLoads[url];
+        callbacks.forEach(cb => {
+          try {
+            const clone = { ...gltf, scene: gltf.scene.clone(true) };
+            cb.onLoad(clone);
+          } catch (e) {
+            console.warn('Cached GLB callback error:', e);
+          }
+        });
+      },
+      undefined,
+      (err) => {
+        const callbacks = this.pendingLoads[url] || [];
+        delete this.pendingLoads[url];
+        callbacks.forEach(cb => {
+          if (cb.onError) cb.onError(err);
+        });
+      }
+    );
   }
 
   // ------------------------------------------------------------------------
@@ -172,16 +219,20 @@ class CadDrawingsEngine {
     return { center: box.getCenter(new THREE.Vector3()), size: box.getSize(new THREE.Vector3()) };
   }
 
-  createCadEdges(geometry, isTubeOrCylinder, isSpacerOrBushing) {
+  createCadEdges(geometry, isTubeOrCylinder, isSpacerOrBushing, viewDir) {
+    if (geometry.userData && geometry.userData.cadEdges) {
+      return geometry.userData.cadEdges;
+    }
+
     if (isSpacerOrBushing) {
       // 22 degrees eliminates the 24 longitudinal facet lines on small bushings/spacers
       // while keeping circular end rims (90 deg) and hex flats (60 deg)
-      return new THREE.EdgesGeometry(geometry, 22);
+      const e = new THREE.EdgesGeometry(geometry, 22); if (!geometry.userData) geometry.userData = {}; geometry.userData.cadEdges = e; return e;
     }
 
     if (!isTubeOrCylinder) {
       // Threshold of 16 degrees captures machined plates, rollers, rim contours, and brackets
-      return new THREE.EdgesGeometry(geometry, 16);
+      const e = new THREE.EdgesGeometry(geometry, 16); if (!geometry.userData) geometry.userData = {}; geometry.userData.cadEdges = e; return e;
     }
 
     // For tubes and cylinders:
@@ -284,7 +335,7 @@ class CadDrawingsEngine {
 
     const filteredGeom = new THREE.BufferGeometry();
     filteredGeom.setAttribute('position', new THREE.Float32BufferAttribute(outFloats, 3));
-    return filteredGeom;
+    if (!geometry.userData) geometry.userData = {}; geometry.userData.cadEdges = filteredGeom; return filteredGeom;
   }
 
   applyCadMaterial(object, viewDir) {
@@ -496,7 +547,7 @@ class CadDrawingsEngine {
 
     // Load actual Suspension GLB in background
     const glbUrl = encodeURI('2027,_Linear_Suspension_V3,_Assembly (1).glb');
-    this.loader.load(
+    this.loadCachedGlb(
       glbUrl,
       (gltf) => {
         try {
@@ -884,7 +935,7 @@ class CadDrawingsEngine {
 
     // 1) Load Full Hero Assembly (HeroRender (1).glb — 23.7 MB optimized)
     const heroGlbUrl = encodeURI('HeroRender (1).glb');
-    this.loader.load(
+    this.loadCachedGlb(
       heroGlbUrl,
       (gltf) => {
         try {
@@ -928,7 +979,7 @@ class CadDrawingsEngine {
 
     // 2) Load Turret Base (TurretBaseRender.glb — 4.4 MB) for static shot on right
     const turretGlbUrl = encodeURI('TurretBaseRender.glb');
-    this.loader.load(
+    this.loadCachedGlb(
       turretGlbUrl,
       (gltf) => {
         try {
@@ -1336,7 +1387,7 @@ class CadDrawingsEngine {
     insp.frameSize.copy(baseFrame.size);
 
     const turretGlbUrl = encodeURI('TurretBaseRender.glb');
-    this.loader.load(
+    this.loadCachedGlb(
       turretGlbUrl,
       (gltf) => {
         if (!this.inspection || this.inspection !== insp) return;
@@ -1386,7 +1437,7 @@ class CadDrawingsEngine {
     insp.frameSize.copy(baseFrame.size);
 
     const suspGlbUrl = encodeURI('2027,_Linear_Suspension_V3,_Assembly (1).glb');
-    this.loader.load(
+    this.loadCachedGlb(
       suspGlbUrl,
       (gltf) => {
         if (!this.inspection || this.inspection !== insp) return;
